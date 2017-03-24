@@ -15,14 +15,22 @@
  *@
 
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@import uk.gov.hmrc.agentmappingfrontend.views.html
 
-@contentHeader = {
-  <h1>@heading</h1>
+
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig))
+
+@html.main_template(appConfig, title = "Confirmation", bodyClasses = None) {
+    <div class="govuk-box-highlight">
+        <h1 class="bold-large">You have successfully added the following codes</h1>
+        <p>
+            to your Agent Reference Number (ARN) <br>
+            <strong class="heading-medium">ARN-HDJ2123F</strong>
+        <ul class="list">
+            <li>H4673G     IR-SA Agent</li>
+        </ul>
+        </p>
+    </div>
+
+    <a href="index.html" class="button">Sign out</a>
 }
-
-@mainContent = {
-  <p>@message</p>
-}
-
-@govuk_wrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)
