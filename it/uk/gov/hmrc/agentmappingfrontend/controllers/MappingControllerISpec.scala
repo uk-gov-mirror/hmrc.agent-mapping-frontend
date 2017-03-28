@@ -18,7 +18,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
   "add-code" should {
 
-    behave like anAgentAffinityGroupOnlyEndpoint(request => controller.addCode(request))
+    behave like anEndfpointAccessableGivenAgentAffinityGroupAndEnrolmentIrPayeAgent(request => controller.addCode(request))
 
     "display the start page if the current user is logged in and has legacy agent enrolment" in {
       isEnrolled(subscribingAgent)
@@ -30,7 +30,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
   "complete" should {
 
-    behave like anAgentAffinityGroupOnlyEndpoint(request => controller.complete(request))
+    behave like anEndfpointAccessableGivenAgentAffinityGroupAndEnrolmentIrPayeAgent(request => controller.complete(request))
 
     "display the start page" in {
       isEnrolled(subscribingAgent)

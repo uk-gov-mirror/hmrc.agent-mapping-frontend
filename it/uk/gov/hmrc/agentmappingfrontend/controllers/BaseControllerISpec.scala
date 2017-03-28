@@ -20,9 +20,7 @@ import com.google.inject.AbstractModule
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentType, _}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 import uk.gov.hmrc.agentmappingfrontend.support.{EndpointBehaviours, WireMockSupport}
@@ -44,13 +42,6 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
   }
 
   protected implicit val materializer = app.materializer
-
-  protected def checkHtmlResultWithBodyText(result: Result, expectedSubstrings: String*): Unit = {
-    status(result) shouldBe OK
-    contentType(result) shouldBe Some("text/html")
-    charset(result) shouldBe Some("utf-8")
-    expectedSubstrings.foreach(s => bodyOf(result) should include(s))
-  }
 
   protected def authenticatedRequest() = {
     val sessionKeys = userIsAuthenticated(subscribingAgent)
