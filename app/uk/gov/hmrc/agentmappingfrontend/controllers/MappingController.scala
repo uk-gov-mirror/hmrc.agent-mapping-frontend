@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentmappingfrontend.auth.{AgentRequest, AuthActions}
+import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
@@ -32,14 +32,14 @@ import scala.concurrent.Future.successful
 class MappingController @Inject()(override val messagesApi: MessagesApi, override val authConnector: AuthConnector)  (implicit appConfig: AppConfig)
   extends FrontendController with I18nSupport with AuthActions {
   val start: Action[AnyContent] = Action { implicit request =>
-    Ok(html.start_template.apply())
+    Ok(html.start_template())
   }
 
-  val addCode: Action[AnyContent] = AuthorisedWithSubscribingAgentAsync { implicit authContext => implicit request =>
-    successful(Ok(html.add_code_template.apply()))
+  val addCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
+    successful(Ok(html.add_code_template()))
   }
 
-  val complete: Action[AnyContent] = AuthorisedWithSubscribingAgentAsync { implicit authContext => implicit request =>
-    successful(Ok(html.complete_template.apply()))
+  val complete: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
+    successful(Ok(html.complete_template()))
   }
 }

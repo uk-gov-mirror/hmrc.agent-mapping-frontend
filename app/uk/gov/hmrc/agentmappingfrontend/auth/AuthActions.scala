@@ -32,13 +32,13 @@ trait AuthActions extends Actions {
   protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
-  def AuthorisedWithSubscribingAgentAsync(body: AsyncPlayUserRequest): Action[AnyContent] =
+  def AuthorisedSAAgent(body: AsyncPlayUserRequest): Action[AnyContent] =
     AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
       implicit authContext => implicit request =>
         isAgentAffinityGroup() flatMap {
           case true => enrolments flatMap {
               e => {
-                if ( e.exists(_.key == "IR-PAYE-AGENT") ){
+                if ( e.exists(_.key == "IR-SA-AGENT") ){
                   body(authContext)(AgentRequest(e, request))
                 } else{
                   Future successful redirectToStart

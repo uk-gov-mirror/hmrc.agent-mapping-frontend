@@ -23,7 +23,7 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.agentmappingfrontend.config.{AppConfig, FrontendAppConfig, FrontendAuthConnector, WSHttp}
+import uk.gov.hmrc.agentmappingfrontend.config._
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.http.HttpGet
@@ -46,11 +46,7 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     override lazy val get = new URL(baseUrl(serviceName))
   }
 
-  private def bindConfigProperty(propertyName: String) =
-    bind(classOf[String]).annotatedWith(named(s"$propertyName")).toProvider(new ConfigPropertyProvider(propertyName))
-
   private class ConfigPropertyProvider(propertyName: String) extends Provider[String] {
     override lazy val get = getConfString(propertyName, throw new RuntimeException(s"No configuration value found for '$propertyName'"))
   }
-
 }
