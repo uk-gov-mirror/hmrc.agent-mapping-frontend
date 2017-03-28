@@ -20,6 +20,7 @@ import javax.inject.Singleton
 
 import play.api.Play.{configuration, current}
 import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 
 trait AppConfig {
   val analyticsToken: String
@@ -30,6 +31,22 @@ trait AppConfig {
 
 trait StrictConfig{
   def loadConfig(key: String): String = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
+}
+
+object GGConfig extends StrictConfig {
+  private lazy val ggBaseUrl = loadConfig("authentication.government-gateway.sign-in.base-url")
+  lazy val ggSignInUrl: String = {
+    val ggSignInPath = loadConfig("authentication.government-gateway.sign-in.path")
+    s"$ggBaseUrl$ggSignInPath"
+  }
+
+  lazy val ggSignOutUrl: String = {
+    val ggSignOutPath = loadConfig("authentication.government-gateway.sign-out.path")
+    s"$ggBaseUrl$ggSignOutPath"
+  }
+
+  lazy val checkAgencyStatusCallbackUrl: String = loadConfig("authentication.login-callback.url") +
+    routes.MappingController.addCode().url
 }
 
 @Singleton
