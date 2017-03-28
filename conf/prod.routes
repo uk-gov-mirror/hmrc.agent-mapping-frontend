@@ -1,5 +1,5 @@
 # Add all the application routes to the app.routes file
-->         /agent-mapping-frontend              app.Routes
+->         /agent-mapping-frontend    app.Routes
 ->         /                          health.Routes
 ->     	   /template                  template.Routes
 
