@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
+import uk.gov.hmrc.agentmappingfrontend.auth.{AuthActions, Enrolment}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
@@ -36,10 +36,17 @@ class MappingController @Inject()(override val messagesApi: MessagesApi, overrid
   }
 
   val addCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
-    successful(Ok(html.add_code_template()))
+    successful(Ok(html.add_code_template(saReference(request.enrolments))))
   }
 
   val complete: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
     successful(Ok(html.complete_template()))
+  }
+
+
+  private def saReference(enrolments: List[Enrolment]): String = {
+    val enrolment = enrolments.find(_.key == "IR-SA-AGENT").get
+    val identifier = enrolment.identifiers.find(_.key == "IrAgentReference")
+    identifier.get.value
   }
 }

@@ -18,8 +18,10 @@ package uk.gov.hmrc.agentmappingfrontend.auth
 
 import play.api.libs.json.{Format, Json}
 
-case class Enrolment(key: String)
+case class Identifier(key: String, value: String)
+case class Enrolment(key: String, identifiers: Seq[Identifier], state: String)
 
 object Enrolment {
+  implicit val identifierFormat: Format[Identifier] = Json.format[Identifier]
   implicit val format: Format[Enrolment] = Json.format[Enrolment]
 }
