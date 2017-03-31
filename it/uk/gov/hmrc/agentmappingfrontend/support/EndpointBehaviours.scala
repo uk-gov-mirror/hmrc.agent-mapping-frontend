@@ -28,7 +28,7 @@ trait EndpointBehaviours {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.start().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but is not enrolled to IR-SA-AGENT " in {
@@ -39,7 +39,7 @@ trait EndpointBehaviours {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.start().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but has an inactive enrolment to IR-SA-AGENT " in {
@@ -50,7 +50,7 @@ trait EndpointBehaviours {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.start().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
     }
   }
 }

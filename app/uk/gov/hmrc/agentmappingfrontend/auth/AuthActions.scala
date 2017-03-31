@@ -45,11 +45,11 @@ trait AuthActions extends Actions {
                 if ( hasActiveIrSaAgentEnrolment(e) ){
                   body(authContext)(AgentRequest(e, request))
                 } else{
-                  Future successful redirectToStart
+                  Future successful redirectToNotEnrolled
                 }
               }
             }
-          case false => Future successful redirectToStart
+          case false => Future successful redirectToNotEnrolled
         }
     }
 
@@ -62,6 +62,6 @@ trait AuthActions extends Actions {
       affinityGroup == "Agent"
     }
 
-  private def redirectToStart =
-    Redirect(routes.MappingController.start())
+  private def redirectToNotEnrolled =
+    Redirect(routes.MappingController.notEnrolled())
 }

@@ -44,6 +44,8 @@
     </logger>
 
     <logger name="com.google.inject" level="INFO"/>
+    <logger name="org.eclipse.jetty" level="INFO"/>
+    <logger name="org.apache.http" level="INFO"/>
 
     <logger name="uk.gov" level="INFO"/>
 

@@ -43,6 +43,10 @@ class MappingController @Inject()(override val messagesApi: MessagesApi, overrid
     successful(Ok(html.complete_template()))
   }
 
+  val notEnrolled: Action[AnyContent] = Action { implicit request =>
+    Ok(html.not_enrolled_template())
+  }
+
 
   private def saReference(enrolments: List[Enrolment]): String = {
     val enrolment = enrolments.find(_.key == "IR-SA-AGENT").get
