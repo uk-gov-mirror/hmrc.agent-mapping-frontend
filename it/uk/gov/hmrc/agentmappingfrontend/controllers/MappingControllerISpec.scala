@@ -46,4 +46,12 @@ class MappingControllerISpec extends BaseControllerISpec {
       bodyOf(result) should include("You have successfully added the following codes")
     }
   }
+
+ "not enrolled " should {
+   "contain a message indicating if the user has enrolled for IR-SA-AGENT" in {
+     val result: Result = await(controller.notEnrolled(FakeRequest()))
+     status(result) shouldBe 200
+     bodyOf(result) should include("There is no active IR-SA-AGENT enrolment associated with this Government Gateway identifier")
+   }
+ }
 }
