@@ -26,7 +26,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentmappingfrontend.config._
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import uk.gov.hmrc.play.http.HttpGet
+import uk.gov.hmrc.play.http.{HttpGet, HttpPut}
 
 class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule with ServicesConfig {
   override protected lazy val mode: Mode = environment.mode
@@ -34,6 +34,7 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
 
   override def configure(): Unit = {
     bind(classOf[HttpGet]).toInstance(WSHttp)
+    bind(classOf[HttpPut]).toInstance(WSHttp)
     bind(classOf[AppConfig]).to(classOf[FrontendAppConfig])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
     bindBaseUrl("agent-mapping")
