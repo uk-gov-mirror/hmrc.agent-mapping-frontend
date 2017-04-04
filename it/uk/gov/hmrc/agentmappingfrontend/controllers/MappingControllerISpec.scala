@@ -7,6 +7,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.Arn
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.isEnrolled
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
 import uk.gov.hmrc.play.http.Upstream4xxResponse
 
 class MappingControllerISpec extends BaseControllerISpec {
@@ -53,15 +54,18 @@ class MappingControllerISpec extends BaseControllerISpec {
       redirectLocation(result).get shouldBe routes.MappingController.complete().url
     }
 
-    "throw exception if the mapping exists" in {
+    "return 500 if the mapping already exists" in new App {
       isEnrolled(subscribingAgent)
       mappingExists(Arn("ARN0001"), subscribingAgent.saAgentReference.get)
-      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0001")
 
-      val e = intercept[Upstream4xxResponse] {
-        await(controller.submitAddCode(request))
-      }
-      e.upstreamResponseCode shouldBe 409
+      val sessionKeys = userIsAuthenticated(subscribingAgent)
+      val request = FakeRequest("POST", "/agent-mapping/add-code")
+                      .withSession(sessionKeys: _*)
+                      .withFormUrlEncodedBody("arn.arn" -> "ARN0001")
+
+      val result = await(route(app, request).get)
+
+      status(result) shouldBe 500
     }
 
     "redisplay the form if there is no ARN " in {
