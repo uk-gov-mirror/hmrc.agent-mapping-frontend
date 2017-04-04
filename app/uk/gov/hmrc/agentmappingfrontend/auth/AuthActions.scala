@@ -32,20 +32,24 @@ trait AuthActions extends Actions {
   protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
+  private def hasActiveIrSaAgentEnrolment(e: List[Enrolment]): Boolean = {
+    e.exists(e => e.key == "IR-SA-AGENT" && e.state == "Activated")
+  }
+
   def AuthorisedSAAgent(body: AsyncPlayUserRequest): Action[AnyContent] =
     AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
       implicit authContext => implicit request =>
         isAgentAffinityGroup() flatMap {
           case true => enrolments flatMap {
               e => {
-                if ( e.exists(_.key == "IR-SA-AGENT") ){
+                if ( hasActiveIrSaAgentEnrolment(e) ){
                   body(authContext)(AgentRequest(e, request))
                 } else{
-                  Future successful redirectToStart
+                  Future successful redirectToNotEnrolled
                 }
               }
             }
-          case false => Future successful redirectToStart
+          case false => Future successful redirectToNotEnrolled
         }
     }
 
@@ -58,6 +62,6 @@ trait AuthActions extends Actions {
       affinityGroup == "Agent"
     }
 
-  private def redirectToStart =
-    Redirect(routes.MappingController.start())
+  private def redirectToNotEnrolled =
+    Redirect(routes.MappingController.notEnrolled())
 }

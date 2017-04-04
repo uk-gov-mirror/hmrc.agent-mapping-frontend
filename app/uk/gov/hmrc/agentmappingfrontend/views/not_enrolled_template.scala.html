@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package uk.gov.hmrc.agentmappingfrontend.auth
+@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+@import uk.gov.hmrc.agentmappingfrontend.views.html
 
-import play.api.libs.json.{Format, Json}
 
-case class Identifier(key: String, value: String)
-case class Enrolment(key: String, identifiers: Seq[Identifier], state: String)
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig))
 
-object Enrolment {
-  implicit val identifierFormat: Format[Identifier] = Json.format[Identifier]
-  implicit val format: Format[Enrolment] = Json.format[Enrolment]
+@html.main_template(appConfig, title = "Not Enrolled", bodyClasses = None) {
+    <h1 class="heading-xlarge">
+        Not Enrolled
+    </h1>
+
+    There is no active IR-SA-AGENT enrolment associated with this Government Gateway identifier.
 }

@@ -20,11 +20,18 @@ class MappingControllerISpec extends BaseControllerISpec {
 
     behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.addCode(request))
 
-    "display the start page if the current user is logged in and has legacy agent enrolment" in {
+    "display the add code page if the current user is logged in and has legacy agent enrolment" in {
       isEnrolled(subscribingAgent)
       val result: Result = await(controller.addCode(authenticatedRequest()))
       status(result) shouldBe 200
       bodyOf(result) should include("Agent codes")
+    }
+
+    "display the SA Agent Reference if the current user is logged in and has legacy agent enrolment" in {
+      isEnrolled(subscribingAgent)
+      val result: Result = await(controller.addCode(authenticatedRequest()))
+      status(result) shouldBe 200
+      bodyOf(result) should include(">HZ1234")
     }
   }
 
@@ -39,4 +46,12 @@ class MappingControllerISpec extends BaseControllerISpec {
       bodyOf(result) should include("You have successfully added the following codes")
     }
   }
+
+ "not enrolled " should {
+   "contain a message indicating if the user has enrolled for IR-SA-AGENT" in {
+     val result: Result = await(controller.notEnrolled(FakeRequest()))
+     status(result) shouldBe 200
+     bodyOf(result) should include("There is no active IR-SA-AGENT enrolment associated with this Government Gateway identifier")
+   }
+ }
 }
