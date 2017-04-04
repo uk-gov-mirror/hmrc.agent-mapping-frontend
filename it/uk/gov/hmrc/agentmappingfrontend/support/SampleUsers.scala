@@ -2,8 +2,9 @@ package uk.gov.hmrc.agentmappingfrontend.support
 
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.parse
+import uk.gov.hmrc.domain.SaAgentReference
 
-case class SampleUser(authJson: String, userDetailsJson: String) {
+case class SampleUser(authJson: String, userDetailsJson: String, saAgentReference: Option[SaAgentReference] = None) {
   private val json: JsValue = parse(authJson)
 
   val authorityUri: String = (json \ "uri").as[String]
@@ -38,7 +39,8 @@ object SampleUsers {
                          |{
                          |  "affinityGroup": "Agent"
                          |}
-    """.stripMargin
+    """.stripMargin,
+    saAgentReference = Some(SaAgentReference("HZ1234"))
   )
 
   private val individualOid = "234567891"

@@ -46,7 +46,7 @@ object GGConfig extends StrictConfig {
   }
 
   lazy val checkAgencyStatusCallbackUrl: String = loadConfig("authentication.login-callback.url") +
-    routes.MappingController.addCode().url
+    routes.MappingController.showAddCode().url
 }
 
 @Singleton
