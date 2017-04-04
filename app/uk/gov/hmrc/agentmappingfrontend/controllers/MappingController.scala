@@ -22,12 +22,11 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentmappingfrontend.auth.{AuthActions, Enrolment}
+import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.model.Arn
 import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
@@ -54,16 +53,16 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   }
 
   val showAddCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
-    successful(Ok(html.add_code_template(mappingForm, saReference(request.enrolments))))
+    successful(Ok(html.add_code_template(mappingForm, request.saAgentReference)))
   }
 
   val submitAddCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
     mappingForm.bindFromRequest.fold(
       formWithErrors => {
-        successful(Ok(html.add_code_template(formWithErrors, saReference(request.enrolments))))
+        successful(Ok(html.add_code_template(formWithErrors, request.saAgentReference)))
       },
       mappingData => {
-        mappingConnector.createMapping(mappingData.arn, saReference(request.enrolments)) map {_ =>
+        mappingConnector.createMapping(mappingData.arn, request.saAgentReference) map {_ =>
           Redirect(routes.MappingController.complete())
         }
       }
@@ -76,12 +75,5 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
 
   val notEnrolled: Action[AnyContent] = Action { implicit request =>
     Ok(html.not_enrolled_template())
-  }
-
-
-  private def saReference(enrolments: List[Enrolment]): SaAgentReference = {
-    val enrolment = enrolments.find(_.key == "IR-SA-AGENT").get
-    val identifier = enrolment.identifiers.find(_.key == "IrAgentReference")
-    SaAgentReference(identifier.get.value)
   }
 }

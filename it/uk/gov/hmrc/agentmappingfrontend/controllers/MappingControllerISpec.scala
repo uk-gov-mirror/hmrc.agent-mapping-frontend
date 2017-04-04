@@ -4,11 +4,9 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model.Arn
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.isEnrolled
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isEnrolled, userIsAuthenticated}
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
-import uk.gov.hmrc.play.http.Upstream4xxResponse
 
 class MappingControllerISpec extends BaseControllerISpec {
   private lazy val controller: MappingController = app.injector.instanceOf[MappingController]
