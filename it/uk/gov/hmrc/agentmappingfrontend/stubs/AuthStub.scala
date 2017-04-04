@@ -27,6 +27,6 @@ object AuthStub {
 
   def isEnrolled(user: SampleUser, state: String = "Activated"): Unit = {
     stubFor(get(urlEqualTo(user.enrolmentsLink)).willReturn(aResponse().withStatus(200).withBody(
-      s"""|[{"key":"IR-SA-AGENT","identifiers":[{"key":"IrAgentReference","value":"HZ1234"}],"state":"$state"}]""".stripMargin)))
+      s"""|[{"key":"IR-SA-AGENT","identifiers":[{"key":"IrAgentReference","value":"${user.saAgentReference.get}"}],"state":"$state"}]""".stripMargin)))
   }
 }
