@@ -21,19 +21,23 @@ import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+import uk.gov.hmrc.domain.SaAgentReference
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class AgentRequest[A](enrolments: List[Enrolment], request: Request[A]) extends WrappedRequest[A](request)
+case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[A]) extends WrappedRequest[A](request)
 
 trait AuthActions extends Actions {
   protected type AsyncPlayUserRequest = AuthContext => AgentRequest[AnyContent] => Future[Result]
   protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
-  private def hasActiveIrSaAgentEnrolment(e: List[Enrolment]): Boolean = {
-    e.exists(e => e.key == "IR-SA-AGENT" && e.state == "Activated")
+  private def saAgentReference(e: List[Enrolment]): Option[SaAgentReference] = {
+    e.find(e => e.key == "IR-SA-AGENT" && e.state == "Activated") flatMap { e =>
+      e.identifiers.find(_.key == "IrAgentReference")
+        .map(i => SaAgentReference(i.value))
+    }
   }
 
   def AuthorisedSAAgent(body: AsyncPlayUserRequest): Action[AnyContent] =
@@ -42,9 +46,9 @@ trait AuthActions extends Actions {
         isAgentAffinityGroup() flatMap {
           case true => enrolments flatMap {
               e => {
-                if ( hasActiveIrSaAgentEnrolment(e) ){
-                  body(authContext)(AgentRequest(e, request))
-                } else{
+                saAgentReference(e) map { saEnrolment =>
+                  body(authContext)(AgentRequest(saEnrolment, request))
+                } getOrElse {
                   Future successful redirectToNotEnrolled
                 }
               }
