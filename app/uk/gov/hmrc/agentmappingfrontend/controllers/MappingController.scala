@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future.successful
 
-case class MappingForm(arn: Arn)
+case class MappingForm(arn: Arn, utr: String)
 
 @Singleton
 class MappingController @Inject()(override val messagesApi: MessagesApi,
@@ -43,8 +43,9 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   private val mappingForm = Form(
     mapping(
       "arn" -> mapping(
-        "arn" -> nonEmptyText
-      )(Arn.apply)(Arn.unapply)
+        "arn" -> arn
+      )(Arn.apply)(Arn.unapply),
+      "utr" -> utr
     )(MappingForm.apply)(MappingForm.unapply)
   )
 

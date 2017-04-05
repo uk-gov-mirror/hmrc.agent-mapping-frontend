@@ -35,8 +35,7 @@
         </ul>
         <p>To add these codes to your firm's HMRC record, please enter your:</p>
         <div class="form-group">
-            <label class="form-label-bold" for="utr">SA or CT UTR</label>
-            <input type="text" class="form-control" id="utr">
+            @input(mappingForm("utr"), '_label -> "SA or CT UTR", '_inputClass -> "input--medium input--cleared")
         </div>
 
         <div class="form-group">
