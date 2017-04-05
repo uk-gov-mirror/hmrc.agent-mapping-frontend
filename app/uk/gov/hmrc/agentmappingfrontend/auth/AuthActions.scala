@@ -33,9 +33,9 @@ trait AuthActions extends Actions {
   protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
-  private def saAgentReference(e: List[Enrolment]): Option[SaAgentReference] = {
+  private[auth] def saAgentReference(e: List[Enrolment]): Option[SaAgentReference] = {
     e.find(e => e.key == "IR-SA-AGENT" && e.state == "Activated") flatMap { e =>
-      e.identifiers.find(_.key == "IrAgentReference")
+      e.identifiers.find(_.key.equalsIgnoreCase("IRAgentReference"))
         .map(i => SaAgentReference(i.value))
     }
   }
