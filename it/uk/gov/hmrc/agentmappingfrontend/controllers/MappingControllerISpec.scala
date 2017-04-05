@@ -43,8 +43,8 @@ class MappingControllerISpec extends BaseControllerISpec {
 
     "redirect to complete if the user enters an ARN" in {
       isEnrolled(subscribingAgent)
-      mappingIsCreated(Arn("ARN0001"), subscribingAgent.saAgentReference.get)
-      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0001")
+      mappingIsCreated(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
 
       val result = await(controller.submitAddCode(request))
 
@@ -54,27 +54,65 @@ class MappingControllerISpec extends BaseControllerISpec {
 
     "return 500 if the mapping already exists" in new App {
       isEnrolled(subscribingAgent)
-      mappingExists(Arn("ARN0001"), subscribingAgent.saAgentReference.get)
+      mappingExists(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
       val sessionKeys = userIsAuthenticated(subscribingAgent)
       val request = FakeRequest("POST", "/agent-mapping/add-code")
                       .withSession(sessionKeys: _*)
-                      .withFormUrlEncodedBody("arn.arn" -> "ARN0001")
+                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001")
 
       val result = await(route(app, request).get)
 
       status(result) shouldBe 500
     }
 
-    "redisplay the form if there is no ARN " in {
-      isEnrolled(subscribingAgent)
+    "redisplay the form " when {
+      "there is no ARN " in {
+        isEnrolled(subscribingAgent)
+        val request = authenticatedRequest().withFormUrlEncodedBody("utr" -> "2000000000")
 
-      val result = await(controller.submitAddCode(authenticatedRequest()))
+        val result = await(controller.submitAddCode(request))
 
-      status(result) shouldBe 200
-      bodyOf(result) should include("Agent codes")
+        status(result) shouldBe 200
+        bodyOf(result) should include("This field is required")
+        bodyOf(result) should include("2000000000")
+      }
+
+      "the arn is invalid" in {
+        isEnrolled(subscribingAgent)
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr" -> "2000000000")
+
+        val result = await(controller.submitAddCode(request))
+
+        status(result) shouldBe 200
+        bodyOf(result) should include("ARN is not valid")
+        bodyOf(result) should include("2000000000")
+        bodyOf(result) should include("ARN0000001")
+      }
+
+      "there is no UTR " in {
+        isEnrolled(subscribingAgent)
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001")
+
+        val result = await(controller.submitAddCode(request))
+
+        status(result) shouldBe 200
+        bodyOf(result) should include("This field is required")
+        bodyOf(result) should include("TARN0000001")
+      }
+
+      "the utr is invalid" in {
+        isEnrolled(subscribingAgent)
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "notautr")
+
+        val result = await(controller.submitAddCode(request))
+
+        status(result) shouldBe 200
+        bodyOf(result) should include("UTR is not valid")
+        bodyOf(result) should include("notautr")
+        bodyOf(result) should include("TARN0000001")
+      }
     }
-
   }
 
   "complete" should {
