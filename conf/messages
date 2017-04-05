@@ -1,2 +1,2 @@
-error.utr.invalid = "UTR is not valid"
-error.arn.invalid = "ARN is not valid"
+error.utr.invalid = UTR is not valid
+error.arn.invalid = ARN is not valid
