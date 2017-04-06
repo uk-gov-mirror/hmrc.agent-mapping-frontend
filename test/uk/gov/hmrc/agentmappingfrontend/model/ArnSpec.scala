@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.play.test.UnitSpec
 
-case class Arn(value: String) extends TaxIdentifier
-
-object Arn {
-  private val arnPattern = "^[A-Z]ARN[0-9]{7}$".r
-
-  def isValid(arn: String): Boolean =
-    arn match {
-      case arnPattern(_*) => true
-      case _ => false
+class ArnSpec extends UnitSpec {
+  "isValid" should {
+    "be true for a valid ARN" in {
+      Arn.isValid("TARN0000001") shouldBe true
     }
+
+    "be false when the regex doesn't match" in {
+      Arn.isValid("ARN0000001") shouldBe false
+    }
+
+  }
 }
