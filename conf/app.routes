@@ -1,5 +1,6 @@
 # microservice specific routes
 
+GET        /                     uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
 GET        /start                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
 GET        /add-code             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showAddCode
 POST       /add-code             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitAddCode

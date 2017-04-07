@@ -11,6 +11,15 @@ import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 class MappingControllerISpec extends BaseControllerISpec {
   private lazy val controller: MappingController = app.injector.instanceOf[MappingController]
 
+  "context root" should {
+    "redirect to start page" in {
+      val result = await(controller.root(FakeRequest()))
+
+      status(result) shouldBe 303
+      redirectLocation(result).head should include("/start")
+    }
+  }
+
   "start" should {
     "display the start page" in {
       val result: Result = await(controller.start(FakeRequest()))
