@@ -49,6 +49,10 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
     )(MappingForm.apply)(MappingForm.unapply)
   )
 
+  val root: Action[AnyContent] = Action { implicit request =>
+    Redirect(routes.MappingController.start())
+  }
+
   val start: Action[AnyContent] = Action { implicit request =>
     Ok(html.start())
   }
