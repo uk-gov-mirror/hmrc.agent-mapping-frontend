@@ -16,6 +16,7 @@
 
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html
+@import uk.gov.hmrc.agentmappingfrontend.controllers.routes.MappingController
 
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig))
@@ -35,7 +36,7 @@
     <p>Mapping takes around 5 minutes</p>
 
     <p>
-        <a class="button button-start button--get-started" href="/agent-mapping-frontend/add-code" role="button">Start now</a>
+        <a class="button button-start button--get-started" href="@MappingController.showAddCode" role="button">Start now</a>
     </p>
 
     <h2 class="heading-medium">Before you start</h2>
