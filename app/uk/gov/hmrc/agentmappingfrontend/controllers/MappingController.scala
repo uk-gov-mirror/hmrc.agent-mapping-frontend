@@ -50,17 +50,17 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   )
 
   val start: Action[AnyContent] = Action { implicit request =>
-    Ok(html.start_template())
+    Ok(html.start())
   }
 
   val showAddCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
-    successful(Ok(html.add_code_template(mappingForm, request.saAgentReference)))
+    successful(Ok(html.add_code(mappingForm, request.saAgentReference)))
   }
 
   val submitAddCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
     mappingForm.bindFromRequest.fold(
       formWithErrors => {
-        successful(Ok(html.add_code_template(formWithErrors, request.saAgentReference)))
+        successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
       },
       mappingData => {
         mappingConnector.createMapping(mappingData.arn, request.saAgentReference) map {_ =>
@@ -71,10 +71,10 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   }
 
   val complete: Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
-    successful(Ok(html.complete_template()))
+    successful(Ok(html.complete()))
   }
 
   val notEnrolled: Action[AnyContent] = Action { implicit request =>
-    Ok(html.not_enrolled_template())
+    Ok(html.not_enrolled())
   }
 }
