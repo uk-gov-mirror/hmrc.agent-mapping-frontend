@@ -25,7 +25,7 @@ class ArnSpec extends UnitSpec {
     }
 
     "be false with lowercase \"arn\"" in {
-      Arn.isValid("Tarn0000001") shouldBe true
+      Arn.isValid("Tarn0000001") shouldBe false
     }
 
     "be false when non capital first character" in {
