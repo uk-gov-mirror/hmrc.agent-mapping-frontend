@@ -26,26 +26,8 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
       bind(" ").left.value should contain only FormError("testKey", "error.required")
     }
 
-    "give \"error.utr.invalid\" error" when {
-      "it has more than 10 digits" in {
-        bind("20000000000") should matchPattern { case Left(List(FormError("testKey", List("error.utr.invalid"), _))) => }
-      }
-
-      "it has fewer than 10 digits" in {
-        bind("200000") should matchPattern { case Left(List(FormError("testKey", List("error.utr.invalid"), _))) => }
-      }
-
-      "it has non-digit characters" in {
-        bind("200000000B") should matchPattern { case Left(List(FormError("testKey", List("error.utr.invalid"), _))) => }
-      }
-
-      "it has non-alphanumeric characters" in {
-        bind("200000000!") should matchPattern { case Left(List(FormError("testKey", List("error.utr.invalid"), _))) => }
-      }
-
-      "checksum fails" in {
-        bind("2000000001") should matchPattern { case Left(List(FormError("testKey", List("error.utr.invalid"), _))) => }
-      }
+    "give \"error.utr.invalid\" error when it is invalid" in {
+      bind("20000000000").left.value should contain only FormError("testKey", "error.utr.invalid")
     }
   }
 
@@ -70,15 +52,8 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
       bind(" ").left.value should contain only FormError("testKey", "error.required")
     }
 
-    "give \"error.arn.invalid\" error" when {
-      "the regex doesn't match" in {
-        bind("ARN0000001") should matchPattern { case Left(List(FormError("testKey", List("error.arn.invalid"), _))) => }
-      }
-
-      "the checksum doesn't pass" in {
-        bind("AARN0000001") should matchPattern { case Left(List(FormError("testKey", List("error.arn.invalid"), _))) => }
-      }
+    "give \"error.arn.invalid\" error when it is invalid" in {
+      bind("ARN0000001").left.value should contain only FormError("testKey", "error.arn.invalid")
     }
-
   }
 }

@@ -19,52 +19,29 @@ package uk.gov.hmrc.agentmappingfrontend
 import play.api.data.Forms.text
 import play.api.data.Mapping
 import play.api.data.validation._
-import uk.gov.hmrc.domain.{Modulus11Check, Modulus23Check}
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 
 package object controllers {
-  private val utrPatternConstraint = Constraints.pattern("^\\d{10}$".r, error = "error.utr.invalid")
-  private val arnPatternConstraint = Constraints.pattern("^[A-Z]ARN[0-9]{7}$".r, error = "error.arn.invalid")
 
   private val utrConstraint: Constraint[String] = Constraint[String] {
     fieldValue: String =>
       Constraints.nonEmpty(fieldValue) match {
         case i: Invalid => i
-        case Valid =>
-          utrPatternConstraint(fieldValue) match {
-            case i: Invalid => i
-            case Valid => if (CheckUTR.isValidUTR(fieldValue)) Valid else Invalid(ValidationError("error.utr.invalid"))
-          }
+        case _ if ! Utr.isValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
+        case _ => Valid
       }
   }
 
-  private val modulus23ArnConstraint: Constraint[String] = Constraint[String] {
+  private val arnConstraint: Constraint[String] = Constraint[String] {
     fieldValue: String =>
       Constraints.nonEmpty(fieldValue) match {
         case i: Invalid => i
-        case Valid =>
-          arnPatternConstraint(fieldValue) match {
-            case i: Invalid => i
-            case Valid => if (CheckArn.isValidArn(fieldValue)) Valid else Invalid(ValidationError("error.arn.invalid"))
-          }
+        case _ if ! Arn.isValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
+        case _ => Valid
       }
   }
 
-  object CheckUTR extends Modulus11Check {
-    def isValidUTR(utr: String): Boolean = {
-      val suffix: String = utr.substring(1)
-      val checkCharacter: Char = calculateCheckCharacter(suffix)
-      checkCharacter == utr.charAt(0)
-    }
-  }
-
-  object CheckArn extends Modulus23Check {
-    def isValidArn(arn: String): Boolean = {
-      val suffix: String = arn.substring(1)
-      val checkCharacter: Char = calculateCheckCharacter(suffix)
-      checkCharacter == arn.charAt(0)
-    }
-  }
-
   def utr: Mapping[String] = text verifying utrConstraint
-  def arn: Mapping[String] = text verifying modulus23ArnConstraint
+
+  def arn: Mapping[String] = text verifying arnConstraint
 }
