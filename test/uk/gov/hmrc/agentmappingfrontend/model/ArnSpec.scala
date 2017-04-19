@@ -28,5 +28,8 @@ class ArnSpec extends UnitSpec {
       Arn.isValid("ARN0000001") shouldBe false
     }
 
+    "be false when the checksum doesn't pass" in {
+      Arn.isValid("AARN0000001") shouldBe false
+    }
   }
 }

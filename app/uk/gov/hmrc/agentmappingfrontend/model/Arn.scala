@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
+import uk.gov.hmrc.agentmappingfrontend.controllers.CheckArn
 import uk.gov.hmrc.domain.TaxIdentifier
 
 case class Arn(value: String) extends TaxIdentifier
@@ -25,7 +26,7 @@ object Arn {
 
   def isValid(arn: String): Boolean =
     arn match {
-      case arnPattern(_*) => true
+      case arnPattern(_*) => CheckArn.isValidArn(arn)
       case _ => false
     }
 }
