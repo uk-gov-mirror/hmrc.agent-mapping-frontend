@@ -20,7 +20,7 @@ import play.api.data.Forms.text
 import play.api.data.Mapping
 import play.api.data.validation._
 import uk.gov.hmrc.agentmappingfrontend.model.Arn
-import uk.gov.hmrc.domain.{Modulus11Check, Modulus23Check}
+import uk.gov.hmrc.domain.Modulus11Check
 
 package object controllers {
   private val utrPatternConstraint = Constraints.pattern("^\\d{10}$".r, error = "error.utr.invalid")
@@ -51,14 +51,6 @@ package object controllers {
       val suffix: String = utr.substring(1)
       val checkCharacter: Char = calculateCheckCharacter(suffix)
       checkCharacter == utr.charAt(0)
-    }
-  }
-
-  object CheckArn extends Modulus23Check {
-    def isValidArn(arn: String): Boolean = {
-      val suffix: String = arn.substring(1)
-      val checkCharacter: Char = calculateCheckCharacter(suffix)
-      checkCharacter == arn.charAt(0)
     }
   }
 
