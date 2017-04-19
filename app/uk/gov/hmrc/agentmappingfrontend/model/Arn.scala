@@ -34,7 +34,6 @@ private object ArnCheck extends Modulus23Check {
 
   def isValid(arn: String): Boolean = {
     val suffix: String = arn.substring(1)
-    val checkCharacter: Char = calculateCheckCharacter(suffix)
-    checkCharacter == arn.charAt(0)
+    calculateCheckCharacter(suffix) == arn.charAt(0)
   }
 }

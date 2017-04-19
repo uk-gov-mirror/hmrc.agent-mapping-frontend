@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import uk.gov.hmrc.agentmappingfrontend.controllers.CheckUTR
+import uk.gov.hmrc.domain.Modulus11Check
 
 object Utr {
 
@@ -24,7 +24,15 @@ object Utr {
 
   def isValid(utr: String): Boolean =
     utr match {
-      case utrPattern(_*) => CheckUTR.isValidUTR(utr)
+      case utrPattern(_*) => UtrCheck.isValid(utr)
       case _ => false
     }
+}
+
+object UtrCheck extends Modulus11Check {
+
+  def isValid(utr: String): Boolean = {
+    val suffix: String = utr.substring(1)
+    calculateCheckCharacter(suffix) == utr.charAt(0)
+  }
 }

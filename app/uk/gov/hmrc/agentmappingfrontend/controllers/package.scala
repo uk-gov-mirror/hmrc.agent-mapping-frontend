@@ -19,8 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend
 import play.api.data.Forms.text
 import play.api.data.Mapping
 import play.api.data.validation._
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
-import uk.gov.hmrc.domain.Modulus11Check
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, UtrCheck}
 
 package object controllers {
   private val utrPatternConstraint = Constraints.pattern("^\\d{10}$".r, error = "error.utr.invalid")
@@ -32,7 +31,7 @@ package object controllers {
         case Valid =>
           utrPatternConstraint(fieldValue) match {
             case i: Invalid => i
-            case Valid => if (CheckUTR.isValidUTR(fieldValue)) Valid else Invalid(ValidationError("error.utr.invalid"))
+            case Valid => if (UtrCheck.isValid(fieldValue)) Valid else Invalid(ValidationError("error.utr.invalid"))
           }
       }
   }
@@ -44,14 +43,6 @@ package object controllers {
         case _ if ! Arn.isValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
         case _ => Valid
       }
-  }
-
-  object CheckUTR extends Modulus11Check {
-    def isValidUTR(utr: String): Boolean = {
-      val suffix: String = utr.substring(1)
-      val checkCharacter: Char = calculateCheckCharacter(suffix)
-      checkCharacter == utr.charAt(0)
-    }
   }
 
   def utr: Mapping[String] = text verifying utrConstraint
