@@ -24,7 +24,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     "display the start page" in {
       val result: Result = await(controller.start(FakeRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include("map existing agent codes to your new MTD Subscription")
+      bodyOf(result) should include("map existing Self Assessment Agent References to your new MTD Subscription")
     }
   }
 
@@ -36,7 +36,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       isEnrolled(subscribingAgent)
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include("Agent codes")
+      bodyOf(result) should include("Self Assessment Agent References")
     }
 
     "display the SA Agent Reference if the current user is logged in and has legacy agent enrolment" in {
