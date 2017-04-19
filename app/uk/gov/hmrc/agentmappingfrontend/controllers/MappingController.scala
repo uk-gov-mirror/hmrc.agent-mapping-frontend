@@ -25,7 +25,7 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
@@ -67,7 +67,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
         successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
       },
       mappingData => {
-        mappingConnector.createMapping(mappingData.arn, request.saAgentReference) map {_ =>
+        mappingConnector.createMapping(Utr(mappingData.utr), mappingData.arn, request.saAgentReference) map {_ =>
           Redirect(routes.MappingController.complete())
         }
       }

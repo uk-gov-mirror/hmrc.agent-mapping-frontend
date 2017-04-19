@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.model
 
 import uk.gov.hmrc.domain.Modulus11Check
+import uk.gov.hmrc.domain.TaxIdentifier
 
 object Utr {
 
@@ -36,3 +37,5 @@ object UtrCheck extends Modulus11Check {
     calculateCheckCharacter(suffix) == utr.charAt(0)
   }
 }
+
+case class Utr(value: String) extends TaxIdentifier

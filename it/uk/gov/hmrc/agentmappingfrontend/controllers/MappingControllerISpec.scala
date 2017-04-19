@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isEnrolled, userIsAuthenticated}
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
@@ -52,7 +52,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
     "redirect to complete if the user enters an ARN" in {
       isEnrolled(subscribingAgent)
-      mappingIsCreated(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+      mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
       val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
 
       val result = await(controller.submitAddCode(request))
@@ -63,7 +63,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
     "return 500 if the mapping already exists" in new App {
       isEnrolled(subscribingAgent)
-      mappingExists(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+      mappingExists(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
       val sessionKeys = userIsAuthenticated(subscribingAgent)
       val request = FakeRequest("POST", "/agent-mapping/add-code")
