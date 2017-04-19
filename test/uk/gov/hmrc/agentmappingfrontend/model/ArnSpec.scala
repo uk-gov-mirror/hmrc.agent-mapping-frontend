@@ -24,7 +24,23 @@ class ArnSpec extends UnitSpec {
       Arn.isValid("TARN0000001") shouldBe true
     }
 
-    "be false when the regex doesn't match" in {
+    "be false with lowercase \"arn\"" in {
+      Arn.isValid("Tarn0000001") shouldBe true
+    }
+
+    "be false when non capital first character" in {
+      Arn.isValid("tARN0000001") shouldBe false
+    }
+
+    "be false when too short" in {
+      Arn.isValid("TARN00001") shouldBe false
+    }
+
+    "be false when too long" in {
+      Arn.isValid("TARN0000000001") shouldBe false
+    }
+
+    "be false when the missing the first character doesn't match" in {
       Arn.isValid("ARN0000001") shouldBe false
     }
 
