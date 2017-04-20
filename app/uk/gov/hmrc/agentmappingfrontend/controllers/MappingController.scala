@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future.successful
 
-case class MappingForm(arn: Arn, utr: String)
+case class MappingForm(arn: Arn, utr: Utr)
 
 @Singleton
 class MappingController @Inject()(override val messagesApi: MessagesApi,
@@ -45,7 +45,9 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
       "arn" -> mapping(
         "arn" -> arn
       )(Arn.apply)(Arn.unapply),
-      "utr" -> utr
+      "utr" -> mapping(
+        "value" -> utr
+      )(Utr.apply)(Utr.unapply)
     )(MappingForm.apply)(MappingForm.unapply)
   )
 
@@ -67,7 +69,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
         successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
       },
       mappingData => {
-        mappingConnector.createMapping(Utr(mappingData.utr), mappingData.arn, request.saAgentReference) map { r : Int =>
+        mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.saAgentReference) map { r : Int =>
           r match {
             case CREATED => Redirect(routes.MappingController.complete())
             case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("Those details do not match the details we have for your business"), request.saAgentReference))

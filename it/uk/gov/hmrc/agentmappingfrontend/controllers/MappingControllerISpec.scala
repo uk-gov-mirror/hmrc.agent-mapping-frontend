@@ -53,7 +53,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     "redirect to complete if the user enters an ARN and UTR that match the known facts" in {
       isEnrolled(subscribingAgent)
       mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
-      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
+      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
 
       val result = await(controller.submitAddCode(request))
 
@@ -68,7 +68,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       val sessionKeys = userIsAuthenticated(subscribingAgent)
       val request = FakeRequest("POST", "/agent-mapping/add-code")
                       .withSession(sessionKeys: _*)
-                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
+                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
 
       val result = await(route(app, request).get)
 
@@ -78,7 +78,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     "redisplay the form " when {
       "there is no ARN " in {
         isEnrolled(subscribingAgent)
-        val request = authenticatedRequest().withFormUrlEncodedBody("utr" -> "2000000000")
+        val request = authenticatedRequest().withFormUrlEncodedBody("utr.value" -> "2000000000")
 
         val result = await(controller.submitAddCode(request))
 
@@ -89,7 +89,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
       "the arn is invalid" in {
         isEnrolled(subscribingAgent)
-        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr" -> "2000000000")
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr.value" -> "2000000000")
 
         val result = await(controller.submitAddCode(request))
 
@@ -112,7 +112,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
       "the utr is invalid" in {
         isEnrolled(subscribingAgent)
-        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "notautr")
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "notautr")
 
         val result = await(controller.submitAddCode(request))
 
@@ -126,7 +126,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         isEnrolled(subscribingAgent)
         mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
-        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
