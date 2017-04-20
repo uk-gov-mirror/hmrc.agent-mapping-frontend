@@ -29,6 +29,13 @@
         <h1 class="form-title heading-large">
             Self Assessment Agent References found
         </h1>
+        @if(mappingForm.hasGlobalErrors) {
+            <ul>
+            @for(error <- mappingForm.globalErrors) {
+                <li>@Messages(error.messages, error.args)</li>
+            }
+            </ul>
+        }
         <p>We have identified the following Self Assessment Agent References on this credential:</p>
         <ul class="list list-bullet">
             <li>@saAgentReference     IR-SA Agent</li>

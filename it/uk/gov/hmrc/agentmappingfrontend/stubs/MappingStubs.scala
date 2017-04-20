@@ -15,4 +15,9 @@ object MappingStubs {
     stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/$utr/$arn/$saAgentReference"))
       willReturn aResponse().withStatus(409))
   }
+
+  def mappingKnownFactsIssue(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/$utr/$arn/$saAgentReference"))
+      willReturn aResponse().withStatus(403))
+  }
 }

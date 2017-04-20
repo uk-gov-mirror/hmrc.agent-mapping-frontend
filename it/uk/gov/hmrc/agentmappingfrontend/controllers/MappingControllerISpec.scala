@@ -5,7 +5,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isEnrolled, userIsAuthenticated}
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated}
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated,mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 
 class MappingControllerISpec extends BaseControllerISpec {
@@ -50,7 +50,7 @@ class MappingControllerISpec extends BaseControllerISpec {
   "submit add code" should {
     behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.submitAddCode(request))
 
-    "redirect to complete if the user enters an ARN" in {
+    "redirect to complete if the user enters an ARN and UTR that match the known facts" in {
       isEnrolled(subscribingAgent)
       mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
       val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
@@ -68,7 +68,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       val sessionKeys = userIsAuthenticated(subscribingAgent)
       val request = FakeRequest("POST", "/agent-mapping/add-code")
                       .withSession(sessionKeys: _*)
-                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001")
+                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
 
       val result = await(route(app, request).get)
 
@@ -120,6 +120,17 @@ class MappingControllerISpec extends BaseControllerISpec {
         bodyOf(result) should include("UTR is not valid")
         bodyOf(result) should include("notautr")
         bodyOf(result) should include("TARN0000001")
+      }
+
+      "the known facts check fails" in {
+        isEnrolled(subscribingAgent)
+        mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
+        val result = await(controller.submitAddCode(request))
+
+        status(result) shouldBe 200
+        bodyOf(result) should include("Those details do not match the details we have for your business")
       }
     }
   }

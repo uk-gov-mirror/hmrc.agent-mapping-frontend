@@ -67,8 +67,11 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
         successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
       },
       mappingData => {
-        mappingConnector.createMapping(Utr(mappingData.utr), mappingData.arn, request.saAgentReference) map {_ =>
-          Redirect(routes.MappingController.complete())
+        mappingConnector.createMapping(Utr(mappingData.utr), mappingData.arn, request.saAgentReference) map { r : Int =>
+          r match {
+            case CREATED => Redirect(routes.MappingController.complete())
+            case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("Those details do not match the details we have for your business"), request.saAgentReference))
+          }
         }
       }
     )
