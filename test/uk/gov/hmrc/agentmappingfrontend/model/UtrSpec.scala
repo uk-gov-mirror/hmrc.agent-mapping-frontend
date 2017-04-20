@@ -24,24 +24,26 @@ class UtrSpec extends UnitSpec {
       Utr.isValid("2000000000") shouldBe true
     }
 
-    "it has more than 10 digits" in {
-      Utr.isValid("20000000000") shouldBe false
-    }
+    "be false" when {
+      "it has more than 10 digits" in {
+        Utr.isValid("20000000000") shouldBe false
+      }
 
-    "it has fewer than 10 digits" in {
-      Utr.isValid("200000") shouldBe false
-    }
+      "it has fewer than 10 digits" in {
+        Utr.isValid("200000") shouldBe false
+      }
 
-    "it has non-digit characters" in {
-      Utr.isValid("200000000B") shouldBe false
-    }
+      "it has non-digit characters" in {
+        Utr.isValid("200000000B") shouldBe false
+      }
 
-    "it has non-alphanumeric characters" in {
-      Utr.isValid("200000000!") shouldBe false
-    }
+      "it has non-alphanumeric characters" in {
+        Utr.isValid("200000000!") shouldBe false
+      }
 
-    "be false when the checksum doesn't pass" in {
-      Utr.isValid("2000000001") shouldBe false
+      "be false when the checksum doesn't pass" in {
+        Utr.isValid("2000000001") shouldBe false
+      }
     }
   }
 }
