@@ -1,8 +1,8 @@
 # microservice specific routes
 
-GET        /                     uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
-GET        /start                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
-GET        /add-code             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showAddCode
-POST       /add-code             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitAddCode
-GET        /complete             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete
-GET        /not-enrolled         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled
+GET        /                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
+GET        /start                            uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
+GET        /add-code                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showAddCode
+POST       /add-code                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitAddCode
+GET        /complete/:arn/:saAgentReference  uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete(arn: uk.gov.hmrc.agentmappingfrontend.model.Arn, saAgentReference: uk.gov.hmrc.domain.SaAgentReference)
+GET        /not-enrolled                     uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled

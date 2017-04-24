@@ -27,6 +27,7 @@ import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.views.html
+import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
@@ -71,7 +72,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
       mappingData => {
         mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.saAgentReference) map { r : Int =>
           r match {
-            case CREATED => Redirect(routes.MappingController.complete())
+            case CREATED => Redirect(routes.MappingController.complete(mappingData.arn, request.saAgentReference))
             case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("Those details do not match the details we have for your business"), request.saAgentReference))
           }
         }
@@ -79,8 +80,8 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
     )
   }
 
-  val complete: Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
-    successful(Ok(html.complete()))
+  def complete(arn: Arn, saAgentReference: SaAgentReference) : Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
+    successful(Ok(html.complete(arn,saAgentReference)))
   }
 
   val notEnrolled: Action[AnyContent] = Action { implicit request =>

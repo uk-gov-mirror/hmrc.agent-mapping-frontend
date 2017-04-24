@@ -5,8 +5,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isEnrolled, userIsAuthenticated}
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated,mappingKnownFactsIssue}
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
+import uk.gov.hmrc.domain.SaAgentReference
 
 class MappingControllerISpec extends BaseControllerISpec {
   private lazy val controller: MappingController = app.injector.instanceOf[MappingController]
@@ -58,7 +59,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       val result = await(controller.submitAddCode(request))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.complete().url
+      redirectLocation(result).get shouldBe routes.MappingController.complete(Arn("TARN0000001"),subscribingAgent.saAgentReference.get).url
     }
 
     "return 500 if the mapping already exists" in new App {
@@ -137,13 +138,16 @@ class MappingControllerISpec extends BaseControllerISpec {
 
   "complete" should {
 
-    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.complete(request))
+    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.complete(Arn("TARN0000001"),subscribingAgent.saAgentReference.get)(request))
 
-    "display the complete page" in {
+    "display the complete page for an arn and ir sa agent reference" in {
       isEnrolled(subscribingAgent)
-      val result: Result = await(controller.complete(authenticatedRequest()))
+      val saRef: SaAgentReference = subscribingAgent.saAgentReference.get
+      val result: Result = await(controller.complete(Arn("TARN0000001"),saRef)(authenticatedRequest()))
       status(result) shouldBe 200
       bodyOf(result) should include("You have successfully added the following codes")
+      bodyOf(result) should include("TARN0000001")
+      bodyOf(result) should include(saRef.value)
     }
   }
 
