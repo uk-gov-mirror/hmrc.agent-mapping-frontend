@@ -16,24 +16,12 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import uk.gov.hmrc.domain.{Modulus23Check, TaxIdentifier}
+import uk.gov.hmrc.agentmtdidentifiers
+import uk.gov.hmrc.domain.TaxIdentifier
 
 case class Arn(value: String) extends TaxIdentifier
 
 object Arn {
-  private val arnPattern = "^[A-Z]ARN[0-9]{7}$".r
 
-  def isValid(arn: String): Boolean =
-    arn match {
-      case arnPattern(_*) => ArnCheck.isValid(arn)
-      case _ => false
-    }
-}
-
-private object ArnCheck extends Modulus23Check {
-
-  def isValid(arn: String): Boolean = {
-    val suffix: String = arn.substring(1)
-    calculateCheckCharacter(suffix) == arn.charAt(0)
-  }
+  def isValid(arn: String): Boolean = agentmtdidentifiers.model.Arn.isValid(arn)
 }
