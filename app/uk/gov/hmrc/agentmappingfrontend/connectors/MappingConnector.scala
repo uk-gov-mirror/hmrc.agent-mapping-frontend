@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpPut}
 

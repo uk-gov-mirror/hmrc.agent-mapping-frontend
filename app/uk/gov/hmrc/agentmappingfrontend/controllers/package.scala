@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend
 import play.api.data.Forms.text
 import play.api.data.Mapping
 import play.api.data.validation._
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 
 package object controllers {

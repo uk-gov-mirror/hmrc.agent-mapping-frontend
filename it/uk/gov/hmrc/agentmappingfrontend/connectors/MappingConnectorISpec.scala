@@ -1,8 +1,8 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.http.{HeaderCarrier, Upstream4xxResponse}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext

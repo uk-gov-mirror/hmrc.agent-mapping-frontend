@@ -1,8 +1,8 @@
 package uk.gov.hmrc.agentmappingfrontend.stubs
 
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
-import uk.gov.hmrc.domain.SaAgentReference
 import com.github.tomakehurst.wiremock.client.WireMock._
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.domain.SaAgentReference
 
 object MappingStubs {
 
