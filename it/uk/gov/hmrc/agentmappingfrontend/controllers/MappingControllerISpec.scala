@@ -3,10 +3,11 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isEnrolled, userIsAuthenticated}
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated}
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.domain.SaAgentReference
 
 class MappingControllerISpec extends BaseControllerISpec {
   private lazy val controller: MappingController = app.injector.instanceOf[MappingController]
@@ -50,25 +51,25 @@ class MappingControllerISpec extends BaseControllerISpec {
   "submit add code" should {
     behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.submitAddCode(request))
 
-    "redirect to complete if the user enters an ARN" in {
+    "redirect to complete if the user enters an ARN and UTR that match the known facts" in {
       isEnrolled(subscribingAgent)
-      mappingIsCreated(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
-      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "2000000000")
+      mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
 
       val result = await(controller.submitAddCode(request))
 
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.complete().url
+      redirectLocation(result).get shouldBe routes.MappingController.complete(Arn("TARN0000001"),subscribingAgent.saAgentReference.get).url
     }
 
     "return 500 if the mapping already exists" in new App {
       isEnrolled(subscribingAgent)
-      mappingExists(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+      mappingExists(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
       val sessionKeys = userIsAuthenticated(subscribingAgent)
       val request = FakeRequest("POST", "/agent-mapping/add-code")
                       .withSession(sessionKeys: _*)
-                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001")
+                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
 
       val result = await(route(app, request).get)
 
@@ -78,7 +79,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     "redisplay the form " when {
       "there is no ARN " in {
         isEnrolled(subscribingAgent)
-        val request = authenticatedRequest().withFormUrlEncodedBody("utr" -> "2000000000")
+        val request = authenticatedRequest().withFormUrlEncodedBody("utr.value" -> "2000000000")
 
         val result = await(controller.submitAddCode(request))
 
@@ -89,7 +90,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
       "the arn is invalid" in {
         isEnrolled(subscribingAgent)
-        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr" -> "2000000000")
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr.value" -> "2000000000")
 
         val result = await(controller.submitAddCode(request))
 
@@ -112,7 +113,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
       "the utr is invalid" in {
         isEnrolled(subscribingAgent)
-        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr" -> "notautr")
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "notautr")
 
         val result = await(controller.submitAddCode(request))
 
@@ -121,18 +122,32 @@ class MappingControllerISpec extends BaseControllerISpec {
         bodyOf(result) should include("notautr")
         bodyOf(result) should include("TARN0000001")
       }
+
+      "the known facts check fails" in {
+        isEnrolled(subscribingAgent)
+        mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
+
+        val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
+        val result = await(controller.submitAddCode(request))
+
+        status(result) shouldBe 200
+        bodyOf(result) should include("Those details do not match the details we have for your business")
+      }
     }
   }
 
   "complete" should {
 
-    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.complete(request))
+    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.complete(Arn("TARN0000001"),subscribingAgent.saAgentReference.get)(request))
 
-    "display the complete page" in {
+    "display the complete page for an arn and ir sa agent reference" in {
       isEnrolled(subscribingAgent)
-      val result: Result = await(controller.complete(authenticatedRequest()))
+      val saRef: SaAgentReference = subscribingAgent.saAgentReference.get
+      val result: Result = await(controller.complete(Arn("TARN0000001"),saRef)(authenticatedRequest()))
       status(result) shouldBe 200
       bodyOf(result) should include("You have successfully added the following codes")
+      bodyOf(result) should include("TARN0000001")
+      bodyOf(result) should include(saRef.value)
     }
   }
 

@@ -25,14 +25,15 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future.successful
 
-case class MappingForm(arn: Arn, utr: String)
+case class MappingForm(arn: Arn, utr: Utr)
 
 @Singleton
 class MappingController @Inject()(override val messagesApi: MessagesApi,
@@ -45,7 +46,9 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
       "arn" -> mapping(
         "arn" -> arn
       )(Arn.apply)(Arn.unapply),
-      "utr" -> utr
+      "utr" -> mapping(
+        "value" -> utr
+      )(Utr.apply)(Utr.unapply)
     )(MappingForm.apply)(MappingForm.unapply)
   )
 
@@ -67,15 +70,18 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
         successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
       },
       mappingData => {
-        mappingConnector.createMapping(mappingData.arn, request.saAgentReference) map {_ =>
-          Redirect(routes.MappingController.complete())
+        mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.saAgentReference) map { r : Int =>
+          r match {
+            case CREATED => Redirect(routes.MappingController.complete(mappingData.arn, request.saAgentReference))
+            case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("Those details do not match the details we have for your business"), request.saAgentReference))
+          }
         }
       }
     )
   }
 
-  val complete: Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
-    successful(Ok(html.complete()))
+  def complete(arn: Arn, saAgentReference: SaAgentReference) : Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
+    successful(Ok(html.complete(arn,saAgentReference)))
   }
 
   val notEnrolled: Action[AnyContent] = Action { implicit request =>

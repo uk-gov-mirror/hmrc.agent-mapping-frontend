@@ -19,20 +19,25 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import play.api.http.Status
+import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
 import uk.gov.hmrc.domain.SaAgentReference
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpPut}
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpPut, Upstream4xxResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, http: HttpPut) {
-
-  def createMapping(arn: Arn, saAgentReference: SaAgentReference)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
-    http.PUT(createUrl(arn, saAgentReference), "") map(_ => ())
+  def createMapping(utr: Utr, arn: Arn, saAgentReference: SaAgentReference)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    http.PUT(createUrl(utr, arn, saAgentReference), "").map{
+      r => r.status
+    }.recover {
+      case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
+      case e => throw e
+    }
   }
 
-  private def createUrl(arn: Arn, saAgentReference: SaAgentReference): String = {
-    new URL(baseUrl, s"/agent-mapping/mappings/$arn/$saAgentReference").toString
+  private def createUrl(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): String = {
+    new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference").toString
   }
 }
