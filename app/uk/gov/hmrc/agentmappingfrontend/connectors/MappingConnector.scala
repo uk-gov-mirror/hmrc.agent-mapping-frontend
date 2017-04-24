@@ -38,6 +38,6 @@ class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, h
   }
 
   private def createUrl(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): String = {
-    new URL(baseUrl, s"/agent-mapping/mappings/$utr/$arn/$saAgentReference").toString
+    new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference").toString
   }
 }

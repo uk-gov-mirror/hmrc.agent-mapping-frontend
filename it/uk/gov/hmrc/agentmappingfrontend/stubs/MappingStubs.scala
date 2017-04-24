@@ -7,17 +7,17 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 object MappingStubs {
 
   def mappingIsCreated(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/$utr/$arn/$saAgentReference"))
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference"))
         willReturn aResponse().withStatus(201))
   }
 
   def mappingExists(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/$utr/$arn/$saAgentReference"))
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference"))
       willReturn aResponse().withStatus(409))
   }
 
   def mappingKnownFactsIssue(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/$utr/$arn/$saAgentReference"))
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference"))
       willReturn aResponse().withStatus(403))
   }
 }
