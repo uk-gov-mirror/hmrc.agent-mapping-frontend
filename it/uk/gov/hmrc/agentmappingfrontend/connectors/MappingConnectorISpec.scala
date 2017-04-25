@@ -5,7 +5,7 @@ import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.domain.SaAgentReference
-import uk.gov.hmrc.play.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 class MappingConnectorISpec extends BaseControllerISpec {
   private val arn = Arn("ARN0001")
@@ -23,12 +23,7 @@ class MappingConnectorISpec extends BaseControllerISpec {
 
     "not create a mapping when one already exists" in {
       mappingExists(utr, arn, saAgentReference)
-
-      val e = intercept[Upstream4xxResponse] {
-        await(connector.createMapping(utr, arn, saAgentReference))
-      }
-
-      e.upstreamResponseCode shouldBe 409
+      await(connector.createMapping(utr, arn, saAgentReference)) shouldBe 409
     }
 
     "not create a mapping when there is a problem with the supplied known facts" in {

@@ -62,18 +62,15 @@ class MappingControllerISpec extends BaseControllerISpec {
       redirectLocation(result).get shouldBe routes.MappingController.complete(Arn("TARN0000001"),subscribingAgent.saAgentReference.get).url
     }
 
-    "return 500 if the mapping already exists" in new App {
+    "redirect to the already-mapped page if the mapping already exists" in new App {
       isEnrolled(subscribingAgent)
       mappingExists(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
-      val sessionKeys = userIsAuthenticated(subscribingAgent)
-      val request = FakeRequest("POST", "/agent-mapping/add-code")
-                      .withSession(sessionKeys: _*)
-                      .withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
+      val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
+      val result = await(controller.submitAddCode(request))
 
-      val result = await(route(app, request).get)
-
-      status(result) shouldBe 500
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.MappingController.alreadyMapped(Arn("TARN0000001"),subscribingAgent.saAgentReference.get).url
     }
 
     "redisplay the form " when {

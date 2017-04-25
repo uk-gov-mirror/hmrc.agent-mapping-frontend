@@ -33,6 +33,7 @@ class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, h
       r => r.status
     }.recover {
       case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
+      case e: Upstream4xxResponse if Status.CONFLICT.equals(e.upstreamResponseCode) => Status.CONFLICT
       case e => throw e
     }
   }
