@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import uk.gov.hmrc.agentmappingfrontend.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.binders.SimpleObjectBinder
 

@@ -20,7 +20,7 @@ import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.http.Status
-import uk.gov.hmrc.agentmappingfrontend.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpPut, Upstream4xxResponse}
 
