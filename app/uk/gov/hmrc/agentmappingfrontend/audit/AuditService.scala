@@ -44,13 +44,18 @@ object AuditService {
     auditService.send(event)
   }
 
+  def toTransactionName(string: String): String = {
+    val s = string.replaceAll("([a-z]+(?=[A-Z]))","$1-").replaceAll("([A-Z]+(?![a-z]))","$1-").toLowerCase
+    if(s.lastOption.contains('-')) s.init else s
+  }
+
   private def createEvent(event: AgentFrontendMappingEvent,
                           details: Seq[(String, Any)])
                          (implicit hc: HeaderCarrier, request: Request[Any]): DataEvent = {
     DataEvent(
       auditSource = "agent-mapping-frontend",
       auditType = event.toString,
-      tags = hc.toAuditTags("", request.path),
+      tags = hc.toAuditTags(toTransactionName(event.toString), request.path),
       detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     )
   }
