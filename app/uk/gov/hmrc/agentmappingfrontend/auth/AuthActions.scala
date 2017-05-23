@@ -22,15 +22,17 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.domain.SaAgentReference
+import uk.gov.hmrc.passcode.authentication.PasscodeAuthentication
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[A]) extends WrappedRequest[A](request)
 
-trait AuthActions extends Actions {
+trait AuthActions extends Actions with PasscodeAuthentication {
   protected type AsyncPlayUserRequest = AuthContext => AgentRequest[AnyContent] => Future[Result]
   protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
+
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
   private[auth] def saAgentReference(e: List[Enrolment]): Option[SaAgentReference] = {
@@ -42,25 +44,28 @@ trait AuthActions extends Actions {
 
   def AuthorisedSAAgent(body: AsyncPlayUserRequest): Action[AnyContent] =
     AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
-      implicit authContext => implicit request =>
-        isAgentAffinityGroup() flatMap {
-          case true => enrolments flatMap {
-              e => {
-                saAgentReference(e) map { saEnrolment =>
-                  body(authContext)(AgentRequest(saEnrolment, request))
-                } getOrElse {
-                  Future successful redirectToNotEnrolled
+      implicit authContext =>
+        implicit request =>
+          withVerifiedPasscode {
+            isAgentAffinityGroup() flatMap {
+              case true => enrolments flatMap {
+                e => {
+                  saAgentReference(e) map { saEnrolment =>
+                    body(authContext)(AgentRequest(saEnrolment, request))
+                  } getOrElse {
+                    Future successful redirectToNotEnrolled
+                  }
                 }
               }
+              case false => Future successful redirectToNotEnrolled
             }
-          case false => Future successful redirectToNotEnrolled
-        }
+          }
     }
 
-  private def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
+  protected def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
     authConnector.getEnrolments[List[Enrolment]](authContext)
 
-  private def isAgentAffinityGroup()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[Boolean] =
+  protected def isAgentAffinityGroup()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[Boolean] =
     authConnector.getUserDetails(authContext).map { userDetailsResponse =>
       val affinityGroup = (userDetailsResponse.json \ "affinityGroup").as[String]
       affinityGroup == "Agent"

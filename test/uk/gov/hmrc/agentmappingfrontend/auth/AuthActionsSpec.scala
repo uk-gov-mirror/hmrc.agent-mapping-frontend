@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.auth
 
 import uk.gov.hmrc.domain.SaAgentReference
+import uk.gov.hmrc.passcode.authentication.{PasscodeAuthenticationProvider, PasscodeVerificationConfig}
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -32,4 +33,8 @@ class AuthActionsSpec extends UnitSpec with AuthActions {
   }
 
   override protected def authConnector: AuthConnector = ???
+
+  override def config: PasscodeVerificationConfig = ???
+
+  override def passcodeAuthenticationProvider: PasscodeAuthenticationProvider = ???
 }
