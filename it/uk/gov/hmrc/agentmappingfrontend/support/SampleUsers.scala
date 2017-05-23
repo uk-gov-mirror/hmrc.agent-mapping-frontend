@@ -37,7 +37,9 @@ object SampleUsers {
     """.stripMargin,
     userDetailsJson = s"""
                          |{
-                         |  "affinityGroup": "Agent"
+                         |  "affinityGroup": "Agent",
+                         |  "authProviderId" : "12345-credId",
+                         |  "authProviderType" : "GovernmentGateway"
                          |}
     """.stripMargin,
     saAgentReference = Some(SaAgentReference("HZ1234"))
@@ -68,7 +70,9 @@ object SampleUsers {
     """.stripMargin,
     userDetailsJson = s"""
                          |{
-                         |  "affinityGroup": "Individual"
+                         |  "affinityGroup": "Individual",
+                         |  "authProviderId": "cred-id-12345",
+                         |  "authProviderType": "Verify"
                          |}
     """.stripMargin
 
