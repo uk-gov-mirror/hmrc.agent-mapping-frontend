@@ -22,6 +22,7 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
@@ -38,7 +39,8 @@ case class MappingForm(arn: Arn, utr: Utr)
 @Singleton
 class MappingController @Inject()(override val messagesApi: MessagesApi,
                                   override val authConnector: AuthConnector,
-                                  mappingConnector: MappingConnector)  (implicit appConfig: AppConfig)
+                                  mappingConnector: MappingConnector,
+                                  auditService: AuditService)  (implicit appConfig: AppConfig)
   extends FrontendController with I18nSupport with AuthActions {
 
   private val mappingForm = Form(
@@ -60,11 +62,11 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
     Ok(html.start())
   }
 
-  val showAddCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
+  val showAddCode: Action[AnyContent] = AuthorisedSAAgent (auditService) { implicit authContext =>implicit request =>
     successful(Ok(html.add_code(mappingForm, request.saAgentReference)))
   }
 
-  val submitAddCode: Action[AnyContent] = AuthorisedSAAgent { implicit authContext =>implicit request =>
+  val submitAddCode: Action[AnyContent] = AuthorisedSAAgent () { implicit authContext =>implicit request =>
     mappingForm.bindFromRequest.fold(
       formWithErrors => {
         successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
@@ -81,11 +83,11 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
     )
   }
 
-  def complete(arn: Arn, saAgentReference: SaAgentReference) : Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
+  def complete(arn: Arn, saAgentReference: SaAgentReference) : Action[AnyContent] = AuthorisedSAAgent () { implicit authContext => implicit request =>
     successful(Ok(html.complete(arn,saAgentReference)))
   }
 
-  def alreadyMapped(arn: Arn, saAgentReference: SaAgentReference) : Action[AnyContent] = AuthorisedSAAgent { implicit authContext => implicit request =>
+  def alreadyMapped(arn: Arn, saAgentReference: SaAgentReference) : Action[AnyContent] = AuthorisedSAAgent () { implicit authContext => implicit request =>
     successful(Ok(html.already_mapped(arn,saAgentReference)))
   }
 
