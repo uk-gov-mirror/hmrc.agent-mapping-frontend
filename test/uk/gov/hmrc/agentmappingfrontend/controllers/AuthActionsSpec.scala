@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MappingControllerSpec extends UnitSpec with MockitoSugar {
+class AuthActionsSpec extends UnitSpec with MockitoSugar {
 
   "AuthorisedWithSubscribingAgent" should {
     "call the body when the user is whitelisted" in {
