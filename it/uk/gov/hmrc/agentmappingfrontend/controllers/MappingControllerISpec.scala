@@ -43,6 +43,7 @@ class MappingControllerISpec extends BaseControllerISpec {
           and auditDetail("saAgentRef" -> "HZ1234")
           and auditDetail("authProviderId" -> "12345-credId")
           and auditDetail("authProviderType" -> "GovernmentGateway")
+          and auditTag("transactionName" -> "check-agent-ref-code")
       )
     }
 
@@ -56,6 +57,7 @@ class MappingControllerISpec extends BaseControllerISpec {
           and auditDetail("saAgentRef" -> "HZ1234")
           and auditDetail("authProviderId" -> "12345-credId")
           and auditDetail("authProviderType" -> "GovernmentGateway")
+          and auditTag("transactionName" -> "check-agent-ref-code")
       )
     }
   }
