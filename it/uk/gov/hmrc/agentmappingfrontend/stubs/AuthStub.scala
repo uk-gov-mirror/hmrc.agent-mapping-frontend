@@ -37,7 +37,7 @@ object AuthStub {
   }
 
   def passcodeAuthorisationFails(regime: String = "agent-mapping"): Unit = {
-    stubPasscodeAuthorisation(regime, 404)
+    stubPasscodeAuthorisation(regime, 403)
   }
 
   private def stubPasscodeAuthorisation(regime: String, status: Int) = {
