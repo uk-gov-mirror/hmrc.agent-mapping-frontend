@@ -24,15 +24,17 @@ import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
 import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.passcode.authentication.PasscodeAuthentication
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[A]) extends WrappedRequest[A](request)
 
-trait AuthActions extends Actions {
+trait AuthActions extends Actions with PasscodeAuthentication {
   protected type AsyncPlayUserRequest = AuthContext => AgentRequest[AnyContent] => Future[Result]
   protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
+
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
   private[auth] def saAgentReference(e: List[Enrolment]): Option[SaAgentReference] = {
@@ -44,31 +46,38 @@ trait AuthActions extends Actions {
 
   def AuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AsyncPlayUserRequest): Action[AnyContent] =
     AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
-      implicit authContext => implicit request =>
-        authConnector.getUserDetails(authContext) flatMap {
-          case isAgentAffinityGroup(authId,authType) => enrolments flatMap {
-              e => {
-                saAgentReference(e) map { saEnrolment =>
-                  auditCheckAgentRefCodeEvent(Some(saEnrolment),authId,authType)(auditService)
-                  body(authContext)(AgentRequest(saEnrolment, request))
-                } getOrElse {
-                  auditCheckAgentRefCodeEvent(None,authId,authType)(auditService)
-                  Future successful redirectToNotEnrolled
+      implicit authContext =>
+        implicit request =>
+          withVerifiedPasscode {
+            getUserDetails flatMap {
+              case isAgentAffinityGroup(authId, authType) => enrolments flatMap {
+                e => {
+                  saAgentReference(e) map { saEnrolment =>
+                    auditCheckAgentRefCodeEvent(Some(saEnrolment), authId, authType)(auditService)
+                    body(authContext)(AgentRequest(saEnrolment, request))
+                  } getOrElse {
+                    auditCheckAgentRefCodeEvent(None, authId, authType)(auditService)
+                    Future successful redirectToNotEnrolled
+                  }
                 }
               }
+              case _ => Future successful redirectToNotEnrolled
             }
-          case _        => Future successful redirectToNotEnrolled
-        }
+          }
     }
 
-  private def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
+  protected def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
     authConnector.getEnrolments[List[Enrolment]](authContext)
 
-  object isAgentAffinityGroup{
+  protected def getUserDetails()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[HttpResponse] = {
+    authConnector.getUserDetails(authContext)
+  }
+
+  object isAgentAffinityGroup {
     def unapply(response: HttpResponse): Option[(Option[String], Option[String])] = {
       val json = response.json
       val affinityGroup = (json \ "affinityGroup").as[String]
-      if(affinityGroup=="Agent") Some((
+      if (affinityGroup == "Agent") Some((
         (json \ "authProviderId").asOpt[String],
         (json \ "authProviderType").asOpt[String]
       )) else None
