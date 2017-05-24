@@ -10,12 +10,12 @@ import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{individual, subscri
 import uk.gov.hmrc.play.test.UnitSpec
 
 trait EndpointBehaviours {
-  me: UnitSpec with WireMockSupport =>
+  me: UnitSpec with WireMockSupport with AuditSupport =>
   type PlayRequest = Request[AnyContent] => Result
 
   protected def authenticatedRequest(): FakeRequest[AnyContentAsEmpty.type]
 
-  protected def anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
+  protected def anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit: Boolean)(doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
     "redirect to the company-auth-frontend sign-in page if the current user is not logged in" in {
       userIsNotAuthenticated()
 
@@ -24,6 +24,7 @@ trait EndpointBehaviours {
 
       result.header.status shouldBe 303
       result.header.headers("Location") should include("/gg/sign-in")
+      auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
 
     "redirect to the start page if the current user is logged in and does not have affinity group Agent" in {
@@ -34,6 +35,8 @@ trait EndpointBehaviours {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+
+      auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but is not enrolled to IR-SA-AGENT " in {
@@ -45,6 +48,16 @@ trait EndpointBehaviours {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+
+      if (expectCheckAgentRefCodeAudit)
+        auditEventShouldHaveBeenSent("CheckAgentRefCode")(
+          auditDetail("isEnrolledSAAgent" -> "false")
+            and not(auditDetailKey("saAgentRef"))
+            and auditDetail("authProviderId" -> "12345-credId")
+            and auditDetail("authProviderType" -> "GovernmentGateway")
+            and auditTag("transactionName" -> "check-agent-ref-code")
+        )
+      else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but has an inactive enrolment to IR-SA-AGENT " in {
@@ -56,6 +69,17 @@ trait EndpointBehaviours {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+
+      if (expectCheckAgentRefCodeAudit)
+        auditEventShouldHaveBeenSent("CheckAgentRefCode")(
+          auditDetail("isEnrolledSAAgent" -> "false")
+            and not(auditDetailKey("saAgentRef"))
+            and auditDetail("authProviderId" -> "12345-credId")
+            and auditDetail("authProviderType" -> "GovernmentGateway")
+            and auditTagsNotEmpty("path", "X-Session-ID", "X-Request-ID", "clientIP", "clientPort")
+            and auditTag("transactionName" -> "check-agent-ref-code")
+        )
+      else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
   }
 

@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isEnrolled, userIsAuthenticated}
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.isEnrolled
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
@@ -31,13 +31,20 @@ class MappingControllerISpec extends BaseControllerISpec {
 
   "show add-code" should {
 
-    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.showAddCode(request))
+    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit = true)(request => controller.showAddCode(request))
 
     "display the add code page if the current user is logged in and has legacy agent enrolment" in {
       isEnrolled(subscribingAgent)
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
       bodyOf(result) should include("Self Assessment Agent References")
+      auditEventShouldHaveBeenSent("CheckAgentRefCode")(
+        auditDetail("isEnrolledSAAgent" -> "true")
+          and auditDetail("saAgentRef" -> "HZ1234")
+          and auditDetail("authProviderId" -> "12345-credId")
+          and auditDetail("authProviderType" -> "GovernmentGateway")
+          and auditTag("transactionName" -> "check-agent-ref-code")
+      )
     }
 
     "display the SA Agent Reference if the current user is logged in and has legacy agent enrolment" in {
@@ -45,11 +52,18 @@ class MappingControllerISpec extends BaseControllerISpec {
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
       bodyOf(result) should include(">HZ1234")
+      auditEventShouldHaveBeenSent("CheckAgentRefCode")(
+        auditDetail("isEnrolledSAAgent" -> "true")
+          and auditDetail("saAgentRef" -> "HZ1234")
+          and auditDetail("authProviderId" -> "12345-credId")
+          and auditDetail("authProviderType" -> "GovernmentGateway")
+          and auditTag("transactionName" -> "check-agent-ref-code")
+      )
     }
   }
 
   "submit add code" should {
-    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.submitAddCode(request))
+    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit = false)(request => controller.submitAddCode(request))
 
     "redirect to complete if the user enters an ARN and UTR that match the known facts" in {
       isEnrolled(subscribingAgent)
@@ -135,7 +149,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
   "complete" should {
 
-    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(request => controller.complete(Arn("TARN0000001"),subscribingAgent.saAgentReference.get)(request))
+    behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit = false)(request => controller.complete(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)(request))
 
     "display the complete page for an arn and ir sa agent reference" in {
       isEnrolled(subscribingAgent)

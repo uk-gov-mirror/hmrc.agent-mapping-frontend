@@ -17,11 +17,14 @@
 package uk.gov.hmrc.agentmappingfrontend.auth
 
 import play.api.mvc._
-import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
+import uk.gov.hmrc.agentmappingfrontend.audit.AuditService.auditCheckAgentRefCodeEvent
+import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.domain.SaAgentReference
+
+import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
+import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.passcode.authentication.PasscodeAuthentication
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,22 +45,24 @@ trait AuthActions extends Actions with PasscodeAuthentication {
     }
   }
 
-  def AuthorisedSAAgent(body: AsyncPlayUserRequest): Action[AnyContent] =
+  def AuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AsyncPlayUserRequest): Action[AnyContent] =
     AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
       implicit authContext =>
         implicit request =>
           withVerifiedPasscode {
-            isAgentAffinityGroup() flatMap {
-              case true => enrolments flatMap {
+            authConnector.getUserDetails(authContext) flatMap {
+              case isAgentAffinityGroup(authId, authType) => enrolments flatMap {
                 e => {
                   saAgentReference(e) map { saEnrolment =>
+                    auditCheckAgentRefCodeEvent(Some(saEnrolment), authId, authType)(auditService)
                     body(authContext)(AgentRequest(saEnrolment, request))
                   } getOrElse {
+                    auditCheckAgentRefCodeEvent(None, authId, authType)(auditService)
                     Future successful redirectToNotEnrolled
                   }
                 }
               }
-              case false => Future successful redirectToNotEnrolled
+              case _ => Future successful redirectToNotEnrolled
             }
           }
     }
@@ -65,11 +70,23 @@ trait AuthActions extends Actions with PasscodeAuthentication {
   protected def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
     authConnector.getEnrolments[List[Enrolment]](authContext)
 
-  protected def isAgentAffinityGroup()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[Boolean] =
-    authConnector.getUserDetails(authContext).map { userDetailsResponse =>
-      val affinityGroup = (userDetailsResponse.json \ "affinityGroup").as[String]
-      affinityGroup == "Agent"
+  /*<<<<<<< HEAD
+    protected def isAgentAffinityGroup()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[Boolean] =
+      authConnector.getUserDetails(authContext).map { userDetailsResponse =>
+        val affinityGroup = (userDetailsResponse.json \ "affinityGroup").as[String]
+        affinityGroup == "Agent"
+  =======*/
+  object isAgentAffinityGroup {
+    def unapply(response: HttpResponse): Option[(Option[String], Option[String])] = {
+      val json = response.json
+      val affinityGroup = (json \ "affinityGroup").as[String]
+      if (affinityGroup == "Agent") Some((
+        (json \ "authProviderId").asOpt[String],
+        (json \ "authProviderType").asOpt[String]
+      )) else None
     }
+  }
+
 
   private def redirectToNotEnrolled =
     Redirect(routes.MappingController.notEnrolled())

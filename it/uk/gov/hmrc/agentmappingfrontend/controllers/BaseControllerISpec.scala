@@ -21,12 +21,13 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
-import uk.gov.hmrc.agentmappingfrontend.support.{EndpointBehaviours, WireMockSupport}
+import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours {
+abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -42,6 +43,7 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
+      bind(classOf[AuditService]).toInstance(testAuditService)
     }
   }
 

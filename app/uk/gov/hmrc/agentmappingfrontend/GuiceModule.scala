@@ -23,8 +23,11 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, AuditServiceImpl}
 import uk.gov.hmrc.agentmappingfrontend.config._
-import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.http.{HttpGet, HttpPut}
 
@@ -37,6 +40,8 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[HttpPut]).toInstance(WSHttp)
     bind(classOf[AppConfig]).to(classOf[FrontendAppConfig])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
+    bind(classOf[AuditService]).to(classOf[AuditServiceImpl])
+    bind(classOf[AuditConnector]).toInstance(new MicroserviceAuditConnector)
     bindBaseUrl("agent-mapping")
   }
 
@@ -51,3 +56,8 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     override lazy val get = getConfString(propertyName, throw new RuntimeException(s"No configuration value found for '$propertyName'"))
   }
 }
+
+class MicroserviceAuditConnector extends AuditConnector with RunMode {
+  override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
+}
+
