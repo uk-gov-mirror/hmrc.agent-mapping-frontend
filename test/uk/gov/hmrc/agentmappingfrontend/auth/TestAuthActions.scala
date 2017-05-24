@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.auth
 
 import org.scalatest.mock.MockitoSugar
+import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.passcode.authentication.{PasscodeAuthenticationProvider, PasscodeVerificationConfig}
@@ -47,8 +48,9 @@ class TestAuthActions(override val config: PasscodeVerificationConfig,
 
   private val authContext: AuthContext = null
 
-  override protected def isAgentAffinityGroup()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[Boolean] =
-    Future successful true
+  override protected def getUserDetails()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[HttpResponse] =
+    Future successful HttpResponse(200, Some(Json.parse("""{"affinityGroup": "Agent"}""")))
+
 
   override protected def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
     Future successful List.empty

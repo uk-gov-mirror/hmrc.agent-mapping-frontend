@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import org.scalatest.mock.MockitoSugar
 import play.api.mvc._
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.auth.{AgentRequest, TestAuthActions}
 import uk.gov.hmrc.agentmappingfrontend.support.{TestPasscodeAuthenticationProvider, TestPasscodeVerificationConfig}
 import uk.gov.hmrc.play.frontend.auth.AuthContext
@@ -35,7 +36,7 @@ class AuthActionsSpec extends UnitSpec with MockitoSugar {
       val passcodeAuthenticationProvider = new TestPasscodeAuthenticationProvider(passcodeVerificationConfig, whitelisted = true)
       val testAuthActions = new TestAuthActions(passcodeVerificationConfig, passcodeAuthenticationProvider)
 
-      val result: Result = testAuthActions.AuthorisedSAAgent(okBody)(FakeRequest("GET", "/"))
+      val result: Result = testAuthActions.AuthorisedSAAgent(NoOpAuditService)(okBody)(FakeRequest("GET", "/"))
 
       status(result) shouldBe 200
     }
@@ -45,7 +46,7 @@ class AuthActionsSpec extends UnitSpec with MockitoSugar {
       val passcodeAuthenticationProvider = new TestPasscodeAuthenticationProvider(passcodeVerificationConfig, whitelisted = false)
       val testAuthActions = new TestAuthActions(passcodeVerificationConfig, passcodeAuthenticationProvider)
 
-      val result: Result = testAuthActions.AuthorisedSAAgent(okBody)(FakeRequest("GET", "/"))
+      val result: Result = testAuthActions.AuthorisedSAAgent(NoOpAuditService)(okBody)(FakeRequest("GET", "/"))
 
       status(result) shouldBe 303
       result.header.headers("Location") should endWith("/otac/login")

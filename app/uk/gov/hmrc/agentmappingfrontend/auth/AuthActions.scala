@@ -21,7 +21,6 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditService.auditCheckAgentRefCod
 import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.domain.SaAgentReference
-
 import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
 import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
@@ -50,7 +49,7 @@ trait AuthActions extends Actions with PasscodeAuthentication {
       implicit authContext =>
         implicit request =>
           withVerifiedPasscode {
-            authConnector.getUserDetails(authContext) flatMap {
+            getUserDetails flatMap {
               case isAgentAffinityGroup(authId, authType) => enrolments flatMap {
                 e => {
                   saAgentReference(e) map { saEnrolment =>
@@ -70,12 +69,10 @@ trait AuthActions extends Actions with PasscodeAuthentication {
   protected def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
     authConnector.getEnrolments[List[Enrolment]](authContext)
 
-  /*<<<<<<< HEAD
-    protected def isAgentAffinityGroup()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[Boolean] =
-      authConnector.getUserDetails(authContext).map { userDetailsResponse =>
-        val affinityGroup = (userDetailsResponse.json \ "affinityGroup").as[String]
-        affinityGroup == "Agent"
-  =======*/
+  protected def getUserDetails()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[HttpResponse] = {
+    authConnector.getUserDetails(authContext)
+  }
+
   object isAgentAffinityGroup {
     def unapply(response: HttpResponse): Option[(Option[String], Option[String])] = {
       val json = response.json
