@@ -29,4 +29,21 @@ object AuthStub {
     stubFor(get(urlEqualTo(user.enrolmentsLink)).willReturn(aResponse().withStatus(200).withBody(
       s"""|[{"key":"IR-SA-AGENT","identifiers":[{"key":"IrAgentReference","value":"${user.saAgentReference.get}"}],"state":"$state"}]""".stripMargin)))
   }
+
+  def passcodeAuthorisationSucceeds(regime: String = "agent-mapping", otacToken: String = "dummy-otac-token"): Seq[(String, String)] = {
+    stubPasscodeAuthorisation(regime, 200)
+
+    Seq(SessionKeys.otacToken -> otacToken)
+  }
+
+  def passcodeAuthorisationFails(regime: String = "agent-mapping"): Unit = {
+    stubPasscodeAuthorisation(regime, 404)
+  }
+
+  private def stubPasscodeAuthorisation(regime: String, status: Int) = {
+    stubFor(get(urlEqualTo(s"/authorise/read/$regime"))
+      .willReturn(
+        aResponse()
+          .withStatus(status)))
+  }
 }

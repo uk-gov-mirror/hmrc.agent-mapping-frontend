@@ -28,7 +28,7 @@ import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.domain.SaAgentReference
-import uk.gov.hmrc.passcode.authentication.{PasscodeAuthenticationProvider, PasscodeVerificationConfig}
+import uk.gov.hmrc.passcode.authentication.{PasscodeAuthentication, PasscodeAuthenticationProvider, PasscodeVerificationConfig}
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
@@ -42,7 +42,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
                                   override val config: PasscodeVerificationConfig,
                                   override val passcodeAuthenticationProvider: PasscodeAuthenticationProvider,
                                   mappingConnector: MappingConnector)(implicit appConfig: AppConfig)
-  extends FrontendController with I18nSupport with AuthActions {
+  extends FrontendController with I18nSupport with AuthActions with PasscodeAuthentication {
 
   private val mappingForm = Form(
     mapping(
@@ -55,11 +55,11 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
     )(MappingForm.apply)(MappingForm.unapply)
   )
 
-  val root: Action[AnyContent] = Action { implicit request =>
+  val root: Action[AnyContent] = PasscodeAuthenticatedAction { implicit request =>
     Redirect(routes.MappingController.start())
   }
 
-  val start: Action[AnyContent] = Action { implicit request =>
+  val start: Action[AnyContent] = PasscodeAuthenticatedAction { implicit request =>
     Ok(html.start())
   }
 
