@@ -23,6 +23,7 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, AuditServiceImpl}
 import uk.gov.hmrc.agentmappingfrontend.config._
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -39,6 +40,7 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[HttpPut]).toInstance(WSHttp)
     bind(classOf[AppConfig]).to(classOf[FrontendAppConfig])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
+    bind(classOf[AuditService]).to(classOf[AuditServiceImpl])
     bind(classOf[AuditConnector]).toInstance(new MicroserviceAuditConnector)
     bindBaseUrl("agent-mapping")
   }
