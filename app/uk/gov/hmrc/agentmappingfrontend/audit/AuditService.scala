@@ -35,7 +35,7 @@ object AuditService {
   def auditCheckAgentRefCodeEvent(saAgentReferenceOpt: Option[SaAgentReference], authProviderId: Option[String], authProviderType: Option[String])
                                  (auditService: AuditService)
                                  (implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
-    val event = createEvent(AgentFrontendMappingEvent.CheckAgentRefCode,
+    val event = createEvent(AgentFrontendMappingEvent.CheckAgentRefCode, "check-agent-ref-code",
       Seq("isEnrolledSAAgent" -> saAgentReferenceOpt.isDefined)
         ++ saAgentReferenceOpt.map(r => Seq("saAgentRef" -> r.value)).getOrElse(Seq.empty)
         ++ authProviderId.map(v => Seq("authProviderId" -> v)).getOrElse(Seq.empty)
@@ -45,12 +45,13 @@ object AuditService {
   }
 
   private def createEvent(event: AgentFrontendMappingEvent,
+                          transactionName: String,
                           details: Seq[(String, Any)])
                          (implicit hc: HeaderCarrier, request: Request[Any]): DataEvent = {
     DataEvent(
       auditSource = "agent-mapping-frontend",
       auditType = event.toString,
-      tags = hc.toAuditTags("", request.path),
+      tags = hc.toAuditTags(transactionName, request.path),
       detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     )
   }

@@ -50,6 +50,7 @@ trait EndpointBehaviours {
             and not(auditDetailKey("saAgentRef"))
             and auditDetail("authProviderId" -> "12345-credId")
             and auditDetail("authProviderType" -> "GovernmentGateway")
+            and auditTag("transactionName" -> "check-agent-ref-code")
         )
       else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
@@ -71,6 +72,7 @@ trait EndpointBehaviours {
             and auditDetail("authProviderId" -> "12345-credId")
             and auditDetail("authProviderType" -> "GovernmentGateway")
             and auditTagsNotEmpty("path", "X-Session-ID", "X-Request-ID", "clientIP", "clientPort")
+            and auditTag("transactionName" -> "check-agent-ref-code")
         )
       else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
