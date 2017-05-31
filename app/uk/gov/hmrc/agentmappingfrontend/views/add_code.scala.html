@@ -22,12 +22,12 @@
 
 @(mappingForm: Form[_], saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "Self Assessment Agent References found", bodyClasses = None) {
+@html.main_template(appConfig, title = "Connect to your Agent Services account", bodyClasses = None) {
     @form(action = routes.MappingController.submitAddCode,
           'class -> "form js-form") {
 
         <h1 class="form-title heading-large">
-            Self Assessment Agent References found
+            Connect to your Agent Services account
         </h1>
         @if(mappingForm.hasGlobalErrors) {
             <ul>
@@ -36,21 +36,17 @@
             }
             </ul>
         }
-        <p>We have identified the following Self Assessment Agent References on this credential:</p>
-        <ul class="list list-bullet">
-            <li>@saAgentReference     IR-SA Agent</li>
-        </ul>
-        <p>To add these codes to your firm's HMRC record, please enter your:</p>
         <div class="form-group">
-            @input(mappingForm("utr.value"), '_label -> "SA or CT UTR", '_inputClass -> "input--medium input--cleared")
+            @input(mappingForm("arn.arn"), '_label -> "Agent Services account number", '_inputClass -> "input--medium input--cleared")
+        </div>
+        <div class="form-group">
+            @input(mappingForm("utr.value"), '_label -> "Self Assessment UTR or Corporation Tax reference", '_inputClass -> "input--medium input--cleared")
         </div>
 
-        <div class="form-group">
-            @input(mappingForm("arn.arn"), '_label -> "ARN", '_inputClass -> "input--medium input--cleared")
-        </div>
+
 
         <div class="form-group">
-            <input type="submit" class="button" id="continue" value="Continue"/>
+            <input type="submit" class="button" id="continue" value="Connect"/>
         </div>
 
     }
