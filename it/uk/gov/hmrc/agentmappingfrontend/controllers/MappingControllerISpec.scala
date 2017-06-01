@@ -141,7 +141,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
-        bodyOf(result) should include("Those details do not match the details we have for your business")
+        bodyOf(result) should include("Something’s wrong")
       }
     }
   }
