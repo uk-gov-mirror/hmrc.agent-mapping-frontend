@@ -25,7 +25,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     "display the start page" in {
       val result: Result = await(controller.start(FakeRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include("map existing Self Assessment Agent References to your new MTD Subscription")
+      bodyOf(result) should include("Connect each of your agent Government Gateway IDs so your accounting software will be able to access your Self Assessment client information.")
     }
   }
 
@@ -37,7 +37,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       isEnrolled(subscribingAgent)
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include("Self Assessment Agent References")
+      bodyOf(result) should include("Connect to your Agent Services account")
       auditEventShouldHaveBeenSent("CheckAgentRefCode")(
         auditDetail("isEnrolledSAAgent" -> "true")
           and auditDetail("saAgentRef" -> "HZ1234")
@@ -51,7 +51,6 @@ class MappingControllerISpec extends BaseControllerISpec {
       isEnrolled(subscribingAgent)
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include(">HZ1234")
       auditEventShouldHaveBeenSent("CheckAgentRefCode")(
         auditDetail("isEnrolledSAAgent" -> "true")
           and auditDetail("saAgentRef" -> "HZ1234")
@@ -106,7 +105,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
-        bodyOf(result) should include("ARN is not valid")
+        bodyOf(result) should include("This is not a valid account number")
         bodyOf(result) should include("2000000000")
         bodyOf(result) should include("ARN0000001")
       }
@@ -129,7 +128,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
-        bodyOf(result) should include("UTR is not valid")
+        bodyOf(result) should include("This is not a valid UTR or tax reference")
         bodyOf(result) should include("notautr")
         bodyOf(result) should include("TARN0000001")
       }
@@ -156,9 +155,9 @@ class MappingControllerISpec extends BaseControllerISpec {
       val saRef: SaAgentReference = subscribingAgent.saAgentReference.get
       val result: Result = await(controller.complete(Arn("TARN0000001"),saRef)(authenticatedRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include("You have successfully added the following codes")
-      bodyOf(result) should include("TARN0000001")
-      bodyOf(result) should include(saRef.value)
+      bodyOf(result) should include("You've connected this Government Gateway ID")
+      bodyOf(result) shouldNot include("TARN0000001")
+      bodyOf(result) shouldNot include(saRef.value)
     }
   }
 
@@ -166,7 +165,7 @@ class MappingControllerISpec extends BaseControllerISpec {
    "contain a message indicating if the user has enrolled for IR-SA-AGENT" in {
      val result: Result = await(controller.notEnrolled(FakeRequest()))
      status(result) shouldBe 200
-     bodyOf(result) should include("There is no active IR-SA-AGENT enrolment associated with this Government Gateway identifier")
+     bodyOf(result) should include("You can only add Government Gateway IDs linked to your business. We can't process client IDs.")
    }
  }
 }
