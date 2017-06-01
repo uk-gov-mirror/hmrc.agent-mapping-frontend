@@ -105,7 +105,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
-        bodyOf(result) should include("This is not a valid account number")
+        bodyOf(result) should include("Check you have entered a valid account number")
         bodyOf(result) should include("2000000000")
         bodyOf(result) should include("ARN0000001")
       }
@@ -128,7 +128,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
-        bodyOf(result) should include("This is not a valid UTR or tax reference")
+        bodyOf(result) should include("Check you have entered a valid UTR or tax reference")
         bodyOf(result) should include("notautr")
         bodyOf(result) should include("TARN0000001")
       }
