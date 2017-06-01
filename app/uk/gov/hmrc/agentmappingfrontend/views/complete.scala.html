@@ -22,16 +22,12 @@
 @(arn: Arn, saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = "Confirmation", bodyClasses = None) {
-    <div class="govuk-box-highlight">
-        <h1 class="bold-large">You have successfully added the following codes</h1>
-        <p>
-            to your Agent Reference Number (ARN) <br>
-            <strong class="heading-medium">@arn.value</strong>
-        <ul class="list">
-            <li>@saAgentReference.value     IR-SA Agent</li>
-        </ul>
-        </p>
+    <div class="transaction-banner--complete">
+        <h1 class="bold-large">
+        You've connected this Government Gateway ID</h1>
     </div>
+
+    <p>If you need to add another agent Government Gateway ID, sign out and repeat the process.</p>
 
     <a href="index.html" class="button">Sign out</a>
 }

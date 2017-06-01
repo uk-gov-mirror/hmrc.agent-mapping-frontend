@@ -21,19 +21,16 @@
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "Agent Mapping", bodyClasses = None) {
+@html.main_template(appConfig, title = "Add your existing clients to your new Agent Services account", bodyClasses = None) {
     <h1 class="heading-xlarge">
-        Agent Mapping
+        Add your existing clients to your new Agent Services account
     </h1>
 
-    <p>By adding existing UTRs to your ARN, HMRC can honour existing legacy agent-client relationships for MTD:</p>
-    <p>Use this service to:</p>
+    <p>Connect each of your agent Government Gateway IDs so your accounting software will be able to access your Self Assessment client information.
+    </p>
 
-    <ul class="list list-bullet">
-        <li>map existing Self Assessment Agent References to your new MTD Subscription</li>
-    </uL>
-
-    <p>Mapping takes around 5 minutes</p>
+    <p>You can only add IDs linked to your business. We can't process client IDs.
+    </p>
 
     <p>
         <a class="button button-start button--get-started" name="start" id="start" href="@MappingController.showAddCode" role="button">Start now</a>
@@ -41,12 +38,14 @@
 
     <h2 class="heading-medium">Before you start</h2>
 
-    <p>To map existing codes, you will need the following:</p>
+    <p>You will need:</p>
 
     <ul class="list list-bullet">
-        <li>Log in and Password for existing credentials used by your firm</li>
-        <li>Agent Reference Number (ARN)</li>
+        <li>each of the agent Government Gateway IDs used by your business for Self Assessment clients
+        </li>
+        <li>your new Agent Services account number
+        </li>
+        <li>your business's tax reference (sometimes called a UTR)
+        </li>
     </uL>
-
-    <p>The online service is also available in Welsh (Cymraeg)</p>
 }
