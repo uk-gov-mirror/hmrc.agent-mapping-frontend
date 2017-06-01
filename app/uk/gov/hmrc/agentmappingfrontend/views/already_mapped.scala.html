@@ -21,16 +21,10 @@
 
 @(arn: Arn, saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "Already Mapped", bodyClasses = None) {
+@html.main_template(appConfig, title = "This ID is already connected to your account", bodyClasses = None) {
     <div class="govuk-box-highlight">
-        <h1 class="bold-large">This mapping has already been created</h1>
-        <p>
-            Agent Reference Number (ARN) <br>
-            <strong class="heading-medium">@arn.value</strong>
-        <ul class="list">
-            <li>@saAgentReference.value     IR-SA Agent</li>
-        </ul>
-        </p>
+        <h1 class="bold-large">This ID is already connected to your account</h1>
+        <p>If you need to add another agent Government Gateway ID, sign out and repeat the process.</p>
     </div>
 
     <a href="index.html" class="button">Sign out</a>

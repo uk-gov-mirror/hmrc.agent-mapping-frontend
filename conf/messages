@@ -1,2 +1,2 @@
-error.utr.invalid = UTR is not valid
-error.arn.invalid = ARN is not valid
+error.utr.invalid = Check you have entered a valid UTR or tax reference
+error.arn.invalid = Check you have entered a valid account number

@@ -20,10 +20,14 @@
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "Not Enrolled", bodyClasses = None) {
+@html.main_template(appConfig, title = "You can't connect this ID", bodyClasses = None) {
     <h1 class="heading-xlarge">
-        Not Enrolled
+        You can't connect this ID
     </h1>
 
-    There is no active IR-SA-AGENT enrolment associated with this Government Gateway identifier.
+    <p>You can only add Government Gateway IDs linked to your business. We can't process client IDs.</p>
+
+    <p>If you need to add another agent Government Gateway ID, sign out and repeat the process.</p>
+
+    <a href="index.html" class="button">Sign out</a>
 }
