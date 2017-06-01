@@ -30,12 +30,16 @@
             Connect to your Agent Services account
         </h1>
         @if(mappingForm.hasGlobalErrors) {
-            <ul>
-            @for(error <- mappingForm.globalErrors) {
-                <li>@Messages(error.messages, error.args)</li>
-            }
-            </ul>
+<div class="flash error-summary error-summary--show">
+    <h1 id="error-summary-heading" class="h2-heading">Something’s wrong</h1>
+    <ul>
+        @for(error <- mappingForm.globalErrors) {
+        <li>@Messages(error.messages, error.args)</li>
         }
+    </ul>
+    }
+</div>
+
         <div class="form-field">
             @input(mappingForm("arn.arn"), '_label -> "Agent Services account number", '_inputClass -> "input--medium input--cleared")
         </div>

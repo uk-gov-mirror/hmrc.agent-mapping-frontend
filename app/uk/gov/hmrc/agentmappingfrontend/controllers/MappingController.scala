@@ -80,7 +80,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
           mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.saAgentReference) map { r: Int =>
             r match {
               case CREATED => Redirect(routes.MappingController.complete(mappingData.arn, request.saAgentReference))
-              case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("Those details do not match the details we have for your business"), request.saAgentReference))
+              case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference."), request.saAgentReference))
               case CONFLICT => Redirect(routes.MappingController.alreadyMapped(mappingData.arn, request.saAgentReference))
             }
           }
