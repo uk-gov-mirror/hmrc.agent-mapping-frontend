@@ -20,6 +20,7 @@ import java.net.URL
 import javax.inject.Provider
 
 import com.google.inject.AbstractModule
+import com.google.inject.name.Names
 import com.google.inject.name.Names.named
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
@@ -29,7 +30,7 @@ import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import uk.gov.hmrc.play.http.{HttpGet, HttpPut}
+import uk.gov.hmrc.play.http.{HttpDelete, HttpGet, HttpPut}
 
 class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule with ServicesConfig {
   override protected lazy val mode: Mode = environment.mode
@@ -43,7 +44,13 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[AuditService]).to(classOf[AuditServiceImpl])
     bind(classOf[AuditConnector]).toInstance(new MicroserviceAuditConnector)
     bindBaseUrl("agent-mapping")
+    bind(classOf[HttpDelete]).toInstance(WSHttp)
+    bindBaseUrl("auth")
+    bindConfigProperty("logoutRedirectUrl")
   }
+
+  private def bindConfigProperty(propertyName: String) =
+    bind(classOf[String]).annotatedWith(Names.named(s"$propertyName")).toProvider(new ConfigPropertyProvider(propertyName))
 
   private def bindBaseUrl(serviceName: String) =
     bind(classOf[URL]).annotatedWith(named(s"$serviceName-baseUrl")).toProvider(new BaseUrlProvider(serviceName))

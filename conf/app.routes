@@ -1,4 +1,4 @@
-# microservice specific routes
+#microservice specific routes
 
 GET        /                                      uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
 GET        /start                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
@@ -7,3 +7,5 @@ POST       /add-code                              uk.gov.hmrc.agentmappingfronte
 GET        /complete/:arn/:saAgentReference       uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn, saAgentReference: uk.gov.hmrc.domain.SaAgentReference)
 GET        /already-mapped/:arn/:saAgentReference uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn, saAgentReference: uk.gov.hmrc.domain.SaAgentReference)
 GET        /not-enrolled                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled
+
+GET        /signed-out                            uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
