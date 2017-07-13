@@ -22,34 +22,46 @@
 
 @(mappingForm: Form[_], saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "Connect to your Agent Services account", bodyClasses = None) {
+@html.main_template(appConfig, title = Messages("connectAgentServices.title"), bodyClasses = None) {
     @form(action = routes.MappingController.submitAddCode,
           'class -> "form js-form") {
 
-        <h1>
-            Connect to your Agent Services account
-        </h1>
-        @if(mappingForm.hasGlobalErrors) {
-<div class="flash error-summary error-summary--show">
-    <h1 id="error-summary-heading" class="h2-heading">Something’s wrong</h1>
-    <ul>
-        @for(error <- mappingForm.globalErrors) {
-        <li>@Messages(error.messages, error.args)</li>
+            <header class="page-header">
+                <h1>@Messages("connectAgentServices.title")</h1>
+            </header>
+
+            @if(mappingForm.hasGlobalErrors) {
+                <div class="flash error-summary error-summary--show">
+                    <h1 id="error-summary-heading" class="h2-heading">@Messages("error.summary.heading")</h1>
+                    <ul>
+                        @for(error <- mappingForm.globalErrors) {
+                            <li>@Messages(error.messages, error.args)</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="form-field">
+                @input(
+                    mappingForm("arn.arn"),
+                    '_label -> Messages("connectAgentServices.label.accountNumber"),
+                    '_inputClass -> "input--medium input--cleared",
+                    '_labelClass -> "bold"
+                )
+            </div>
+
+            <div class="form-group">
+                @input(
+                    mappingForm("utr.value"),
+                    '_label -> Messages("connectAgentServices.label.utrOrTaxReference"),
+                    '_inputClass -> "input--medium input--cleared",
+                    '_labelClass -> "bold"
+                )
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="button" id="continue">@Messages("button.connect")</button>
+            </div>
+
         }
-    </ul>
-</div>
-    }
-
-        <div class="form-field">
-            @input(mappingForm("arn.arn"), '_label -> "Agent Services account number", '_inputClass -> "input--medium input--cleared")
-        </div>
-        <div class="form-group">
-            @input(mappingForm("utr.value"), '_label -> "Self Assessment UTR or Corporation Tax reference", '_inputClass -> "input--medium input--cleared")
-        </div>
-
-        <div class="form-group">
-            <input type="submit" class="button" id="continue" value="Connect"/>
-        </div>
-
-    }
 }
