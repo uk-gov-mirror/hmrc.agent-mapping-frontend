@@ -7,10 +7,10 @@ connectAgentServices.label.utrOrTaxReference=Self Assessment UTR or Corporation 
 alreadyMapped.title=This ID is already connected to your account
 alreadyMapped.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
 
-#Not enroled
-notEnroled.title=You can''t connect this ID
-notEnroled.p1=You can only add Government Gateway IDs linked to your business. We can''t process client IDs.
-notEnroled.p2=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+#Not enrolled
+notEnrolled.title=You can''t connect this ID
+notEnrolled.p1=You can only add Government Gateway IDs linked to your business. We can''t process client IDs.
+notEnrolled.p2=If you need to add another agent Government Gateway ID, sign out and repeat the process.
 
 #Connection complete
 connectionComplete.title=You''ve connected this Government Gateway ID

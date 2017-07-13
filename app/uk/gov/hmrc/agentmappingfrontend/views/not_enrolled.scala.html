@@ -20,15 +20,15 @@
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = Messages("notEnroled.title"), bodyClasses = None) {
+@html.main_template(appConfig, title = Messages("notEnrolled.title"), bodyClasses = None) {
 
     <header class="page-header">
-        <h1>@Messages("notEnroled.title")</h1>
+        <h1>@Messages("notEnrolled.title")</h1>
     </header>
 
-    <p>@Messages("notEnroled.p1")</p>
+    <p>@Messages("notEnrolled.p1")</p>
 
-    <p>@Messages("notEnroled.p2")</p>
+    <p>@Messages("notEnrolled.p2")</p>
 
     <a href="@uk.gov.hmrc.agentmappingfrontend.controllers.routes.SignedOutController.signOut" class="button">@Messages("button.signOut")</a>
 }
