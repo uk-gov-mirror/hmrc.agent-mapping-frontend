@@ -1,2 +1,26 @@
+#Connect agent services
+connectAgentServices.title=Connect to your Agent Services account
+connectAgentServices.label.accountNumber=Agent Services account number
+connectAgentServices.label.utrOrTaxReference=Self Assessment UTR or Corporation Tax reference
+
+#Already mapped
+alreadyMapped.title=This ID is already connected to your account
+alreadyMapped.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+
+#Not enrolled
+notEnrolled.title=You can''t connect this ID
+notEnrolled.p1=You can only add Government Gateway IDs linked to your business. We can''t process client IDs.
+notEnrolled.p2=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+
+#Connection complete
+connectionComplete.title=You''ve connected this Government Gateway ID
+connectionComplete.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+
+#Buttons
+button.connect=Connect
+button.signOut=Sign out
+
+#Errors
+error.summary.heading=Something''s wrong
 error.utr.invalid = Check you have entered a valid UTR or tax reference
 error.arn.invalid = Check you have entered a valid account number

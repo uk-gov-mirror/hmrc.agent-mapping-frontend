@@ -21,13 +21,13 @@
 
 @(arn: Arn, saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "Confirmation", bodyClasses = None) {
+@html.main_template(appConfig, title = Messages("connectionComplete.title"), bodyClasses = None) {
+
     <div class="transaction-banner--complete">
-        <h1 class="bold-large">
-        You've connected this Government Gateway ID</h1>
+        <h1 class="transaction-banner__heading">@Messages("connectionComplete.title")</h1>
     </div>
 
-    <p>If you need to add another agent Government Gateway ID, sign out and repeat the process.</p>
+    <p>@Messages("connectionComplete.p1")</p>
 
-    <a href="@uk.gov.hmrc.agentmappingfrontend.controllers.routes.SignedOutController.signOut" class="button">Sign out</a>
+    <a href="@uk.gov.hmrc.agentmappingfrontend.controllers.routes.SignedOutController.signOut" class="button">@Messages("button.signOut")</a>
 }

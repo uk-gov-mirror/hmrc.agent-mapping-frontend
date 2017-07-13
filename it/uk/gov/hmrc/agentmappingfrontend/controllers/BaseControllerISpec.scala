@@ -26,6 +26,8 @@ import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
 import uk.gov.hmrc.play.test.UnitSpec
+import play.api.i18n.{Lang, Messages, MessagesApi}
+import play.twirl.api.HtmlFormat
 
 abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
 
@@ -53,5 +55,8 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
     val sessionKeys = userIsAuthenticated(subscribingAgent)
     FakeRequest().withSession(sessionKeys: _*)
   }
-}
 
+  private val messagesApi = app.injector.instanceOf[MessagesApi]
+  private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
+  protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
+}

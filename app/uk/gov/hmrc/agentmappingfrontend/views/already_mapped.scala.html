@@ -21,11 +21,13 @@
 
 @(arn: Arn, saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = "This ID is already connected to your account", bodyClasses = None) {
-    <div class="govuk-box-highlight">
-        <h1 class="bold-large">This ID is already connected to your account</h1>
-        <p>If you need to add another agent Government Gateway ID, sign out and repeat the process.</p>
-    </div>
+@html.main_template(appConfig, title = Messages("alreadyMapped.title"), bodyClasses = None) {
 
-    <a href="@uk.gov.hmrc.agentmappingfrontend.controllers.routes.SignedOutController.signOut" class="button">Sign out</a>
+    <header class="page-header">
+        <h1>@Messages("alreadyMapped.title")</h1>
+    </header>
+
+    <p>@Messages("alreadyMapped.p1")</p>
+
+    <a href="@uk.gov.hmrc.agentmappingfrontend.controllers.routes.SignedOutController.signOut" class="button">@Messages("button.signOut")</a>
 }
