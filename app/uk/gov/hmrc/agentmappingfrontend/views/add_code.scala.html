@@ -23,6 +23,7 @@
 @(mappingForm: Form[_], saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("connectAgentServices.title"), bodyClasses = None) {
+
     @form(action = routes.MappingController.submitAddCode,
           'class -> "form js-form") {
 
@@ -41,6 +42,8 @@
                 </div>
             }
 
+        <fieldset class="form-field-group">
+
             <div class="form-field">
                 @input(
                     mappingForm("arn.arn"),
@@ -50,7 +53,7 @@
                 )
             </div>
 
-            <div class="form-group">
+            <div class="form-field">
                 @input(
                     mappingForm("utr.value"),
                     '_label -> Messages("connectAgentServices.label.utrOrTaxReference"),
@@ -59,9 +62,11 @@
                 )
             </div>
 
-            <div class="form-group">
+            <div class="form-field">
                 <button type="submit" class="button" id="continue">@Messages("button.connect")</button>
             </div>
+
+        </fieldset>
 
         }
 }
