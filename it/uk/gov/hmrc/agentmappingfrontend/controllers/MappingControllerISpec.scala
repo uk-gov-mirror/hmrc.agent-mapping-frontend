@@ -141,7 +141,7 @@ class MappingControllerISpec extends BaseControllerISpec {
         val result = await(controller.submitAddCode(request))
 
         status(result) shouldBe 200
-        bodyOf(result) should include("Something’s wrong")
+        bodyOf(result) should include(htmlEscapedMessage("error.summary.heading"))
       }
     }
   }
@@ -155,7 +155,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       val saRef: SaAgentReference = subscribingAgent.saAgentReference.get
       val result: Result = await(controller.complete(Arn("TARN0000001"),saRef)(authenticatedRequest()))
       status(result) shouldBe 200
-      bodyOf(result) should include("You've connected this Government Gateway ID")
+      bodyOf(result) should include(htmlEscapedMessage("connectionComplete.title"))
       bodyOf(result) shouldNot include("TARN0000001")
       bodyOf(result) shouldNot include(saRef.value)
     }
@@ -165,7 +165,7 @@ class MappingControllerISpec extends BaseControllerISpec {
    "contain a message indicating if the user has enrolled for IR-SA-AGENT" in {
      val result: Result = await(controller.notEnrolled(FakeRequest()))
      status(result) shouldBe 200
-     bodyOf(result) should include("You can only add Government Gateway IDs linked to your business. We can't process client IDs.")
+     bodyOf(result) should include(htmlEscapedMessage("notEnroled.p1"))
    }
  }
 }
