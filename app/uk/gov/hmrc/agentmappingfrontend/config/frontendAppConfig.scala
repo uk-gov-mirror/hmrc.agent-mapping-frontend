@@ -21,12 +21,16 @@ import javax.inject.Singleton
 import play.api.Play.{configuration, current}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+import views.html.helper.urlEncode
+
 
 trait AppConfig {
   val analyticsToken: String
   val analyticsHost: String
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
+  val signOutUrl: String
+  val signOutAndRedirectUrl: String
 }
 
 trait StrictConfig{
@@ -58,5 +62,12 @@ class FrontendAppConfig extends AppConfig with ServicesConfig with StrictConfig 
   override lazy val analyticsHost: String = loadConfig(s"google-analytics.host")
   override lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   override lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+
+  private lazy val companyAuthFrontendExternalUrl = loadConfig("microservice.services.company-auth-frontend.external-url")
+  private lazy val signOutPath = loadConfig("microservice.services.company-auth-frontend.sign-out.path")
+  private lazy val signOutContinueUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.continue-url")
+  private lazy val signOutRedirectUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.redirect-url")
+  override lazy val signOutUrl: String = s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutContinueUrl)}"
+  override lazy val signOutAndRedirectUrl: String = s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutRedirectUrl)}"
 }
 
