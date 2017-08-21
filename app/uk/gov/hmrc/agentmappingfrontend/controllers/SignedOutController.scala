@@ -18,16 +18,20 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Named}
 
-import play.api.mvc.Action
-
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 
-import scala.concurrent.Future.successful
+import scala.concurrent.Future
 
-class SignedOutController @Inject()(@Named("logoutRedirectUrl") logOutUrl: String) extends FrontendController {
+class SignedOutController @Inject()(appConfig: AppConfig) extends FrontendController {
 
-  def signOut = Action.async { implicit request =>
-    successful(Redirect(logOutUrl, 303).withNewSession)
+  def signOut: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Redirect(appConfig.signOutUrl)
+  }
+
+  def signOutAndRedirect: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Redirect(appConfig.signOutAndRedirectUrl)
   }
 
 }

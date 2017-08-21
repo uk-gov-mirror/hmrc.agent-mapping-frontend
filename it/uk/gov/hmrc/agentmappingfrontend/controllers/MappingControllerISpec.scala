@@ -153,11 +153,14 @@ class MappingControllerISpec extends BaseControllerISpec {
     "display the complete page for an arn and ir sa agent reference" in {
       isEnrolled(subscribingAgent)
       val saRef: SaAgentReference = subscribingAgent.saAgentReference.get
-      val result: Result = await(controller.complete(Arn("TARN0000001"),saRef)(authenticatedRequest()))
+      val result: Result = await(controller.complete(Arn("TARN0000001"), saRef)(authenticatedRequest()))
+      val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("connectionComplete.title"))
-      bodyOf(result) shouldNot include("TARN0000001")
-      bodyOf(result) shouldNot include(saRef.value)
+      resultBody should include(htmlEscapedMessage("connectionComplete.title"))
+      resultBody should include(htmlEscapedMessage("button.repeatProcess"))
+      resultBody should include(htmlEscapedMessage("button.signOut"))
+      resultBody shouldNot include("TARN0000001")
+      resultBody shouldNot include(saRef.value)
     }
   }
 

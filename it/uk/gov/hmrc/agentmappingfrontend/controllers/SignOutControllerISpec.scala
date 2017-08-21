@@ -9,12 +9,21 @@ class SignOutControllerISpec extends BaseControllerISpec{
 
   private val fakeRequest = FakeRequest()
 
-  "context signed out" should {
-    "redirect to gov.uk page" in {
+  "sign out" should {
+    "redirect to /agent-mapping/start" in {
       val result = await(controller.signOut(fakeRequest))
 
       status(result) shouldBe 303
-      redirectLocation(result).head should include("www.gov.uk")
+      redirectLocation(result).get should include("agent-mapping%2Fstart")
+    }
+  }
+
+  "sign out and redirect" should {
+    "redirect to /agent-mapping/add-code" in {
+      val result = await(controller.signOutAndRedirect(fakeRequest))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get should include("agent-mapping%2Fadd-code")
     }
   }
 }

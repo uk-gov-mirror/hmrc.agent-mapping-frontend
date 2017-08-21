@@ -18,6 +18,7 @@ connectionComplete.p1=If you need to add another agent Government Gateway ID, si
 
 #Buttons
 button.connect=Connect
+button.repeatProcess=Repeat process with another ID
 button.signOut=Sign out
 
 #Errors
