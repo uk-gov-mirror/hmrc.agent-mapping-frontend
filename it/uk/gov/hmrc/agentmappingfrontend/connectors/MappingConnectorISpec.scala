@@ -46,18 +46,12 @@ class MappingConnectorISpec extends BaseControllerISpec {
       val mappings = await(connector.find(arn))
       mappings.size shouldBe 0
     }
-
   }
 
   "delete" should {
     "delete all mappings for a given arn" in {
-      mappingsFound(arn)
-      val mappings = await(connector.find(arn))
-      mappings.size shouldBe 2
-
       mappingsDelete(arn)
-      val deleteMappings = await(connector.delete(arn))
-      deleteMappings shouldBe 200
+      await(connector.delete(arn)) shouldBe 204
     }
 
   }

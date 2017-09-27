@@ -41,6 +41,6 @@ object MappingStubs {
 
   def mappingsDelete(arn:Arn): Unit = {
     stubFor(delete(urlPathEqualTo(s"/test-only/mappings/${arn.value}"))
-      .willReturn(aResponse().withStatus(200)))
+      .willReturn(aResponse().withStatus(204)))
  }
 }
