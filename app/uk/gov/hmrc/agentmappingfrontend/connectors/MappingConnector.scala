@@ -20,16 +20,18 @@ import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.http.Status
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.agentmappingfrontend.model.Mapping
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.domain.SaAgentReference
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpPut, Upstream4xxResponse}
+import uk.gov.hmrc.play.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, http: HttpPut) {
+class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, httpGet: HttpGet, httpPut: HttpPut, httpDelete: HttpDelete) {
   def createMapping(utr: Utr, arn: Arn, saAgentReference: SaAgentReference)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
-    http.PUT(createUrl(utr, arn, saAgentReference), "").map{
+    httpPut.PUT(createUrl(utr, arn, saAgentReference), "").map{
       r => r.status
     }.recover {
       case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
@@ -40,5 +42,28 @@ class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, h
 
   private def createUrl(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): String = {
     new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference").toString
+  }
+
+  private def deleteUrl(arn: Arn): String = {
+    new URL(baseUrl, s"/test-only/mappings/${arn.value}").toString
+  }
+
+  private def findUrl(arn: Arn): String = {
+    new URL(baseUrl, s"agent-mapping/mappings/${arn.value}").toString
+  }
+
+  def find(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[Mapping]] = {
+    httpGet.GET[JsValue](findUrl(arn)).map {
+      response => (response \ "mappings").as[Seq[Mapping]]
+    } recover {
+      case ex: NotFoundException => Seq.empty
+      case ex: Throwable => throw new RuntimeException(ex)
+    }
+  }
+
+  def delete(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    httpDelete.DELETE(deleteUrl(arn)).map {
+      r => r.status
+    }
   }
 }

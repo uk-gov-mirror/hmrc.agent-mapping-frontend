@@ -25,3 +25,7 @@ button.signOut=Sign out
 error.summary.heading=Something''s wrong
 error.utr.invalid = Check you have entered a valid UTR or tax reference
 error.arn.invalid = Check you have entered a valid account number
+
+#TestOnly
+view.mappings.title=Here are your Mappings
+no.mappings.title=There are no Mappings
