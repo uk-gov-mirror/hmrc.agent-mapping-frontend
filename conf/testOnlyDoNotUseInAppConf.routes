@@ -12,5 +12,5 @@
 # Add all the application routes to the prod.routes file
 ->          /                               prod.Routes
 
-GET         /test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
-POST        /test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.delete(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+GET         /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+POST        /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.delete(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
