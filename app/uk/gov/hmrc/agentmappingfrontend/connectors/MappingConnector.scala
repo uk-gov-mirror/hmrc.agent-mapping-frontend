@@ -45,7 +45,7 @@ class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, h
   }
 
   private def deleteUrl(arn: Arn): String = {
-    new URL(baseUrl, s"/test-only/mappings/${arn.value}").toString
+    new URL(baseUrl, s"/agent-mapping/test-only/mappings/${arn.value}").toString
   }
 
   private def findUrl(arn: Arn): String = {
