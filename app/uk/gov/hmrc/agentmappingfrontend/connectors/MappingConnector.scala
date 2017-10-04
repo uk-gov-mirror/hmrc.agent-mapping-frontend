@@ -20,14 +20,13 @@ import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.agentmappingfrontend.model.Mapping
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.domain.SaAgentReference
-import uk.gov.hmrc.play.http._
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpDelete, HttpGet, HttpPut, NotFoundException, Upstream4xxResponse }
 
 @Singleton
 class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, httpGet: HttpGet, httpPut: HttpPut, httpDelete: HttpDelete) {
