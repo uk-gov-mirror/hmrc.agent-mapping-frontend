@@ -26,10 +26,10 @@ import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, AuditServiceImpl}
 import uk.gov.hmrc.agentmappingfrontend.config._
+import uk.gov.hmrc.http.{HttpDelete, HttpGet, HttpPut}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import uk.gov.hmrc.http.{ HttpDelete, HttpGet, HttpPut }
 import uk.gov.hmrc.play.frontend.config.LoadAuditingConfig
 
 class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule with ServicesConfig {
