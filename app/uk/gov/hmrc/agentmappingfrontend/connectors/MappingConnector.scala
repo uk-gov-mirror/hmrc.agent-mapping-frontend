@@ -27,6 +27,7 @@ import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.http._
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpDelete, HttpGet, HttpPut, NotFoundException, Upstream4xxResponse }
 
 @Singleton
 class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, httpGet: HttpGet, httpPut: HttpPut, httpDelete: HttpDelete) {

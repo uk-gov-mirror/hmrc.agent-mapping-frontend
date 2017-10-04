@@ -22,12 +22,12 @@ import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
-import uk.gov.hmrc.play.http.HeaderCarrier.fromHeadersAndSession
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import _root_.uk.gov.hmrc.http.HeaderCarrier.fromHeadersAndSession
 import uk.gov.hmrc.passcode.authentication.PasscodeAuthentication
 
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[A]) extends WrappedRequest[A](request)
 
