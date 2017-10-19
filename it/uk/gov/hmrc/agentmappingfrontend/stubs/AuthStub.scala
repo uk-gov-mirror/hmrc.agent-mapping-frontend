@@ -25,9 +25,14 @@ object AuthStub {
     stubFor(get(urlEqualTo(user.enrolmentsLink)).willReturn(aResponse().withStatus(200).withBody("[]")))
   }
 
-  def isEnrolled(user: SampleUser, state: String = "Activated"): Unit = {
+  def isIrSaAgentEnrolled(user: SampleUser, state: String = "Activated"): Unit = {
     stubFor(get(urlEqualTo(user.enrolmentsLink)).willReturn(aResponse().withStatus(200).withBody(
       s"""|[{"key":"IR-SA-AGENT","identifiers":[{"key":"IrAgentReference","value":"${user.saAgentReference.get}"}],"state":"$state"}]""".stripMargin)))
+  }
+
+  def isHmrcAsAgentEnrolled(user: SampleUser, state: String = "Activated"): Unit = {
+    stubFor(get(urlEqualTo(user.enrolmentsLink)).willReturn(aResponse().withStatus(200).withBody(
+      s"""|[{"key":"HMRC-AS-AGENT","identifiers":[{"key":"AgentReferenceNumber","value":"TARN0000001"}],"state":"$state"}]""".stripMargin)))
   }
 
   def passcodeAuthorisationSucceeds(regime: String = "agent-mapping", otacToken: String = "dummy-otac-token"): Seq[(String, String)] = {

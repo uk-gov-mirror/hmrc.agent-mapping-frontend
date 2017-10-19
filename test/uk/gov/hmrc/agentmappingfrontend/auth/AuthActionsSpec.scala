@@ -32,6 +32,16 @@ class AuthActionsSpec extends UnitSpec with AuthActions {
     }
   }
 
+  "hmrcAsAgentCheck" should {
+    "be case sensitive when finding the enrolment" in {
+      val usualCasedEnrolments = List(Enrolment("HMRC-AS-AGENT", Seq.empty, ""))
+      hmrcAsAgentCheck(usualCasedEnrolments) shouldBe true
+
+      val otherCasedEnrolments = List(Enrolment("hMrC-As-AgEnT", Seq.empty, ""))
+      hmrcAsAgentCheck(otherCasedEnrolments) shouldBe false
+    }
+  }
+
   override protected def authConnector: AuthConnector = ???
 
   override def config: PasscodeVerificationConfig = ???

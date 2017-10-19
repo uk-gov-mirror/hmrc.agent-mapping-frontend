@@ -15,6 +15,31 @@ trait EndpointBehaviours {
 
   protected def authenticatedRequest(): FakeRequest[AnyContentAsEmpty.type]
 
+  protected def anAuthenticatedEndpoint(doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
+    "redirect to the company-auth-frontend sign-in page if the current user is not logged in" in {
+      userIsNotAuthenticated()
+
+      val request = FakeRequest()
+      val result = await(doRequest(request))
+
+      result.header.status shouldBe 303
+      result.header.headers("Location") should include("/gg/sign-in")
+      auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
+    }
+
+    "redirect to the start page if the current user is logged in and does not have affinity group Agent" in {
+      val sessionKeys = userIsAuthenticated(individual)
+
+      val request = FakeRequest().withSession(sessionKeys: _*)
+      val result = await(doRequest(request))
+
+      result.header.status shouldBe 303
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+
+      auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
+    }
+  }
+
   protected def anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit: Boolean)(doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
     "redirect to the company-auth-frontend sign-in page if the current user is not logged in" in {
       userIsNotAuthenticated()
@@ -61,7 +86,7 @@ trait EndpointBehaviours {
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but has an inactive enrolment to IR-SA-AGENT " in {
-      isEnrolled(subscribingAgent, "Inactive")
+      isIrSaAgentEnrolled(subscribingAgent, "Inactive")
 
       val sessionKeys = userIsAuthenticated(subscribingAgent)
       val request = FakeRequest().withSession(sessionKeys: _*)

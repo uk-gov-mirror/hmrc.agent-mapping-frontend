@@ -65,6 +65,11 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
     Ok(html.start())
   }
 
+  val startSubmit: Action[AnyContent] = AlreadyLoggedIn { implicit authContext =>
+    implicit Request =>
+    successful(Redirect(routes.MappingController.showAddCode()))
+  }
+
   val showAddCode: Action[AnyContent] = AuthorisedSAAgent(auditService) { implicit authContext =>
     implicit request =>
       successful(Ok(html.add_code(mappingForm, request.saAgentReference)))
