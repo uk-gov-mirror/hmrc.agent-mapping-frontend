@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.isEnrolled
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.{isHmrcAsAgentEnrolled, isIrSaAgentEnrolled, userIsNotAuthenticated}
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
@@ -29,12 +29,31 @@ class MappingControllerISpec extends BaseControllerISpec {
     }
   }
 
+  "startSubmit" should {
+
+    behave like anAuthenticatedEndpoint(request => controller.startSubmit(request))
+
+    "redirect to add-code if the current user is logged in and has legacy agent enrolment" in {
+      isIrSaAgentEnrolled(subscribingAgent)
+      val result: Result = await(controller.startSubmit(authenticatedRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.MappingController.showAddCode().url
+    }
+
+    "redirect to sign out if the current user is logged in with HMRC-AS-AGENT enrolment" in {
+      isHmrcAsAgentEnrolled(subscribingAgent)
+      val result: Result = await(controller.startSubmit(authenticatedRequest()))
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe routes.SignedOutController.signOutAndRedirect().url
+    }
+  }
+
   "show add-code" should {
 
     behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit = true)(request => controller.showAddCode(request))
 
     "display the add code page if the current user is logged in and has legacy agent enrolment" in {
-      isEnrolled(subscribingAgent)
+      isIrSaAgentEnrolled(subscribingAgent)
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
       bodyOf(result) should include("Connect to your Agent Services account")
@@ -48,7 +67,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     }
 
     "display the SA Agent Reference if the current user is logged in and has legacy agent enrolment" in {
-      isEnrolled(subscribingAgent)
+      isIrSaAgentEnrolled(subscribingAgent)
       val result: Result = await(controller.showAddCode(authenticatedRequest()))
       status(result) shouldBe 200
       auditEventShouldHaveBeenSent("CheckAgentRefCode")(
@@ -65,7 +84,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit = false)(request => controller.submitAddCode(request))
 
     "redirect to complete if the user enters an ARN and UTR that match the known facts" in {
-      isEnrolled(subscribingAgent)
+      isIrSaAgentEnrolled(subscribingAgent)
       mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
       val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
 
@@ -76,7 +95,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     }
 
     "redirect to the already-mapped page if the mapping already exists" in new App {
-      isEnrolled(subscribingAgent)
+      isIrSaAgentEnrolled(subscribingAgent)
       mappingExists(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
       val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
@@ -88,7 +107,7 @@ class MappingControllerISpec extends BaseControllerISpec {
 
     "redisplay the form " when {
       "there is no ARN " in {
-        isEnrolled(subscribingAgent)
+        isIrSaAgentEnrolled(subscribingAgent)
         val request = authenticatedRequest().withFormUrlEncodedBody("utr.value" -> "2000000000")
 
         val result = await(controller.submitAddCode(request))
@@ -99,7 +118,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       }
 
       "the arn is invalid" in {
-        isEnrolled(subscribingAgent)
+        isIrSaAgentEnrolled(subscribingAgent)
         val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr.value" -> "2000000000")
 
         val result = await(controller.submitAddCode(request))
@@ -111,7 +130,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       }
 
       "there is no UTR " in {
-        isEnrolled(subscribingAgent)
+        isIrSaAgentEnrolled(subscribingAgent)
         val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001")
 
         val result = await(controller.submitAddCode(request))
@@ -122,7 +141,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       }
 
       "the utr is invalid" in {
-        isEnrolled(subscribingAgent)
+        isIrSaAgentEnrolled(subscribingAgent)
         val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "notautr")
 
         val result = await(controller.submitAddCode(request))
@@ -134,7 +153,7 @@ class MappingControllerISpec extends BaseControllerISpec {
       }
 
       "the known facts check fails" in {
-        isEnrolled(subscribingAgent)
+        isIrSaAgentEnrolled(subscribingAgent)
         mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"), subscribingAgent.saAgentReference.get)
 
         val request = authenticatedRequest().withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
@@ -151,7 +170,7 @@ class MappingControllerISpec extends BaseControllerISpec {
     behave like anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit = false)(request => controller.complete(Arn("TARN0000001"), subscribingAgent.saAgentReference.get)(request))
 
     "display the complete page for an arn and ir sa agent reference" in {
-      isEnrolled(subscribingAgent)
+      isIrSaAgentEnrolled(subscribingAgent)
       val saRef: SaAgentReference = subscribingAgent.saAgentReference.get
       val result: Result = await(controller.complete(Arn("TARN0000001"), saRef)(authenticatedRequest()))
       val resultBody: String = bodyOf(result)

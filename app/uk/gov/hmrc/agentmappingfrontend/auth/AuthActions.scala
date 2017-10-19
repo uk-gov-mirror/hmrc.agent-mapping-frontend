@@ -32,8 +32,9 @@ import scala.concurrent.Future
 case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[A]) extends WrappedRequest[A](request)
 
 trait AuthActions extends Actions with PasscodeAuthentication {
-  protected type AsyncPlayUserRequest = AuthContext => AgentRequest[AnyContent] => Future[Result]
-  protected type PlayUserRequest = AuthContext => AgentRequest[AnyContent] => Result
+  protected type AsyncSaAgentUserRequest = AuthContext => AgentRequest[AnyContent] => Future[Result]
+  protected type AsyncHmrcAsAgentRequest = AuthContext => Request[AnyContent] => Future[Result]
+  protected type SaAgentUserRequest = AuthContext => AgentRequest[AnyContent] => Result
 
   private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
 
@@ -44,7 +45,9 @@ trait AuthActions extends Actions with PasscodeAuthentication {
     }
   }
 
-  def AuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AsyncPlayUserRequest): Action[AnyContent] =
+  private[auth] def hmrcAsAgentCheck(e: List[Enrolment]): Boolean = e.exists(e => e.key == "HMRC-AS-AGENT")
+
+  def AuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AsyncSaAgentUserRequest): Action[AnyContent] =
     AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
       implicit authContext =>
         implicit request =>
@@ -59,6 +62,25 @@ trait AuthActions extends Actions with PasscodeAuthentication {
                     auditCheckAgentRefCodeEvent(None, authId, authType)(auditService)
                     Future successful redirectToNotEnrolled
                   }
+                }
+              }
+              case _ => Future successful redirectToNotEnrolled
+            }
+          }
+    }
+
+  def AlreadyLoggedIn(body: AsyncHmrcAsAgentRequest): Action[AnyContent] =
+    AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
+      implicit authContext =>
+        implicit request =>
+          withVerifiedPasscode {
+            getUserDetails flatMap {
+              case isAgentAffinityGroup(Some(_), Some(_)) => enrolments flatMap {
+                e => {
+                  if (hmrcAsAgentCheck(e))
+                    Future successful Redirect(routes.SignedOutController.signOutAndRedirect())
+                  else
+                    body(authContext)(request)
                 }
               }
               case _ => Future successful redirectToNotEnrolled
@@ -83,7 +105,6 @@ trait AuthActions extends Actions with PasscodeAuthentication {
       )) else None
     }
   }
-
 
   private def redirectToNotEnrolled =
     Redirect(routes.MappingController.notEnrolled())
