@@ -10,10 +10,10 @@ object FrontendBuild extends Build with MicroService {
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "frontend-bootstrap" % "8.8.0",
+    "uk.gov.hmrc" %% "frontend-bootstrap" % "8.9.0",
     "uk.gov.hmrc" %% "play-partials" % "6.1.0",
     "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.5.0",
-    "uk.gov.hmrc" %% "passcode-verification" % "4.1.0"
+    "uk.gov.hmrc" %% "passcode-verification" % "5.0.0"
   )
 
   def test(scope: String = "test") = Seq(
