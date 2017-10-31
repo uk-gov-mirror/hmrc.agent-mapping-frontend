@@ -5,8 +5,8 @@ import org.scalatest.exceptions.TestFailedException
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatest.{BeforeAndAfterEach, Matchers, Suite}
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.Future
 

@@ -25,9 +25,9 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
 import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
-import uk.gov.hmrc.play.test.UnitSpec
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.play.test.UnitSpec
 
 abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
 

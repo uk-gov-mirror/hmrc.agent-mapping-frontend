@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentmappingfrontend.support.{SampleUser, SessionKeysForTesting}
-import uk.gov.hmrc.play.http.SessionKeys
+import uk.gov.hmrc.http.SessionKeys
 
 object AuthStub {
   def userIsNotAuthenticated(): Unit = {
