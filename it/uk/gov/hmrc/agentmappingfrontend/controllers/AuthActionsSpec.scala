@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import play.api.{Configuration, Environment}
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
+import play.api.{Configuration, Environment}
+import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
-import uk.gov.hmrc.auth.core.{AuthConnector, InsufficientEnrolments, MissingBearerToken}
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,39 +45,47 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
   "withAuthorisedSAAgent" should {
 
-    "check if agent is enrolled for IR-SA-AGENT and extract SaAgentReference" in {
+    "check if an agent is enrolled for IR-SA-AGENT and extract SaAgentReference" in {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"authorisedEnrolments": [
-           |  { "key":"IR-SA-AGENT", "identifiers": [
-           |    { "key":"IRAgentReference", "value": "fooSaAgentReference" }
-           |  ]}
-           |]}""".stripMargin)
+           |  "authorisedEnrolments": [
+           |    { "key":"IR-SA-AGENT", "identifiers": [
+           |      { "key":"IRAgentReference", "value": "fooSaAgentReference" }
+           |    ]}
+           |  ],
+           |  "credentials": {
+           |    "providerId": "12345-credId",
+           |    "providerType": "GovernmentGateway"
+           |  }}""".stripMargin)
       val result = TestController.testWithAuthorisedSAAgent
       status(result) shouldBe 200
       bodyOf(result) shouldBe "fooSaAgentReference"
     }
 
-    "throw an exception if agent is not enrolled for IR-SA-AGENT" in {
+    "redirect to not-enrolled if an agent is not enrolled for IR-SA-AGENT" in {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |"authorisedEnrolments": [
-           |  { "key":"IR-FOO-AGENT", "identifiers": [
-           |    { "key":"IRAgentReference", "value": "fooSaAgentReference" }
-           |  ]}
-           |]}""".stripMargin)
-      an[InsufficientEnrolments] shouldBe thrownBy {
-        TestController.testWithAuthorisedSAAgent
-      }
+           |  "authorisedEnrolments": [
+           |    { "key":"IR-FOO-AGENT", "identifiers": [
+           |     { "key":"IRAgentReference", "value": "fooSaAgentReference" }
+           |    ]}
+           |  ],
+           |  "credentials": {
+           |    "providerId": "12345-credId",
+           |    "providerType": "GovernmentGateway"
+           |  }}""".stripMargin)
+      val result = TestController.testWithAuthorisedSAAgent
+      status(result) shouldBe 303
+      result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
     }
 
-    "throw an exception if agent is not logged in" in {
+    "redirect to sign-in if an agent is not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
-      an[MissingBearerToken] shouldBe thrownBy {
-        TestController.testWithAuthorisedSAAgent
-      }
+      val result = TestController.testWithAuthorisedSAAgent
+      status(result) shouldBe 303
+      result.header.headers(HeaderNames.LOCATION) shouldBe "/gg/sign-in?continue=%2F&origin=agent-mapping-frontend"
     }
   }
 }

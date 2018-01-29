@@ -74,7 +74,7 @@ trait AuditSupport extends BeforeAndAfterEach {
 
   def auditTagsNotEmpty(keys: String*): Matcher[DataEvent] = keys.map(k => auditTag(k, not(be(empty)))).reduce(_ and _)
 
-  def auditTag(pair: (String,String)): Matcher[DataEvent] = auditTag(pair._1,be(pair._2))
+  def auditTag(pair: (String,String)): Matcher[DataEvent] = auditTag(pair._1, be(pair._2))
 
   def auditTag(key: String, matcher: Matcher[String]): Matcher[DataEvent] = new Matcher[DataEvent] {
     def apply(event: DataEvent): MatchResult =
@@ -85,7 +85,9 @@ trait AuditSupport extends BeforeAndAfterEach {
           "",
           Vector(event, key)
         )
-      else matcher(event.tags(key))
+      else {
+        matcher(event.tags(key))
+      }
   }
 
   override protected def beforeEach(): Unit = {

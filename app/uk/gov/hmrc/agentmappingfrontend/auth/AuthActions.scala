@@ -38,16 +38,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
 
-  private def withAgentEnrolledFor[A](serviceName: String, identifierKey: String)(body: (Option[String], Credentials) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  private def withAgentEnrolledFor[A](serviceName: String, identifierKey: String)(body: (Option[(Boolean,String)], Credentials) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(
       Enrolment(serviceName) and AuthProviders(GovernmentGateway) and Agent)
       .retrieve(authorisedEnrolments and credentials) {
         case enrolments ~ creds =>
-          val id = for {
+          val args = for {
             enrolment <- enrolments.getEnrolment(serviceName)
             identifier <- enrolment.getIdentifier(identifierKey)
-          } yield identifier.value
-          body(id, creds)
+          } yield (enrolment.isActivated, identifier.value)
+          body(args, creds)
       } recover {
         case _: NoActiveSession => toGGLogin(if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}" else s"${request.uri}")
     }
@@ -55,10 +55,15 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def withAuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AgentRequest[AnyContent] => Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
       withAgentEnrolledFor("IR-SA-AGENT", "IRAgentReference") {
-        case (Some(iRAgentReference), creds) =>
+        case (Some((activated, iRAgentReference)), creds) =>
           val saAgentReference = SaAgentReference(iRAgentReference)
-          AuditService.auditCheckAgentRefCodeEvent(Some(saAgentReference), Option(creds.providerId), Option(creds.providerType))(auditService)
-          body(AgentRequest(saAgentReference,request))
+          if(activated) {
+            AuditService.auditCheckAgentRefCodeEvent(Some(saAgentReference), Option(creds.providerId), Option(creds.providerType))(auditService)
+            body(AgentRequest(saAgentReference,request))
+          } else {
+            AuditService.auditCheckAgentRefCodeEvent(None, Option(creds.providerId), Option(creds.providerType))(auditService)
+            Future.failed(InsufficientEnrolments("IR-SA-AGENT enrolment not activated"))
+          }
         case (None, creds) =>
           AuditService.auditCheckAgentRefCodeEvent(None, Option(creds.providerId), Option(creds.providerType))(auditService)
           Future.failed(InsufficientEnrolments("IRAgentReference identifier not found"))

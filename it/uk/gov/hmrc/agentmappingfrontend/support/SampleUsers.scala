@@ -25,17 +25,19 @@ object SampleUsers {
 
   val anSAEnrolledAgentInactive = SampleUser(
     s"""{
-       | "authorisedEnrolments": [
-       |  { "key":"IR-SA-AGENT", "identifiers": [
-       |     { "key":"IRAgentReference", "value":"HZ1234", "state":"Inactive"}
-       |   ]}
+       |  "authorisedEnrolments": [
+       |   { "key":"IR-SA-AGENT",
+       |     "identifiers": [
+       |        { "key":"IRAgentReference", "value": "HZ1234" }
+       |      ],
+       |     "state": "Inactive" }
        |  ],
        |  "affinityGroup": "Agent",
        |  "credentials": {
-       |    "providerId": "12346-credId",
+       |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
-       | }""".stripMargin,
+       |}""".stripMargin,
     saAgentReference = Some(SaAgentReference("HZ1234"))
   )
 
@@ -44,7 +46,7 @@ object SampleUsers {
        | "authorisedEnrolments": [],
        | "affinityGroup": "Agent",
        |  "credentials": {
-       |    "providerId": "12347-credId",
+       |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
