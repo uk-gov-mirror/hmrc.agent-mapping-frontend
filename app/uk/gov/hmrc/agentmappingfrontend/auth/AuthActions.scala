@@ -17,95 +17,43 @@
 package uk.gov.hmrc.agentmappingfrontend.auth
 
 import play.api.mvc._
-import uk.gov.hmrc.agentmappingfrontend.audit.AuditService.auditCheckAgentRefCodeEvent
 import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+import uk.gov.hmrc.auth.core.AffinityGroup.Agent
+import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
 import uk.gov.hmrc.domain.SaAgentReference
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.passcode.authentication.PasscodeAuthentication
-import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
-import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[A]) extends WrappedRequest[A](request)
 
-trait AuthActions extends Actions with PasscodeAuthentication {
-  protected type AsyncSaAgentUserRequest = AuthContext => AgentRequest[AnyContent] => Future[Result]
-  protected type AsyncHmrcAsAgentRequest = AuthContext => Request[AnyContent] => Future[Result]
-  protected type SaAgentUserRequest = AuthContext => AgentRequest[AnyContent] => Result
+trait AuthActions extends AuthorisedFunctions {
 
-  private implicit def hc(implicit request: Request[_]): HeaderCarrier = fromHeadersAndSession(request.headers, Some(request.session))
-
-  private[auth] def saAgentReference(e: List[Enrolment]): Option[SaAgentReference] = {
-    e.find(e => e.key == "IR-SA-AGENT" && e.state == "Activated") flatMap { e =>
-      e.identifiers.find(_.key.equalsIgnoreCase("IRAgentReference"))
-        .map(i => SaAgentReference(i.value))
-    }
+  private def withAgentEnrolledFor[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+    authorised(
+      Enrolment(serviceName) and AuthProviders(GovernmentGateway) and Agent)
+      .retrieve(authorisedEnrolments) { enrolments =>
+        val id = for {
+          enrolment <- enrolments.getEnrolment(serviceName)
+          identifier <- enrolment.getIdentifier(identifierKey)
+        } yield identifier.value
+        body(id)
+      }
   }
 
-  private[auth] def hmrcAsAgentCheck(e: List[Enrolment]): Boolean = e.exists(e => e.key == "HMRC-AS-AGENT")
-
-  def AuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AsyncSaAgentUserRequest): Action[AnyContent] =
-    AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
-      implicit authContext =>
-        implicit request =>
-          withVerifiedPasscode {
-            getUserDetails flatMap {
-              case isAgentAffinityGroup(authId, authType) => enrolments flatMap {
-                e => {
-                  saAgentReference(e) map { saEnrolment =>
-                    auditCheckAgentRefCodeEvent(Some(saEnrolment), authId, authType)(auditService)
-                    body(authContext)(AgentRequest(saEnrolment, request))
-                  } getOrElse {
-                    auditCheckAgentRefCodeEvent(None, authId, authType)(auditService)
-                    Future successful redirectToNotEnrolled
-                  }
-                }
-              }
-              case _ => Future successful redirectToNotEnrolled
-            }
-          }
-    }
-
-  def AlreadyLoggedIn(body: AsyncHmrcAsAgentRequest): Action[AnyContent] =
-    AuthorisedFor(NoOpRegime, pageVisibility = GGConfidence).async {
-      implicit authContext =>
-        implicit request =>
-          withVerifiedPasscode {
-            getUserDetails flatMap {
-              case isAgentAffinityGroup(Some(_), Some(_)) => enrolments flatMap {
-                e => {
-                  if (hmrcAsAgentCheck(e))
-                    Future successful Redirect(routes.SignedOutController.signOutAndRedirect())
-                  else
-                    body(authContext)(request)
-                }
-              }
-              case _ => Future successful redirectToNotEnrolled
-            }
-          }
-    }
-
-  protected def enrolments(implicit authContext: AuthContext, hc: HeaderCarrier): Future[List[Enrolment]] =
-    authConnector.getEnrolments[List[Enrolment]](authContext)
-
-  protected def getUserDetails()(implicit authContext: AuthContext, hc: HeaderCarrier): Future[HttpResponse] = {
-    authConnector.getUserDetails(authContext)
+  def withAuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AgentRequest[AnyContent] => Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+      withAgentEnrolledFor("IR-SA-AGENT", "IRAgentReference") {
+        case Some(iRAgentReference) =>
+          val saAgentReference = SaAgentReference(iRAgentReference)
+          AuditService.auditCheckAgentRefCodeEvent(Some(saAgentReference), None, None)(auditService)
+          body(AgentRequest(saAgentReference,request))
+        case None =>
+          AuditService.auditCheckAgentRefCodeEvent(None, None, None)(auditService)
+          Future.failed(InsufficientEnrolments("IRAgentReference identifier not found"))
+      }
   }
 
-  object isAgentAffinityGroup {
-    def unapply(response: HttpResponse): Option[(Option[String], Option[String])] = {
-      val json = response.json
-      val affinityGroup = (json \ "affinityGroup").as[String]
-      if (affinityGroup == "Agent") Some((
-        (json \ "authProviderId").asOpt[String],
-        (json \ "authProviderType").asOpt[String]
-      )) else None
-    }
-  }
-
-  private def redirectToNotEnrolled =
-    Redirect(routes.MappingController.notEnrolled())
 }

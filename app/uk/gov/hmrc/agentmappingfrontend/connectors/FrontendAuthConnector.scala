@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.auth
+package uk.gov.hmrc.agentmappingfrontend.connectors
 
-import play.api.libs.json.{Format, Json}
+import java.net.URL
+import javax.inject.{Inject, Named, Singleton}
 
-case class Identifier(key: String, value: String)
-case class Enrolment(key: String, identifiers: Seq[Identifier], state: String)
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.http.HttpPost
+import uk.gov.hmrc.play.http.ws.WSPost
 
-object Enrolment {
-  implicit val identifierFormat: Format[Identifier] = Json.format[Identifier]
-  implicit val format: Format[Enrolment] = Json.format[Enrolment]
+@Singleton
+class FrontendAuthConnector @Inject() (@Named("auth-baseUrl") baseUrl: URL)
+  extends PlayAuthConnector {
+
+  override val serviceUrl = baseUrl.toString
+
+  override def http = new HttpPost with WSPost {
+    override val hooks = NoneRequired
+  }
 }

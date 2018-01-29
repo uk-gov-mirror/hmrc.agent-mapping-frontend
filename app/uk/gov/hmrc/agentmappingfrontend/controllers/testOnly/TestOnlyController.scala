@@ -24,8 +24,8 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.play.frontend.controller.FrontendController
-import uk.gov.hmrc.agentmappingfrontend.views.html.{view_mappings, no_mappings}
+import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_mappings}
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class TestOnlyController @Inject()(override val messagesApi: MessagesApi,
                                    mappingConnector: MappingConnector,
