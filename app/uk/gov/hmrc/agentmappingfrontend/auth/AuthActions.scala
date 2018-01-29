@@ -24,7 +24,8 @@ import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.authorisedEnrolments
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.{authorisedEnrolments,credentials}
+import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
@@ -37,15 +38,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
 
-  private def withAgentEnrolledFor[A](serviceName: String, identifierKey: String)(body: Option[String] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  private def withAgentEnrolledFor[A](serviceName: String, identifierKey: String)(body: (Option[String], Credentials) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(
       Enrolment(serviceName) and AuthProviders(GovernmentGateway) and Agent)
-      .retrieve(authorisedEnrolments) { enrolments =>
-        val id = for {
-          enrolment <- enrolments.getEnrolment(serviceName)
-          identifier <- enrolment.getIdentifier(identifierKey)
-        } yield identifier.value
-        body(id)
+      .retrieve(authorisedEnrolments and credentials) {
+        case enrolments ~ creds =>
+          val id = for {
+            enrolment <- enrolments.getEnrolment(serviceName)
+            identifier <- enrolment.getIdentifier(identifierKey)
+          } yield identifier.value
+          body(id, creds)
       } recover {
         case _: NoActiveSession => toGGLogin(if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}" else s"${request.uri}")
     }
@@ -53,12 +55,12 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def withAuthorisedSAAgent(auditService: AuditService = NoOpAuditService)(body: AgentRequest[AnyContent] => Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
       withAgentEnrolledFor("IR-SA-AGENT", "IRAgentReference") {
-        case Some(iRAgentReference) =>
+        case (Some(iRAgentReference), creds) =>
           val saAgentReference = SaAgentReference(iRAgentReference)
-          AuditService.auditCheckAgentRefCodeEvent(Some(saAgentReference), None, None)(auditService)
+          AuditService.auditCheckAgentRefCodeEvent(Some(saAgentReference), Option(creds.providerId), Option(creds.providerType))(auditService)
           body(AgentRequest(saAgentReference,request))
-        case None =>
-          AuditService.auditCheckAgentRefCodeEvent(None, None, None)(auditService)
+        case (None, creds) =>
+          AuditService.auditCheckAgentRefCodeEvent(None, Option(creds.providerId), Option(creds.providerType))(auditService)
           Future.failed(InsufficientEnrolments("IRAgentReference identifier not found"))
       } recover {
         case _: InsufficientEnrolments => Redirect(routes.MappingController.notEnrolled())

@@ -14,7 +14,11 @@ object SampleUsers {
        |      { "key":"IRAgentReference", "value": "HZ1234" }
        |    ]}
        |  ],
-       |  "affinityGroup": "Agent"
+       |  "affinityGroup": "Agent",
+       |  "credentials": {
+       |    "providerId": "12345-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
        |}""".stripMargin,
     saAgentReference = Some(SaAgentReference("HZ1234"))
   )
@@ -26,7 +30,11 @@ object SampleUsers {
        |     { "key":"IRAgentReference", "value":"HZ1234", "state":"Inactive"}
        |   ]}
        |  ],
-       |  "affinityGroup": "Agent"
+       |  "affinityGroup": "Agent",
+       |  "credentials": {
+       |    "providerId": "12346-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
        | }""".stripMargin,
     saAgentReference = Some(SaAgentReference("HZ1234"))
   )
@@ -34,7 +42,11 @@ object SampleUsers {
   val anAgentNotEnrolled = SampleUser(
     s"""{
        | "authorisedEnrolments": [],
-       | "affinityGroup": "Agent"
+       | "affinityGroup": "Agent",
+       |  "credentials": {
+       |    "providerId": "12347-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
        |}""".stripMargin,
     saAgentReference = Some(SaAgentReference("HZ1234"))
   )
