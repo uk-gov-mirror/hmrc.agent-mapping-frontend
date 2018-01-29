@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
+import akka.stream.Materializer
 import com.google.inject.AbstractModule
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
+import play.api.http.{HttpFilters, NoHttpFilters}
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub.userIsAuthenticated
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.subscribingAgent
-import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
-import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
+import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
+import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.play.test.UnitSpec
 
 abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
@@ -38,20 +39,21 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
       "microservice.services.auth.port" -> wireMockPort,
       "microservice.services.agent-mapping.port" -> wireMockPort,
       "application.router" -> "testOnlyDoNotUseInAppConf.Routes"
-    ).overrides(new TestGuiceModule)
+    )
+      .overrides(new TestGuiceModule)
   }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
       bind(classOf[AuditService]).toInstance(testAuditService)
+      bind(classOf[HttpFilters]).to(classOf[NoHttpFilters])
     }
   }
 
-  protected implicit val materializer = app.materializer
+  protected implicit val materializer: Materializer = app.materializer
 
-  protected def authenticatedRequest() = {
-    val sessionKeys = userIsAuthenticated(subscribingAgent)
-    FakeRequest().withSession(sessionKeys: _*)
+  protected def fakeRequest(endpointMethod: String, endpointPath: String) = {
+    FakeRequest(endpointMethod, endpointPath).withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
+import play.api.{Configuration, Environment}
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
@@ -32,6 +33,9 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
     implicit val hc = HeaderCarrier()
     implicit val request = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
+
+    val env = app.injector.instanceOf[Environment]
+    val config = app.injector.instanceOf[Configuration]
 
     def testWithAuthorisedSAAgent = {
       await(withAuthorisedSAAgent(){request => Future.successful(Ok(request.saAgentReference.value))})

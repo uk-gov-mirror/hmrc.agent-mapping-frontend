@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.{Configuration, Environment}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -41,7 +42,10 @@ case class MappingForm(arn: Arn, utr: Utr)
 class MappingController @Inject()(override val messagesApi: MessagesApi,
                                   val authConnector: AuthConnector,
                                   mappingConnector: MappingConnector,
-                                  auditService: AuditService)(implicit appConfig: AppConfig)
+                                  auditService: AuditService,
+                                  val env: Environment,
+                                  val config: Configuration
+                                 )(implicit appConfig: AppConfig)
   extends FrontendController with I18nSupport with AuthActions {
 
   private val mappingForm = Form(

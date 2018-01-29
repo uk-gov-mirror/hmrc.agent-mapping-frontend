@@ -1,25 +1,26 @@
 package uk.gov.hmrc.agentmappingfrontend.support
 
+import akka.stream.Materializer
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, Request, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub
-import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStub._
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{individual, subscribingAgent}
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
 import uk.gov.hmrc.play.test.UnitSpec
 
-trait EndpointBehaviours {
+trait EndpointBehaviours extends AuthStubs {
   me: UnitSpec with WireMockSupport with AuditSupport =>
   type PlayRequest = Request[AnyContent] => Result
 
-  protected def authenticatedRequest(): FakeRequest[AnyContentAsEmpty.type]
+  protected def fakeRequest(endpointMethod: String, endpointPath: String): FakeRequest[AnyContentAsEmpty.type]
+  protected def materializer: Materializer
 
-  protected def anAuthenticatedEndpoint(doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
+  implicit lazy val mat = materializer
+
+  protected def anAuthenticatedEndpoint(endpointMethod: String, endpointPath:String, doRequest: Request[AnyContentAsEmpty.type] => Result): Unit = {
     "redirect to the company-auth-frontend sign-in page if the current user is not logged in" in {
-      userIsNotAuthenticated()
-
-      val request = FakeRequest()
+      givenUserIsNotAuthenticated()
+      val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -28,9 +29,8 @@ trait EndpointBehaviours {
     }
 
     "redirect to the start page if the current user is logged in and does not have affinity group Agent" in {
-      val sessionKeys = userIsAuthenticated(individual)
-
-      val request = FakeRequest().withSession(sessionKeys: _*)
+      givenUserIsAuthenticated(individual)
+      val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -40,11 +40,13 @@ trait EndpointBehaviours {
     }
   }
 
-  protected def anEndpointAccessableGivenAgentAffinityGroupAndEnrolmentIrSAAgent(expectCheckAgentRefCodeAudit: Boolean)(doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
+  protected def anEndpointReachableGivenAgentAffinityGroupAndIrSaAgentEnrolment(endpointMethod: String, endpointPath: String,
+                                                                                expectCheckAgentRefCodeAudit: Boolean)
+                                                                               (doRequest: FakeRequest[AnyContentAsEmpty.type] => Result): Unit = {
     "redirect to the company-auth-frontend sign-in page if the current user is not logged in" in {
-      userIsNotAuthenticated()
+      givenUserIsNotAuthenticated()
 
-      val request = FakeRequest()
+      val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -53,9 +55,8 @@ trait EndpointBehaviours {
     }
 
     "redirect to the start page if the current user is logged in and does not have affinity group Agent" in {
-      val sessionKeys = userIsAuthenticated(individual)
-
-      val request = FakeRequest().withSession(sessionKeys: _*)
+      givenUserIsAuthenticated(individual)
+      val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -65,10 +66,8 @@ trait EndpointBehaviours {
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but is not enrolled to IR-SA-AGENT " in {
-      isNotEnrolled(subscribingAgent)
-
-      val sessionKeys = userIsAuthenticated(subscribingAgent)
-      val request = FakeRequest().withSession(sessionKeys: _*)
+      givenUserIsAuthenticated(anAgentNotEnrolled)
+      val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -86,12 +85,11 @@ trait EndpointBehaviours {
     }
 
     "redirect to the start page if the current user is logged with affinity group Agent but has an inactive enrolment to IR-SA-AGENT " in {
-      isIrSaAgentEnrolled(subscribingAgent, "Inactive")
-
-      val sessionKeys = userIsAuthenticated(subscribingAgent)
-      val request = FakeRequest().withSession(sessionKeys: _*)
+      givenUserIsAuthenticated(anSAEnrolledAgentInactive)
+      val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
+      bodyOf(result) shouldBe ""
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
 
@@ -105,34 +103,6 @@ trait EndpointBehaviours {
             and auditTag("transactionName" -> "check-agent-ref-code")
         )
       else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
-    }
-  }
-
-  protected def aWhitelistedEndpoint(doRequest: PlayRequest): Unit = {
-    "prevent access if passcode authorisation fails" in {
-      AuthStub.isNotEnrolled(subscribingAgent)
-
-      AuthStub.passcodeAuthorisationFails()
-
-      val request = authenticatedRequest()
-      val result = await(doRequest(request))
-
-      status(result) shouldBe 303
-      result.header.headers("Location") should include("verification/otac")
-    }
-
-    "allow access if passcode authorisation succeeds" in {
-      AuthStub.isNotEnrolled(subscribingAgent)
-
-      val sessionKeys = AuthStub.passcodeAuthorisationSucceeds()
-
-      val request = authenticatedRequest().withSession(sessionKeys: _*)
-      val result = await(doRequest(request))
-
-      redirectLocation(result) match {
-        case Some(location) => location should not include "verification/otac"
-        case None =>
-      }
     }
   }
 }

@@ -2,11 +2,21 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
+import uk.gov.hmrc.agentmappingfrontend.support.{SampleUser, WireMockSupport}
 import uk.gov.hmrc.http.SessionKeys
 
 trait AuthStubs {
   me: WireMockSupport =>
+
+  def givenUserIsAuthenticated(user: SampleUser) = {
+    givenAuthorisedFor(
+      "{}",
+      user.authoriseJsonResponse)
+  }
+
+  def givenUserIsNotAuthenticated() = {
+    givenUnauthorisedWith("MissingBearerToken")
+  }
 
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
