@@ -58,6 +58,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           AuditService.auditCheckAgentRefCodeEvent(Some(saAgentReference), None, None)(auditService)
           body(AgentRequest(saAgentReference,request))
         case None =>
+          AuditService.auditCheckAgentRefCodeEvent(None, None, None)(auditService)
           Future.failed(InsufficientEnrolments("IRAgentReference identifier not found"))
       } recover {
         case _: InsufficientEnrolments => Redirect(routes.MappingController.notEnrolled())

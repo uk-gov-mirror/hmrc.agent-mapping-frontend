@@ -1,8 +1,9 @@
 package uk.gov.hmrc.agentmappingfrontend.support
 
+import uk.gov.hmrc.auth.core.InsufficientEnrolments
 import uk.gov.hmrc.domain.SaAgentReference
 
-case class SampleUser(authoriseJsonResponse: String, saAgentReference: Option[SaAgentReference] = None)
+case class SampleUser(authoriseJsonResponse: String, saAgentReference: Option[SaAgentReference] = None, throwException: Option[Exception] = None)
 
 object SampleUsers {
 
@@ -38,14 +39,5 @@ object SampleUsers {
     saAgentReference = Some(SaAgentReference("HZ1234"))
   )
 
-  val individual = SampleUser(
-    s"""{
-       | "authorisedEnrolments": [
-       |  { "key":"IR-SA", "identifiers": [
-       |     { "key":"utr", "value": "ABC123456" }
-       |   ]}
-       | ],
-       | "affinityGroup": "Individual"
-       |}""".stripMargin
-  )
+  val individual = SampleUser("", None, Some(InsufficientEnrolments()))
 }

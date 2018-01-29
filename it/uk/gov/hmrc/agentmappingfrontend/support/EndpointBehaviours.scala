@@ -89,7 +89,6 @@ trait EndpointBehaviours extends AuthStubs {
       val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
-      bodyOf(result) shouldBe ""
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
 

@@ -9,9 +9,13 @@ trait AuthStubs {
   me: WireMockSupport =>
 
   def givenUserIsAuthenticated(user: SampleUser) = {
-    givenAuthorisedFor(
-      "{}",
-      user.authoriseJsonResponse)
+    user.throwException.fold {
+      givenAuthorisedFor(
+        "{}",
+        user.authoriseJsonResponse)
+    } {
+      e => givenUnauthorisedWith(e.getClass.getSimpleName)
+    }
   }
 
   def givenUserIsNotAuthenticated() = {
