@@ -32,6 +32,7 @@ trait AppConfig {
   val reportAProblemNonJSUrl: String
   val signOutUrl: String
   val signOutAndRedirectUrl: String
+  val authenticationLoginCallbackUrl: String
 }
 
 trait StrictConfig{
@@ -77,5 +78,7 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
   private lazy val signOutRedirectUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.redirect-url")
   override lazy val signOutUrl: String = s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutContinueUrl)}"
   override lazy val signOutAndRedirectUrl: String = s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutRedirectUrl)}"
+  override lazy val authenticationLoginCallbackUrl: String = loadConfig("authentication.login-callback.url")
+
 }
 

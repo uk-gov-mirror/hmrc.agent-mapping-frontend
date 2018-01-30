@@ -45,7 +45,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
                                   auditService: AuditService,
                                   val env: Environment,
                                   val config: Configuration
-                                 )(implicit appConfig: AppConfig)
+                                 )(implicit val appConfig: AppConfig)
   extends FrontendController with I18nSupport with AuthActions {
 
   private val mappingForm = Form(

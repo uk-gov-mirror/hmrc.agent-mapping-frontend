@@ -20,6 +20,7 @@ import play.api.mvc.Results.Redirect
 import play.api.mvc._
 import play.api.{Environment, Mode}
 import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
+import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
@@ -37,6 +38,7 @@ case class AgentRequest[A](saAgentReference: SaAgentReference, request: Request[
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
+  def appConfig: AppConfig
 
   private def withAgentEnrolledFor[A](serviceName: String, identifierKey: String)(body: (Option[(Boolean,String)], Credentials) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(
@@ -49,7 +51,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           } yield (enrolment.isActivated, identifier.value)
           body(args, creds)
       } recover {
-        case _: NoActiveSession => toGGLogin(if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}" else s"${request.uri}")
+        case _: NoActiveSession => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
     }
   }
 
