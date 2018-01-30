@@ -38,7 +38,8 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
     new GuiceApplicationBuilder().configure(
       "microservice.services.auth.port" -> wireMockPort,
       "microservice.services.agent-mapping.port" -> wireMockPort,
-      "application.router" -> "testOnlyDoNotUseInAppConf.Routes"
+      "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
+      "authentication.login-callback.url" -> "somehost"
     )
       .overrides(new TestGuiceModule)
   }

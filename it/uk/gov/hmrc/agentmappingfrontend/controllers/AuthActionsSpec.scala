@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
+import java.net.URLEncoder
+
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
+import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -33,10 +36,11 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
   object TestController extends AuthActions {
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
     implicit val hc = HeaderCarrier()
-    implicit val request = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
+    implicit val request = FakeRequest("GET","/foo").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
     val env = app.injector.instanceOf[Environment]
     val config = app.injector.instanceOf[Configuration]
+    val appConfig = app.injector.instanceOf[AppConfig]
 
     def testWithAuthorisedSAAgent = {
       await(withAuthorisedSAAgent(){request => Future.successful(Ok(request.saAgentReference.value))})
@@ -85,7 +89,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithAuthorisedSAAgent
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe "/gg/sign-in?continue=%2F&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo","utf-8")}&origin=agent-mapping-frontend"
     }
   }
 }
