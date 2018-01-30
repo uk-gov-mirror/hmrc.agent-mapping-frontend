@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.play.frontend.controller.FrontendController
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 

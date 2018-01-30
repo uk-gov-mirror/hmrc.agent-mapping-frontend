@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.agentmappingfrontend.config
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 
-import play.api.Play.{configuration, current}
+import play.api.Mode.Mode
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import views.html.helper.urlEncode
@@ -34,10 +35,12 @@ trait AppConfig {
 }
 
 trait StrictConfig{
+  def configuration: Configuration
   def loadConfig(key: String): String = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 }
 
-object GGConfig extends StrictConfig {
+@Singleton
+class GGConfig @Inject()(val environment: Environment, val configuration: Configuration) extends StrictConfig {
   private lazy val ggBaseUrl = loadConfig("authentication.government-gateway.sign-in.base-url")
   lazy val ggSignInUrl: String = {
     val ggSignInPath = loadConfig("authentication.government-gateway.sign-in.path")
@@ -54,7 +57,12 @@ object GGConfig extends StrictConfig {
 }
 
 @Singleton
-class FrontendAppConfig extends AppConfig with ServicesConfig with StrictConfig  {
+class FrontendAppConfig @Inject()(val environment: Environment, val configuration: Configuration)
+  extends AppConfig with ServicesConfig with StrictConfig  {
+
+  override val runModeConfiguration: Configuration = configuration
+  override protected def mode: Mode = environment.mode
+
   private lazy val contactHost = runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
   private val contactFormServiceIdentifier = "AOSS"
 
