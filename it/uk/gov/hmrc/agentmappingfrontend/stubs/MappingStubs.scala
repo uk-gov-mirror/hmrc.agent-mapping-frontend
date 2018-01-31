@@ -1,31 +1,30 @@
 package uk.gov.hmrc.agentmappingfrontend.stubs
 
-import uk.gov.hmrc.domain.SaAgentReference
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentmappingfrontend.model.{Mapping, Mappings}
+import uk.gov.hmrc.agentmappingfrontend.model.{Identifier, Mapping, Mappings}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 
 object MappingStubs {
 
   val listOfMapping = List(
-    Mapping("ARN0001", "AgentCode1"),
-    Mapping("ARN0001", "AgentCode2"))
+    Mapping("ARN0001", Identifier("IRAgentReference", "AgentCode1")),
+    Mapping("ARN0001", Identifier("IRAgentReference", "AgentCode2")))
 
   val jsonBody = Json.toJson(Mappings(listOfMapping))
 
-  def mappingIsCreated(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference"))
+  def mappingIsCreated(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}"))
         willReturn aResponse().withStatus(201))
   }
 
-  def mappingExists(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference"))
+  def mappingExists(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}"))
       willReturn aResponse().withStatus(409))
   }
 
-  def mappingKnownFactsIssue(utr: Utr, arn: Arn, saAgentReference: SaAgentReference): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/$saAgentReference"))
+  def mappingKnownFactsIssue(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}"))
       willReturn aResponse().withStatus(403))
   }
 

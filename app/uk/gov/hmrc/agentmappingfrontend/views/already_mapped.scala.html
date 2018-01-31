@@ -15,12 +15,12 @@
  *@
 
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+@import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 @import uk.gov.hmrc.agentmappingfrontend.views.html
 @import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-@import uk.gov.hmrc.domain.SaAgentReference
-@import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 
-@(arn: Arn, saAgentReference: SaAgentReference)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("alreadyMapped.title"), bodyClasses = None) {
 

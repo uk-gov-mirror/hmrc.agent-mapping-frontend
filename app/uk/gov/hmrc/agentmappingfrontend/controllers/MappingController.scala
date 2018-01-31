@@ -27,10 +27,10 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.auth.{AgentRequest, AuthActions}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
+import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
@@ -68,32 +68,32 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   }
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedSAAgent() {
+    withAuthorisedAgent() {
       implicit request: AgentRequest[AnyContent] =>
         successful(Redirect(routes.MappingController.showAddCode()))
     }
   }
 
   def showAddCode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedSAAgent(auditService) {
+    withAuthorisedAgent(auditService) {
       implicit request: AgentRequest[AnyContent] =>
-        successful(Ok(html.add_code(mappingForm, request.saAgentReference)))
+        successful(Ok(html.add_code(mappingForm, request.identifiers)))
     }
   }
 
   def submitAddCode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedSAAgent() {
+    withAuthorisedAgent() {
       implicit request: AgentRequest[AnyContent] =>
         mappingForm.bindFromRequest.fold(
           formWithErrors => {
-            successful(Ok(html.add_code(formWithErrors, request.saAgentReference)))
+            successful(Ok(html.add_code(formWithErrors, request.identifiers)))
           },
           mappingData => {
-            mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.saAgentReference) map { r: Int =>
+            mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.identifiers) map { r: Int =>
               r match {
-                case CREATED => Redirect(routes.MappingController.complete(mappingData.arn, request.saAgentReference))
-                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference."), request.saAgentReference))
-                case CONFLICT => Redirect(routes.MappingController.alreadyMapped(mappingData.arn, request.saAgentReference))
+                case CREATED => Redirect(routes.MappingController.complete())
+                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference."), request.identifiers))
+                case CONFLICT => Redirect(routes.MappingController.alreadyMapped())
               }
             }
           }
@@ -102,17 +102,18 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   }
 
 
-  def complete(arn: Arn, saAgentReference: SaAgentReference): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedSAAgent() {
+  val complete: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent() {
       implicit request =>
-        successful(Ok(html.complete(arn, saAgentReference)))
+        successful(Ok(html.complete()))
     }
   }
 
-  def alreadyMapped(arn: Arn, saAgentReference: SaAgentReference): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedSAAgent() {
+
+  val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent() {
       implicit request =>
-        successful(Ok(html.already_mapped(arn, saAgentReference)))
+        successful(Ok(html.already_mapped()))
     }
   }
 
