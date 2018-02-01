@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_mappings}
+import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_sa_mappings, view_vat_mappings}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class TestOnlyController @Inject()(override val messagesApi: MessagesApi,
@@ -32,18 +32,28 @@ class TestOnlyController @Inject()(override val messagesApi: MessagesApi,
                                    auditService: AuditService)(implicit appConfig: AppConfig)
   extends FrontendController with I18nSupport {
 
-  def findMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
-    mappingConnector.find(arn).map {
+  def findSaMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
+    mappingConnector.findSaMappingsFor(arn).map {
       mappings =>
         if(mappings.nonEmpty)
-          Ok(view_mappings(arn, mappings))
+          Ok(view_sa_mappings(arn, mappings))
         else
           NotFound(no_mappings(arn))
     }
   }
 
-  def delete(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
-    mappingConnector.delete(arn).map {
+  def findVatMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
+    mappingConnector.findVatMappingsFor(arn).map {
+      mappings =>
+        if(mappings.nonEmpty)
+          Ok(view_vat_mappings(arn, mappings))
+        else
+          NotFound(no_mappings(arn))
+    }
+  }
+
+  def deleteAllMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
+    mappingConnector.deleteAllMappingsBy(arn).map {
       _ => Ok(no_mappings(arn))
     }
   }

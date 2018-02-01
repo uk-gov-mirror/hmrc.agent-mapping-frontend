@@ -19,8 +19,16 @@ package uk.gov.hmrc.agentmappingfrontend.model
 import play.api.libs.json.Format
 import play.api.libs.json.Json._
 
-case class Mappings(mappings: List[Mapping])
+case class Identifier(key: String, value: String, activated: Boolean = true){
+  override def toString: String = s"$key~$value"
+}
 
-object Mappings {
-  implicit val formats: Format[Mappings] = format[Mappings]
+object Identifier {
+  implicit val formats: Format[Identifier] = format[Identifier]
+
+  def parse(identifier: String): Identifier = {
+    val args = identifier.split("~")
+    if(args.size!=2) throw new IllegalArgumentException("Identifier format shall be KEY~VALUE.")
+    Identifier(args(0),args(1))
+  }
 }

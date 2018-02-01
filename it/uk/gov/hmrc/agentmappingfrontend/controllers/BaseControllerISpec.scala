@@ -28,6 +28,8 @@ import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
 import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.play.audit.http.config.AuditingConfig
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
 
 abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
@@ -48,6 +50,9 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
     override def configure(): Unit = {
       bind(classOf[AuditService]).toInstance(testAuditService)
       bind(classOf[HttpFilters]).to(classOf[NoHttpFilters])
+      bind(classOf[AuditConnector]).toInstance(new AuditConnector {
+        override def auditingConfig: AuditingConfig = AuditingConfig(None, enabled = false)
+      })
     }
   }
 
