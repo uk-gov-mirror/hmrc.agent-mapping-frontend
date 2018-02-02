@@ -4,11 +4,11 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
+import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
-import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.http.HeaderCarrier
 
-class MappingConnectorISpec extends BaseControllerISpec {
+class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
   private val arn = Arn("ARN0001")
   private val identifiers = Seq(Identifier("IRAgentReference", "ARN0001"), Identifier("VATRegNo", "VRN0001"))
   private val utr = Utr("2000000000")
@@ -18,8 +18,10 @@ class MappingConnectorISpec extends BaseControllerISpec {
 
   "createMapping" should {
     "create a mapping" in {
+      givenCleanMetricRegistry()
       mappingIsCreated(utr, arn, identifiers)
       await(connector.createMapping(utr, arn, identifiers)) shouldBe 201
+      timerShouldExistsAndBeenUpdated("ConsumedAPI-Mapping-CreateMapping-PUT")
     }
 
     "not create a mapping when one already exists" in {
@@ -34,17 +36,31 @@ class MappingConnectorISpec extends BaseControllerISpec {
   }
 
   "find" should {
-    "find all mappings for a given arn" in {
-      mappingsFound(arn)
-      val mappings = await(connector.find(arn))
+    "find all sa mappings for a given arn" in {
+      saMappingsFound(arn)
+      val mappings = await(connector.findSaMappingsFor(arn))
 
       mappings.size shouldBe 2
       mappings.head.arn shouldBe arn.value
     }
 
-    "return empty list if no mappings found for a given arn" in {
-      noMappingsFound(arn)
-      val mappings = await(connector.find(arn))
+    "find all vat mappings for a given arn" in {
+      vatMappingsFound(arn)
+      val mappings = await(connector.findVatMappingsFor(arn))
+
+      mappings.size shouldBe 2
+      mappings.head.arn shouldBe arn.value
+    }
+
+    "return empty list if no sa mappings found for a given arn" in {
+      noSaMappingsFound(arn)
+      val mappings = await(connector.findSaMappingsFor(arn))
+      mappings.size shouldBe 0
+    }
+
+    "return empty list if no vat mappings found for a given arn" in {
+      noVatMappingsFound(arn)
+      val mappings = await(connector.findVatMappingsFor(arn))
       mappings.size shouldBe 0
     }
   }
@@ -52,7 +68,7 @@ class MappingConnectorISpec extends BaseControllerISpec {
   "delete" should {
     "delete all mappings for a given arn" in {
       mappingsDelete(arn)
-      await(connector.delete(arn)) shouldBe 204
+      await(connector.deleteAllMappingsBy(arn)) shouldBe 204
     }
 
   }

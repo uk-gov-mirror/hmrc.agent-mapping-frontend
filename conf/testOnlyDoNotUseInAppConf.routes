@@ -12,5 +12,9 @@
 # Add all the application routes to the prod.routes file
 ->          /                               prod.Routes
 
-GET         /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
-POST        /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.delete(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+# DEPRECTED, use /agent-mapping/test-only/mappings/sa/:arn instead
+GET         /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findSaMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+
+GET         /agent-mapping/test-only/mappings/sa/:arn     @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findSaMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+GET         /agent-mapping/test-only/mappings/vat/:arn    @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findVatMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)
+POST        /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.deleteAllMappings(arn: uk.gov.hmrc.agentmtdidentifiers.model.Arn)

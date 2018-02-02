@@ -19,24 +19,38 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 import java.net.URL
 import javax.inject.{Inject, Named, Singleton}
 
+import com.codahale.metrics.MetricRegistry
+import com.kenshoo.play.metrics.Metrics
 import play.api.http.Status
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.agentmappingfrontend.model.{Identifier, Mapping}
+import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentmappingfrontend.model.{Identifier, SaMapping, VatMapping}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, httpGet: HttpGet, httpPut: HttpPut, httpDelete: HttpDelete) {
+class MappingConnector @Inject()(
+                                  @Named("agent-mapping-baseUrl") baseUrl: URL,
+                                  httpGet: HttpGet,
+                                  httpPut: HttpPut,
+                                  httpDelete: HttpDelete,
+                                  metrics: Metrics
+                                )
+  extends HttpAPIMonitor {
+
+  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def createMapping(utr: Utr, arn: Arn, identifiers: Seq[Identifier])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
-    httpPut.PUT(createUrl(utr, arn, identifiers), "").map{
-      r => r.status
-    }.recover {
-      case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
-      case e: Upstream4xxResponse if Status.CONFLICT.equals(e.upstreamResponseCode) => Status.CONFLICT
-      case e => throw e
+    monitor(s"ConsumedAPI-Mapping-CreateMapping-PUT") {
+      httpPut.PUT(createUrl(utr, arn, identifiers), "").map {
+        r => r.status
+      }.recover {
+        case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
+        case e: Upstream4xxResponse if Status.CONFLICT.equals(e.upstreamResponseCode) => Status.CONFLICT
+        case e => throw e
+      }
     }
   }
 
@@ -48,22 +62,41 @@ class MappingConnector @Inject()(@Named("agent-mapping-baseUrl") baseUrl: URL, h
     new URL(baseUrl, s"/agent-mapping/test-only/mappings/${arn.value}").toString
   }
 
-  private def findUrl(arn: Arn): String = {
-    new URL(baseUrl, s"agent-mapping/mappings/${arn.value}").toString
+  private def findSaUrl(arn: Arn): String = {
+    new URL(baseUrl, s"agent-mapping/mappings/sa/${arn.value}").toString
   }
 
-  def find(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[Mapping]] = {
-    httpGet.GET[JsValue](findUrl(arn)).map {
-      response => (response \ "mappings").as[Seq[Mapping]]
-    } recover {
-      case ex: NotFoundException => Seq.empty
-      case ex: Throwable => throw new RuntimeException(ex)
+  private def findVatUrl(arn: Arn): String = {
+    new URL(baseUrl, s"agent-mapping/mappings/vat/${arn.value}").toString
+  }
+
+  def findSaMappingsFor(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[SaMapping]] = {
+    monitor(s"ConsumedAPI-Mapping-FindSaMappingsForArn-GET") {
+      httpGet.GET[JsValue](findSaUrl(arn)).map {
+        response => (response \ "mappings").as[Seq[SaMapping]]
+      } recover {
+        case _: NotFoundException => Seq.empty
+        case ex: Throwable => throw new RuntimeException(ex)
+      }
     }
   }
 
-  def delete(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
-    httpDelete.DELETE(deleteUrl(arn)).map {
-      r => r.status
+  def findVatMappingsFor(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatMapping]] = {
+    monitor(s"ConsumedAPI-Mapping-FindVatMappingsForArn-GET") {
+      httpGet.GET[JsValue](findVatUrl(arn)).map {
+        response => (response \ "mappings").as[Seq[VatMapping]]
+      } recover {
+        case _: NotFoundException => Seq.empty
+        case ex: Throwable => throw new RuntimeException(ex)
+      }
+    }
+  }
+
+  def deleteAllMappingsBy(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    monitor(s"ConsumedAPI-Mapping-DeleteAllMappingsByArn-DELETE") {
+      httpDelete.DELETE(deleteUrl(arn)).map {
+        r => r.status
+      }
     }
   }
 }
