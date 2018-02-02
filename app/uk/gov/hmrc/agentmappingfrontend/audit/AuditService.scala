@@ -21,11 +21,11 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.Request
 import uk.gov.hmrc.agentmappingfrontend.audit.AgentFrontendMappingEvent.AgentFrontendMappingEvent
 import uk.gov.hmrc.agentmappingfrontend.model.Identifier
-import uk.gov.hmrc.domain.SaAgentReference
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.agentmappingfrontend.model.Names._
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -34,12 +34,12 @@ import uk.gov.hmrc.http.HeaderCarrier
 object AuditService {
 
   val fieldsByIdentifierKey = Map(
-    "IRAgentReference"->"isEnrolledSAAgent",
-    "VATRegNo" -> "isEnrolledVATAgent"
+    IRAgentReference->"isEnrolledSAAgent",
+    AgentRefNo -> "isEnrolledVATAgent"
   )
   val identifiersByKey = Map(
-    "IRAgentReference"->"saAgentRef",
-    "VATRegNo" -> "vatAgentRef"
+    IRAgentReference->"saAgentRef",
+    AgentRefNo -> "vatAgentRef"
   )
 
   def toDetailFields(identifier: Identifier): Seq[(String,Any)] = {

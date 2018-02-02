@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.agentmappingfrontend.auth
 
+import play.api.Environment
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
-import play.api.{Environment, Mode}
 import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Identifier
+import uk.gov.hmrc.agentmappingfrontend.model.Names._
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
@@ -41,7 +42,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   def env: Environment
   def appConfig: AppConfig
 
-  private val validEnrolments: Seq[(String, String)] = Seq(("IR-SA-AGENT", "IRAgentReference"), ("HMCE-VATDEC-ORG", "VATRegNo"))
+  private val validEnrolments: Seq[(String, String)] = Seq((`IR-SA-AGENT`,IRAgentReference), (`HMCE-VAT-AGNT`, AgentRefNo))
 
   private def toPredicate(enrolments: Seq[(String,String)]): Predicate = {
     enrolments.map(e => Enrolment(e._1)).reduce[Predicate](_ or _)

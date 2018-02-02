@@ -27,8 +27,8 @@ object SampleUsers {
   val anVATEnrolledAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
-       |   { "key":"HMCE-VATDEC-ORG", "identifiers": [
-       |      { "key":"VATRegNo", "value": "HZ1234" }
+       |   { "key":"HMCE-VAT-AGNT", "identifiers": [
+       |      { "key":"AgentRefNo", "value": "HZ1234" }
        |    ]}
        |  ],
        |  "affinityGroup": "Agent",
@@ -37,7 +37,7 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("VATRegNo","HZ1234"))
+    identifier = Seq(Identifier("AgentRefNo","HZ1234"))
   )
 
   val anSAEnrolledAgentInactive = SampleUser(
@@ -61,9 +61,9 @@ object SampleUsers {
   val anVATEnrolledAgentInactive = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
-       |   { "key":"HMCE-VATDEC-ORG",
+       |   { "key":"HMCE-VAT-AGNT",
        |     "identifiers": [
-       |        { "key":"VATRegNo", "value": "HZ1234" }
+       |        { "key":"AgentRefNo", "value": "HZ1234" }
        |      ],
        |     "state": "Inactive" }
        |  ],
@@ -73,7 +73,7 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("VATRegNo","HZ1234"))
+    identifier = Seq(Identifier("AgentRefNo","HZ1234"))
   )
 
   val anAgentNotEnrolled = SampleUser(
