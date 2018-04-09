@@ -29,7 +29,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include("Connect each of your agent Government Gateway IDs so your accounting software will be able to access your Self Assessment client information.")
+      bodyOf(result) should include("Connect each of your agent Government Gateway IDs so your accounting software will be able to access your Self Assessment or VAT client information.")
     }
   }
 

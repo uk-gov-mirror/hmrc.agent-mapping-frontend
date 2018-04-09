@@ -3,6 +3,15 @@ connectAgentServices.title=Connect to your Agent Services account
 connectAgentServices.label.accountNumber=Agent Services account number
 connectAgentServices.label.utrOrTaxReference=Self Assessment UTR or Corporation Tax reference
 
+connectAgentServices.start.title=Add your existing clients to your agent services account
+connectAgentServices.start.p1=Connect each of your agent Government Gateway IDs so your accounting software will be able to access your Self Assessment or VAT client information.
+connectAgentServices.start.p2=You can only add IDs linked to your business. We can''t process client IDs.
+connectAgentServices.start.beforeYouStart=Before you start
+connectAgentServices.start.youWillNeed=You will need:
+connectAgentServices.start.l1=each of the agent Government Gateway IDs used by your business for Self Assessment or VAT clients
+connectAgentServices.start.l2=your agent services account number
+connectAgentServices.start.l3=your business''s tax reference (sometimes called a UTR)
+
 #Already mapped
 alreadyMapped.title=This ID is already connected to your account
 alreadyMapped.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
@@ -20,6 +29,7 @@ connectionComplete.p1=If you need to add another agent Government Gateway ID, si
 button.connect=Connect
 button.repeatProcess=Repeat process with another ID
 button.signOut=Sign out
+button.startNow=Start now
 
 #Errors
 error.summary.heading=Something''s wrong
@@ -36,10 +46,10 @@ global.error.400.title=Bad request - 400
 global.error.400.heading=Bad request
 global.error.400.message=Please check that you have entered the correct web address.
 global.error.403.title=Forbidden - 403
-global.error.403.heading=Sorry, you haven't been authorised to proceed.
+global.error.403.heading=Sorry, you haven''t been authorised to proceed.
 global.error.403.message=
 global.error.passcode.title=Forbidden - 403
-global.error.passcode.heading=Sorry, you haven't been authorised to proceed.
+global.error.passcode.heading=Sorry, you haven''t been authorised to proceed.
 global.error.passcode.message=
 global.error.404.title=Page not found - 404
 global.error.404.heading=This page can''t be found
