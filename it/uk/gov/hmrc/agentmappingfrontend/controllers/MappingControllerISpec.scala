@@ -65,7 +65,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include("Connect to your Agent Services account")
+      bodyOf(result) should include("Connect to your agent services account")
       auditEventShouldHaveBeenSent("CheckAgentRefCode")(
         auditDetail("isEnrolledSAAgent" -> "true")
           and auditDetail("saAgentRef" -> "HZ1234")
@@ -80,7 +80,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include("Connect to your Agent Services account")
+      bodyOf(result) should include("Connect to your agent services account")
       auditEventShouldHaveBeenSent("CheckAgentRefCode")(
         auditDetail("isEnrolledVATAgent" -> "true")
           and auditDetail("vatAgentRef" -> "HZ1234")
