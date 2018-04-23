@@ -24,36 +24,37 @@
 
 @html.main_template(appConfig, title = Messages("connectAgentServices.title"), bodyClasses = None) {
 
-    @form(action = routes.MappingController.submitAddCode,
-          'class -> "form js-form") {
+@form(action = routes.MappingController.submitAddCode,
+'class -> "form js-form") {
 
-            @errorSummary(Messages("error.summary.heading"), mappingForm, Seq.empty, Some("enter-arn"))
+@errorSummary(Messages("error.summary.heading"), mappingForm, Seq.empty, Some("enter-arn"))
 
-            <h1 class="heading-xlarge">@Messages("connectAgentServices.title")</h1>
+<h1 class="heading-xlarge">@Messages("connectAgentServices.title")</h1>
 
-            <div class="form-group">
-                @input(
-                    mappingForm("arn.arn"),
-                    '_label -> Messages("connectAgentServices.label.accountNumber"),
-                    '_inputClass -> "input--medium input--cleared",
-                    '_labelClass -> "bold"
-                )
-            </div>
+<div class="form-group">
+    @input(
+    mappingForm("arn.arn"),
+    '_label -> Messages("connectAgentServices.label.accountNumber"),
+    '_inputClass -> "input--medium input--cleared",
+    '_labelClass -> "bold",
+    '_labelClass -> "soft--ends"
+    )
+</div>
 
-            <div class="form-group">
-                @input(
-                    mappingForm("utr.value"),
-                    '_label -> Messages("connectAgentServices.label.utrOrTaxReference"),
-                    '_inputClass -> "input--medium input--cleared",
-                    '_labelClass -> "bold"
-                )
-            </div>
+<div class="form-group">
+    @input(
+    mappingForm("utr.value"),
+    '_label -> Messages("connectAgentServices.label.utrOrTaxReference"),
+    '_inputClass -> "input--medium input--cleared",
+    '_labelClass -> "bold",
+    '_labelClass -> "soft--ends"
+    )
+</div>
 
-            <div class="form-group">
-                <button type="submit" class="button" id="continue">@Messages("button.connect")</button>
-            </div>
+<div class="form-group">
+    <button type="submit" class="button" id="continue">@Messages("button.connect")</button>
+</div>
 
 
-
-        }
+}
 }
