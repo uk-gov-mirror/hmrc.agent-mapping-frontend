@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.views.html
-@import uk.gov.hmrc.play.views.html.helpers.{form, input}
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 @import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 
 @(mappingForm: Form[_], identifier: Seq[Identifier])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
@@ -27,24 +27,11 @@
     @form(action = routes.MappingController.submitAddCode,
           'class -> "form js-form") {
 
-            <header class="page-header">
-                <h1>@Messages("connectAgentServices.title")</h1>
-            </header>
+            @errorSummary(Messages("error.summary.heading"), mappingForm, Seq.empty, Some("enter-arn"))
 
-            @if(mappingForm.hasGlobalErrors) {
-                <div class="flash error-summary error-summary--show">
-                    <h1 id="error-summary-heading" class="h2-heading">@Messages("error.summary.heading")</h1>
-                    <ul>
-                        @for(error <- mappingForm.globalErrors) {
-                            <li>@Messages(error.messages, error.args)</li>
-                        }
-                    </ul>
-                </div>
-            }
+            <h1 class="heading-xlarge">@Messages("connectAgentServices.title")</h1>
 
-        <fieldset class="form-field-group">
-
-            <div class="form-field">
+            <div class="form-group">
                 @input(
                     mappingForm("arn.arn"),
                     '_label -> Messages("connectAgentServices.label.accountNumber"),
@@ -53,7 +40,7 @@
                 )
             </div>
 
-            <div class="form-field">
+            <div class="form-group">
                 @input(
                     mappingForm("utr.value"),
                     '_label -> Messages("connectAgentServices.label.utrOrTaxReference"),
@@ -62,11 +49,11 @@
                 )
             </div>
 
-            <div class="form-field">
+            <div class="form-group">
                 <button type="submit" class="button" id="continue">@Messages("button.connect")</button>
             </div>
 
-        </fieldset>
+
 
         }
 }
