@@ -22,13 +22,11 @@
 
 @html.main_template(appConfig, title = Messages("notEnrolled.title"), bodyClasses = None) {
 
-    <header class="page-header">
-        <h1>@Messages("notEnrolled.title")</h1>
-    </header>
+<h1 class="heading-xlarge">@Messages("notEnrolled.title")</h1>
 
-    <p>@Messages("notEnrolled.p1")</p>
+<p>@Messages("notEnrolled.p1")</p>
 
-    <p>@Messages("notEnrolled.p2")</p>
+<p>@Messages("notEnrolled.p2")</p>
 
-    <a href="@routes.SignedOutController.signOut" class="button"  id="buttonSignOut">@Messages("button.signOut")</a>
+<a href="@routes.SignedOutController.signOut" id="buttonSignOut">@Messages("button.signOut")</a>
 }
