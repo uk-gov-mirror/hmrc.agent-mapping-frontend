@@ -41,6 +41,8 @@ class ErrorHandler @Inject() (
   @Named("appName") val appName: String)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
   extends FrontendErrorHandler with AuthRedirects with ErrorAuditing {
 
+  private val isDevEnv = if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
+
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
     super.onClientError(request, statusCode, message)
@@ -49,7 +51,7 @@ class ErrorHandler @Inject() (
   override def resolveError(request: RequestHeader, exception: Throwable) = {
     auditServerError(request, exception)
     exception match {
-      case _: NoActiveSession => toGGLogin(if (env.mode.equals(Mode.Dev)) s"http://${request.host}${request.uri}" else s"${request.uri}")
+      case _: NoActiveSession => toGGLogin(if (isDevEnv) s"http://${request.host}${request.uri}" else s"${request.uri}")
       case _: InsufficientEnrolments => Redirect(routes.MappingController.notEnrolled())
       case _ => super.resolveError(request, exception)
     }
