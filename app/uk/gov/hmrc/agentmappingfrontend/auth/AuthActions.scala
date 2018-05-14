@@ -19,76 +19,59 @@ package uk.gov.hmrc.agentmappingfrontend.auth
 import play.api.Environment
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
-import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, NoOpAuditService}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.{authorisedEnrolments, credentials}
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
+import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
 
 import scala.concurrent.{ExecutionContext, Future}
+
+object Auth {
+
+  val validEnrolments: Set[String] = Set(
+    `IR-SA-AGENT`,
+    `HMCE-VAT-AGNT`,
+    `HMRC-CHAR-AGENT`,
+    `HMRC-GTS-AGNT`,
+    `HMRC-MGD-AGNT`,
+    `HMRC-NOVRN-AGNT`,
+    `IR-CT-AGENT`,
+    `IR-PAYE-AGENT`,
+    `IR-SDLT-AGENT`
+  )
+
+}
 
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
   def appConfig: AppConfig
 
-  private val validEnrolments: Seq[(String, String)] = Seq((`IR-SA-AGENT`,IRAgentReference), (`HMCE-VAT-AGNT`, AgentRefNo))
-
-  private def toPredicate(enrolments: Seq[(String,String)]): Predicate = {
-    enrolments.map(e => Enrolment(e._1)).reduce[Predicate](_ or _)
-  }
-
-  def extractIdentifiers(expectedEnrolments: Seq[(String,String)], authorisedEnrolments: Enrolments): Seq[Identifier] = {
-    val identifierOpts: Seq[Option[Identifier]] = expectedEnrolments.map {
-      case (serviceName, identifierKey) =>
-        for {
-          enrolment <- authorisedEnrolments.getEnrolment(serviceName)
-          identifier <- enrolment.getIdentifier(identifierKey)
-        } yield Identifier(identifier.key, identifier.value, enrolment.isActivated)
-    }
-    identifierOpts.collect {case Some(i) => i}
-  }
-
-  private def withAgentEnrolledFor[A](enrolments: Seq[(String,String)])(body: (Seq[Identifier], Credentials) => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
-    authorised(
-      toPredicate(enrolments) and AuthProviders(GovernmentGateway) and Agent)
-      .retrieve(authorisedEnrolments and credentials) {
+  def withAuthorisedAsAgent(body: => Future[Result])
+                           (audit: AuditData => Unit = _ => ())
+                           (implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+    authorised(AuthProviders(GovernmentGateway) and Agent)
+      .retrieve(authorisedEnrolments and credentials){
         case justAuthorisedEnrolments ~ creds =>
-          val identifiers = extractIdentifiers(enrolments, justAuthorisedEnrolments)
-          body(identifiers, creds)
-      } recover {
-        case _: NoActiveSession => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
-    }
-  }
-
-  def withAuthorisedAgent(auditService: AuditService = NoOpAuditService)(body: => Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
-      withAgentEnrolledFor(validEnrolments) {
-        case (identifiers, creds) if identifiers.nonEmpty =>
-          val (activated, others) = identifiers.partition(_.activated)
-          others.foreach { id =>
-            AuditService.auditCheckAgentRefCodeEvent(Some(id), Option(creds.providerId), Option(creds.providerType))(auditService)
-          }
-          if(activated.nonEmpty){
-            activated.foreach { id =>
-              AuditService.auditCheckAgentRefCodeEvent(Some(id), Option(creds.providerId), Option(creds.providerType))(auditService)
-            }
+          val activeEnrolments = justAuthorisedEnrolments.enrolments.filter(_.isActivated).map(_.key)
+          val eligible = activeEnrolments.nonEmpty && activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
+          audit(AuditData(activeEnrolments,eligible,creds))
+          if(eligible){
             body
           } else {
-            Future.failed(InsufficientEnrolments("None activated enrolment has been found."))
+            Future.failed(InsufficientEnrolments())
           }
-        case (_, creds) =>
-          AuditService.auditCheckAgentRefCodeEvent(None, Option(creds.providerId), Option(creds.providerType))(auditService)
-          Future.failed(InsufficientEnrolments("Expected enrolments has not been found"))
-      } recover {
+      }
+      .recover {
         case _: InsufficientEnrolments => Redirect(routes.MappingController.notEnrolled())
+        case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
       }
   }
 

@@ -2,7 +2,6 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
-import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}

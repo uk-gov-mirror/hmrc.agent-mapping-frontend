@@ -17,14 +17,14 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import play.api.http.Status
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentmappingfrontend.model.{Identifier, SaMapping, VatMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.{SaMapping, VatMapping}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.http._
 
