@@ -128,7 +128,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "redirect to complete if the user enters an ARN and UTR that match the known facts for SA" in {
       givenUserIsAuthenticated(anSAEnrolledAgent)
-      mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), anSAEnrolledAgent.identifier)
+      mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"))
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
       val result = callEndpointWith(request)
 
@@ -138,7 +138,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "redirect to complete if the user enters an ARN and UTR that match the known facts for VAT" in {
       givenUserIsAuthenticated(anVATEnrolledAgent)
-      mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"), anVATEnrolledAgent.identifier)
+      mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"))
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
       val result = callEndpointWith(request)
 
@@ -148,7 +148,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "redirect to the already-mapped page if the mapping already exists for SA" in new App {
       givenUserIsAuthenticated(anSAEnrolledAgent)
-      mappingExists(Utr("2000000000"),Arn("TARN0000001"), anSAEnrolledAgent.identifier)
+      mappingExists(Utr("2000000000"),Arn("TARN0000001"))
 
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
       val result = callEndpointWith(request)
@@ -159,7 +159,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "redirect to the already-mapped page if the mapping already exists for VAT" in new App {
       givenUserIsAuthenticated(anVATEnrolledAgent)
-      mappingExists(Utr("2000000000"),Arn("TARN0000001"), anVATEnrolledAgent.identifier)
+      mappingExists(Utr("2000000000"),Arn("TARN0000001"))
 
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
       val result = callEndpointWith(request)
@@ -213,7 +213,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
       "the known facts check fails" in {
         givenUserIsAuthenticated(anSAEnrolledAgent)
-        mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"), anSAEnrolledAgent.identifier)
+        mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"))
 
         val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
         val result = callEndpointWith(request)

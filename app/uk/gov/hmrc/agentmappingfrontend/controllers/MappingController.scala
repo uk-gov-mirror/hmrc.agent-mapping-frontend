@@ -17,17 +17,15 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.{Configuration, Environment}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
-import uk.gov.hmrc.agentmappingfrontend.auth.{AgentRequest, AuthActions}
+import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -69,30 +67,27 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent() {
-      implicit request: AgentRequest[AnyContent] =>
-        successful(Redirect(routes.MappingController.showAddCode()))
+      successful(Redirect(routes.MappingController.showAddCode()))
     }
   }
 
   def showAddCode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(auditService) {
-      implicit request: AgentRequest[AnyContent] =>
-        successful(Ok(html.add_code(mappingForm, request.identifiers)))
+      successful(Ok(html.add_code(mappingForm)))
     }
   }
 
   def submitAddCode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent() {
-      implicit request: AgentRequest[AnyContent] =>
-        mappingForm.bindFromRequest.fold(
+      mappingForm.bindFromRequest.fold(
           formWithErrors => {
-            successful(Ok(html.add_code(formWithErrors, request.identifiers)))
+            successful(Ok(html.add_code(formWithErrors)))
           },
           mappingData => {
-            mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.identifiers) map { r: Int =>
+            mappingConnector.createMapping(mappingData.utr, mappingData.arn) map { r: Int =>
               r match {
                 case CREATED => Redirect(routes.MappingController.complete())
-                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference."), request.identifiers))
+                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference.")))
                 case CONFLICT => Redirect(routes.MappingController.alreadyMapped())
               }
             }
@@ -104,16 +99,14 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
 
   val complete: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent() {
-      implicit request =>
-        successful(Ok(html.complete()))
+      successful(Ok(html.complete()))
     }
   }
 
 
   val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent() {
-      implicit request =>
-        successful(Ok(html.already_mapped()))
+      successful(Ok(html.already_mapped()))
     }
   }
 

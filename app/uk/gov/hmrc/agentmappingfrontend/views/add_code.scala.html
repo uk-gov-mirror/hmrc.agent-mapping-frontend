@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
 @import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 
-@(mappingForm: Form[_], identifier: Seq[Identifier])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(mappingForm: Form[_])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("connectAgentServices.title"), bodyClasses = None) {
 

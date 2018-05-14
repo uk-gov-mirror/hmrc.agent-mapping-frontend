@@ -35,8 +35,6 @@ import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AgentRequest[A](identifiers: Seq[Identifier], request: Request[A]) extends WrappedRequest[A](request)
-
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
@@ -71,7 +69,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     }
   }
 
-  def withAuthorisedAgent(auditService: AuditService = NoOpAuditService)(body: AgentRequest[AnyContent] => Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  def withAuthorisedAgent(auditService: AuditService = NoOpAuditService)(body: => Future[Result])(implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
       withAgentEnrolledFor(validEnrolments) {
         case (identifiers, creds) if identifiers.nonEmpty =>
           val (activated, others) = identifiers.partition(_.activated)
@@ -82,7 +80,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
             activated.foreach { id =>
               AuditService.auditCheckAgentRefCodeEvent(Some(id), Option(creds.providerId), Option(creds.providerType))(auditService)
             }
-            body(AgentRequest(activated, request))
+            body
           } else {
             Future.failed(InsufficientEnrolments("None activated enrolment has been found."))
           }
