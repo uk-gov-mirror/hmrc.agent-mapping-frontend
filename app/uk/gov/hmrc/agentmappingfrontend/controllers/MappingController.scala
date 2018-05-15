@@ -46,16 +46,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
                                  )(implicit val appConfig: AppConfig)
   extends FrontendController with I18nSupport with AuthActions {
 
-  private val mappingForm = Form(
-    mapping(
-      "arn" -> mapping(
-        "arn" -> arn
-      )(Arn.apply)(Arn.unapply),
-      "utr" -> mapping(
-        "value" -> utr
-      )(Utr.apply)(Utr.unapply)
-    )(MappingForm.apply)(MappingForm.unapply)
-  )
+  import MappingController.mappingForm
 
   val root: Action[AnyContent] = ActionWithMdc {
     Redirect(routes.MappingController.start())
@@ -113,4 +104,18 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok(html.not_enrolled())
   }
+}
+
+object MappingController {
+
+  val mappingForm = Form(
+    mapping(
+      "arn" -> mapping(
+        "arn" -> arn
+      )(Arn.apply)(Arn.unapply),
+      "utr" -> mapping(
+        "value" -> utr
+      )(Utr.apply)(Utr.unapply)
+    )(MappingForm.apply)(MappingForm.unapply)
+  )
 }
