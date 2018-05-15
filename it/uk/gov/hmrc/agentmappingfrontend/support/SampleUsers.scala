@@ -2,7 +2,10 @@ package uk.gov.hmrc.agentmappingfrontend.support
 
 import uk.gov.hmrc.auth.core.InsufficientEnrolments
 
-case class SampleUser(authoriseJsonResponse: String, activeEnrolments: Set[String], throwException: Option[Exception] = None)
+case class SampleUser(
+  authoriseJsonResponse: String,
+  activeEnrolments: Set[String],
+  throwException: Option[Exception] = None)
 
 object SampleUsers {
 

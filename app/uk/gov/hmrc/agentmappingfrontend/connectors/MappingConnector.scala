@@ -32,71 +32,65 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MappingConnector @Inject()(
-                                  @Named("agent-mapping-baseUrl") baseUrl: URL,
-                                  httpGet: HttpGet,
-                                  httpPut: HttpPut,
-                                  httpDelete: HttpDelete,
-                                  metrics: Metrics
-                                )
-  extends HttpAPIMonitor {
+  @Named("agent-mapping-baseUrl") baseUrl: URL,
+  httpGet: HttpGet,
+  httpPut: HttpPut,
+  httpDelete: HttpDelete,
+  metrics: Metrics
+) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def createMapping(utr: Utr, arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def createMapping(utr: Utr, arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Mapping-CreateMapping-PUT") {
-      httpPut.PUT(createUrl(utr, arn), "").map {
-        r => r.status
-      }.recover {
-        case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
-        case e: Upstream4xxResponse if Status.CONFLICT.equals(e.upstreamResponseCode) => Status.CONFLICT
-        case e => throw e
-      }
+      httpPut
+        .PUT(createUrl(utr, arn), "")
+        .map { r =>
+          r.status
+        }
+        .recover {
+          case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
+          case e: Upstream4xxResponse if Status.CONFLICT.equals(e.upstreamResponseCode)  => Status.CONFLICT
+          case e                                                                         => throw e
+        }
     }
-  }
 
-  private def createUrl(utr: Utr, arn: Arn): String = {
+  private def createUrl(utr: Utr, arn: Arn): String =
     new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}").toString
-  }
 
-  private def deleteUrl(arn: Arn): String = {
+  private def deleteUrl(arn: Arn): String =
     new URL(baseUrl, s"/agent-mapping/test-only/mappings/${arn.value}").toString
-  }
 
-  private def findSaUrl(arn: Arn): String = {
+  private def findSaUrl(arn: Arn): String =
     new URL(baseUrl, s"agent-mapping/mappings/sa/${arn.value}").toString
-  }
 
-  private def findVatUrl(arn: Arn): String = {
+  private def findVatUrl(arn: Arn): String =
     new URL(baseUrl, s"agent-mapping/mappings/vat/${arn.value}").toString
-  }
 
-  def findSaMappingsFor(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[SaMapping]] = {
+  def findSaMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[SaMapping]] =
     monitor(s"ConsumedAPI-Mapping-FindSaMappingsForArn-GET") {
-      httpGet.GET[JsValue](findSaUrl(arn)).map {
-        response => (response \ "mappings").as[Seq[SaMapping]]
+      httpGet.GET[JsValue](findSaUrl(arn)).map { response =>
+        (response \ "mappings").as[Seq[SaMapping]]
       } recover {
         case _: NotFoundException => Seq.empty
-        case ex: Throwable => throw new RuntimeException(ex)
+        case ex: Throwable        => throw new RuntimeException(ex)
       }
     }
-  }
 
-  def findVatMappingsFor(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatMapping]] = {
+  def findVatMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatMapping]] =
     monitor(s"ConsumedAPI-Mapping-FindVatMappingsForArn-GET") {
-      httpGet.GET[JsValue](findVatUrl(arn)).map {
-        response => (response \ "mappings").as[Seq[VatMapping]]
+      httpGet.GET[JsValue](findVatUrl(arn)).map { response =>
+        (response \ "mappings").as[Seq[VatMapping]]
       } recover {
         case _: NotFoundException => Seq.empty
-        case ex: Throwable => throw new RuntimeException(ex)
+        case ex: Throwable        => throw new RuntimeException(ex)
       }
     }
-  }
 
-  def deleteAllMappingsBy(arn:Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def deleteAllMappingsBy(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Mapping-DeleteAllMappingsByArn-DELETE") {
-      httpDelete.DELETE(deleteUrl(arn)).map {
-        r => r.status
+      httpDelete.DELETE(deleteUrl(arn)).map { r =>
+        r.status
       }
     }
-  }
 }

@@ -37,14 +37,14 @@ import scala.concurrent.Future.successful
 case class MappingForm(arn: Arn, utr: Utr)
 
 @Singleton
-class MappingController @Inject()(override val messagesApi: MessagesApi,
-                                  val authConnector: AuthConnector,
-                                  mappingConnector: MappingConnector,
-                                  auditService: AuditService,
-                                  val env: Environment,
-                                  val config: Configuration
-                                 )(implicit val appConfig: AppConfig)
-  extends FrontendController with I18nSupport with AuthActions {
+class MappingController @Inject()(
+  override val messagesApi: MessagesApi,
+  val authConnector: AuthConnector,
+  mappingConnector: MappingConnector,
+  auditService: AuditService,
+  val env: Environment,
+  val config: Configuration)(implicit val appConfig: AppConfig)
+    extends FrontendController with I18nSupport with AuthActions {
 
   import MappingController.mappingForm
 
@@ -71,29 +71,30 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   def submitAddCode: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent {
       mappingForm.bindFromRequest.fold(
-          formWithErrors => {
-            successful(Ok(html.add_code(formWithErrors)))
-          },
-          mappingData => {
-            mappingConnector.createMapping(mappingData.utr, mappingData.arn) map { r: Int =>
-              r match {
-                case CREATED => Redirect(routes.MappingController.complete())
-                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference.")))
-                case CONFLICT => Redirect(routes.MappingController.alreadyMapped())
-              }
+        formWithErrors => {
+          successful(Ok(html.add_code(formWithErrors)))
+        },
+        mappingData => {
+          mappingConnector.createMapping(mappingData.utr, mappingData.arn) map { r: Int =>
+            r match {
+              case CREATED => Redirect(routes.MappingController.complete())
+              case FORBIDDEN =>
+                Ok(
+                  html.add_code(mappingForm.withGlobalError(
+                    "These details don't match our records. Check your account number and tax reference.")))
+              case CONFLICT => Redirect(routes.MappingController.alreadyMapped())
             }
           }
-        )
+        }
+      )
     }
   }
-
 
   val complete: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent {
       successful(Ok(html.complete()))
     }
   }
-
 
   val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent {

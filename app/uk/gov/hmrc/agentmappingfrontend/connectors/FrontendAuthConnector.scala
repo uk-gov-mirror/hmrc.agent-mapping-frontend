@@ -24,8 +24,7 @@ import uk.gov.hmrc.http.HttpPost
 import uk.gov.hmrc.play.http.ws.WSPost
 
 @Singleton
-class FrontendAuthConnector @Inject() (@Named("auth-baseUrl") baseUrl: URL)
-  extends PlayAuthConnector {
+class FrontendAuthConnector @Inject()(@Named("auth-baseUrl") baseUrl: URL) extends PlayAuthConnector {
 
   override val serviceUrl = baseUrl.toString
 

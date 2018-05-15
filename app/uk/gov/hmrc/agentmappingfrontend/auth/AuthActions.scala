@@ -54,21 +54,23 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   def env: Environment
   def appConfig: AppConfig
 
-  def withAuthorisedAgent(body: => Future[Result])
-                         (implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
-    withAuthorisedAgentAudited(body)(_ =>())
-  }
+  def withAuthorisedAgent(body: => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    withAuthorisedAgentAudited(body)(_ => ())
 
-  def withAuthorisedAgentAudited(body: => Future[Result])
-                         (audit: AuditData => Unit = _ => ())
-                         (implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  def withAuthorisedAgentAudited(body: => Future[Result])(audit: AuditData => Unit = _ => ())(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway) and Agent)
-      .retrieve(authorisedEnrolments and credentials){
+      .retrieve(authorisedEnrolments and credentials) {
         case justAuthorisedEnrolments ~ creds =>
           val activeEnrolments = justAuthorisedEnrolments.enrolments.filter(_.isActivated).map(_.key)
           val eligible = activeEnrolments.nonEmpty && activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
-          audit(AuditData(activeEnrolments,eligible,creds))
-          if(eligible){
+          audit(AuditData(activeEnrolments, eligible, creds))
+          if (eligible) {
             body
           } else {
             Future.failed(InsufficientEnrolments())
@@ -78,6 +80,5 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case _: InsufficientEnrolments => Redirect(routes.MappingController.notEnrolled())
         case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
       }
-  }
 
 }

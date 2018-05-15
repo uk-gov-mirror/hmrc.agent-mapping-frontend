@@ -23,12 +23,11 @@ class MappingISpec extends UnitSpec with GuiceOneServerPerSuite with WireMockSup
 
   override implicit lazy val app: Application = appBuilder.build()
 
-  protected def appBuilder: GuiceApplicationBuilder = {
+  protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
+      "microservice.services.auth.port"          -> wireMockPort,
       "microservice.services.agent-mapping.port" -> wireMockPort
     )
-  }
 
   private lazy val ws = app.injector.instanceOf[WSClient]
   private lazy val messagesApi = app.injector.instanceOf[MessagesApi]

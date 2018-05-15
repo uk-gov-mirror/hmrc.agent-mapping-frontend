@@ -33,31 +33,30 @@ case class AuditData(activeEnrolments: Set[String], eligible: Boolean, creds: Cr
 
 object AuditService {
 
-  def auditCheckAgentRefCodeEvent(auditService: AuditService)
-                                 (auditData: AuditData)
-                                 (implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
-    val event = createEvent(AgentFrontendMappingEvent.CheckAgentRefCode, "check-agent-ref-code",
+  def auditCheckAgentRefCodeEvent(auditService: AuditService)(
+    auditData: AuditData)(implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
+    val event = createEvent(
+      AgentFrontendMappingEvent.CheckAgentRefCode,
+      "check-agent-ref-code",
       Seq(
-        "eligible" -> auditData.eligible,
+        "eligible"         -> auditData.eligible,
         "activeEnrolments" -> auditData.activeEnrolments.mkString(","),
-        "authProviderId" -> auditData.creds.providerId,
+        "authProviderId"   -> auditData.creds.providerId,
         "authProviderType" -> auditData.creds.providerType
       )
     )
     auditService.send(event)
   }
 
-  private def createEvent(event: AgentFrontendMappingEvent,
-                          transactionName: String,
-                          details: Seq[(String, Any)])
-                         (implicit hc: HeaderCarrier, request: Request[Any]): DataEvent = {
+  private def createEvent(event: AgentFrontendMappingEvent, transactionName: String, details: Seq[(String, Any)])(
+    implicit hc: HeaderCarrier,
+    request: Request[Any]): DataEvent =
     DataEvent(
       auditSource = "agent-mapping-frontend",
       auditType = event.toString,
       tags = hc.toAuditTags(transactionName, request.path),
       detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     )
-  }
 
 }
 
@@ -68,11 +67,10 @@ trait AuditService {
 @Singleton
 class AuditServiceImpl @Inject()(val auditConnector: AuditConnector) extends AuditService {
 
-  override def send(event: DataEvent)(implicit hc: HeaderCarrier): Future[Unit] = {
+  override def send(event: DataEvent)(implicit hc: HeaderCarrier): Future[Unit] =
     Future {
       Try(auditConnector.sendEvent(event))
     }
-  }
 }
 
 object AgentFrontendMappingEvent extends Enumeration {

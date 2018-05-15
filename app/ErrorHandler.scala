@@ -31,12 +31,12 @@ import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ErrorHandler @Inject() (
+class ErrorHandler @Inject()(
   val env: Environment,
   val messagesApi: MessagesApi,
   val auditConnector: AuditConnector,
   @Named("appName") val appName: String)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
-  extends FrontendErrorHandler with AuthRedirects with ErrorAuditing {
+    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
@@ -47,17 +47,18 @@ class ErrorHandler @Inject() (
     auditServerError(request, exception)
     implicit val r = Request(request, "")
     exception match {
-      case _ => Ok(standardErrorTemplate(
-        Messages("global.error.500.title"),
-        Messages("global.error.500.heading"),
-        Messages("global.error.500.message"))
-      )
+      case _ =>
+        Ok(
+          standardErrorTemplate(
+            Messages("global.error.500.title"),
+            Messages("global.error.500.heading"),
+            Messages("global.error.500.message")))
     }
   }
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]) = {
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(
+    implicit request: Request[_]) =
     error_template(pageTitle, heading, message)
-  }
 }
 
 object EventTypes {
@@ -81,22 +82,31 @@ trait ErrorAuditing extends HttpAuditEvent {
 
   def auditServerError(request: RequestHeader, ex: Throwable)(implicit ec: ExecutionContext): Unit = {
     val eventType = ex match {
-      case _: NotFoundException => ResourceNotFound
+      case _: NotFoundException     => ResourceNotFound
       case _: JsValidationException => ServerValidationError
-      case _ => ServerInternalError
+      case _                        => ServerInternalError
     }
     val transactionName = ex match {
       case _: NotFoundException => notFoundError
-      case _ => unexpectedError
+      case _                    => unexpectedError
     }
-    auditConnector.sendEvent(dataEvent(eventType, transactionName, request, Map(TransactionFailureReason -> ex.getMessage))(HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+    auditConnector.sendEvent(
+      dataEvent(eventType, transactionName, request, Map(TransactionFailureReason -> ex.getMessage))(
+        HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
   }
 
-  def auditClientError(request: RequestHeader, statusCode: Int, message: String)(implicit ec: ExecutionContext): Unit = {
+  def auditClientError(request: RequestHeader, statusCode: Int, message: String)(
+    implicit ec: ExecutionContext): Unit = {
     import play.api.http.Status._
     statusCode match {
-      case NOT_FOUND => auditConnector.sendEvent(dataEvent(ResourceNotFound, notFoundError, request, Map(TransactionFailureReason -> message))(HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
-      case BAD_REQUEST => auditConnector.sendEvent(dataEvent(ServerValidationError, badRequestError, request, Map(TransactionFailureReason -> message))(HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+      case NOT_FOUND =>
+        auditConnector.sendEvent(
+          dataEvent(ResourceNotFound, notFoundError, request, Map(TransactionFailureReason -> message))(
+            HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+      case BAD_REQUEST =>
+        auditConnector.sendEvent(
+          dataEvent(ServerValidationError, badRequestError, request, Map(TransactionFailureReason -> message))(
+            HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
       case _ =>
     }
   }

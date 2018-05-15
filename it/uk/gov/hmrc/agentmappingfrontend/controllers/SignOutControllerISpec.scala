@@ -4,7 +4,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import play.api.test.Helpers._
 
-class SignOutControllerISpec extends BaseControllerISpec{
+class SignOutControllerISpec extends BaseControllerISpec {
   private lazy val controller: SignedOutController = app.injector.instanceOf[SignedOutController]
 
   private val fakeRequest = FakeRequest()

@@ -25,12 +25,10 @@ class MappingFormSpec extends UnitSpec {
 
     val form = MappingController.mappingForm
 
-    val value = MappingForm(
-      arn = Arn("TARN0000001"),
-      utr = Utr("2000000000"))
+    val value = MappingForm(arn = Arn("TARN0000001"), utr = Utr("2000000000"))
 
     val fieldValues = Map(
-      "arn.arn" -> "TARN0000001",
+      "arn.arn"   -> "TARN0000001",
       "utr.value" -> "2000000000"
     )
 

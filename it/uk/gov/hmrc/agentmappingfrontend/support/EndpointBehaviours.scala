@@ -17,7 +17,10 @@ trait EndpointBehaviours extends AuthStubs {
 
   implicit lazy val mat = materializer
 
-  protected def anAuthenticatedEndpoint(endpointMethod: String, endpointPath:String, doRequest: Request[AnyContentAsEmpty.type] => Result): Unit = {
+  protected def anAuthenticatedEndpoint(
+    endpointMethod: String,
+    endpointPath: String,
+    doRequest: Request[AnyContentAsEmpty.type] => Result): Unit = {
     "redirect to the sign-in page if the current user is not logged in" in {
       givenUserIsNotAuthenticated()
       val request = fakeRequest(endpointMethod, endpointPath)
@@ -30,7 +33,7 @@ trait EndpointBehaviours extends AuthStubs {
 
     "redirect to the sign-in page if the current user is logged in but does not have affinity group Agent" in {
       givenUnauthorisedWith("UnsupportedAffinityGroup")
-      val request = fakeRequest(endpointMethod,endpointPath)
+      val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -39,14 +42,15 @@ trait EndpointBehaviours extends AuthStubs {
     }
   }
 
-  protected def anEndpointReachableGivenAgentAffinityGroupAndValidEnrolment(endpointMethod: String, endpointPath: String,
-                                                                            expectCheckAgentRefCodeAudit: Boolean)
-                                                                           (doRequest: Request[AnyContentAsEmpty.type] => Result): Unit = {
+  protected def anEndpointReachableGivenAgentAffinityGroupAndValidEnrolment(
+    endpointMethod: String,
+    endpointPath: String,
+    expectCheckAgentRefCodeAudit: Boolean)(doRequest: Request[AnyContentAsEmpty.type] => Result): Unit = {
     behave like anAuthenticatedEndpoint(endpointMethod, endpointPath, doRequest)
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but is not validly enrolled" in {
       givenUserIsAuthenticated(notEligibleAgent)
-      val request = fakeRequest(endpointMethod,endpointPath)
+      val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -57,7 +61,7 @@ trait EndpointBehaviours extends AuthStubs {
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but has an HMRC-AS-AGENT enrolment" in {
       givenUserIsAuthenticated(mtdAgent)
-      val request = fakeRequest(endpointMethod,endpointPath)
+      val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -68,7 +72,7 @@ trait EndpointBehaviours extends AuthStubs {
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but has an inactive enrolment" in {
       givenUserIsAuthenticated(saEnrolledAgentInactive)
-      val request = fakeRequest(endpointMethod,endpointPath)
+      val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
@@ -78,12 +82,17 @@ trait EndpointBehaviours extends AuthStubs {
     }
   }
 
-  def verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit:Boolean = true, eligible: Boolean = true, activeEnrolments: Set[String] = Set()) =
-    if (expectCheckAgentRefCodeAudit) auditEventShouldHaveBeenSent("CheckAgentRefCode")(
-      auditDetail("authProviderType" -> "GovernmentGateway")
-        and auditDetail("eligible" -> eligible.toString)
-        and auditDetail("activeEnrolments" -> activeEnrolments.mkString(","))
-        and auditTagsNotEmpty("path", "X-Session-ID", "X-Request-ID", "clientIP", "clientPort")
-        and auditTag("transactionName" -> "check-agent-ref-code")
-    ) else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
+  def verifyCheckAgentRefCodeAuditEvent(
+    expectCheckAgentRefCodeAudit: Boolean = true,
+    eligible: Boolean = true,
+    activeEnrolments: Set[String] = Set()) =
+    if (expectCheckAgentRefCodeAudit)
+      auditEventShouldHaveBeenSent("CheckAgentRefCode")(
+        auditDetail("authProviderType"       -> "GovernmentGateway")
+          and auditDetail("eligible"         -> eligible.toString)
+          and auditDetail("activeEnrolments" -> activeEnrolments.mkString(","))
+          and auditTagsNotEmpty("path", "X-Session-ID", "X-Request-ID", "clientIP", "clientPort")
+          and auditTag("transactionName" -> "check-agent-ref-code")
+      )
+    else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
 }

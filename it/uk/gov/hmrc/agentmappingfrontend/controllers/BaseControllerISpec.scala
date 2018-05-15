@@ -32,19 +32,20 @@ import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
+abstract class BaseControllerISpec
+    extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
 
   override implicit lazy val app: Application = appBuilder.build()
 
-  protected def appBuilder: GuiceApplicationBuilder = {
-    new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.agent-mapping.port" -> wireMockPort,
-      "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
-      "authentication.login-callback.url" -> "somehost"
-    )
+  protected def appBuilder: GuiceApplicationBuilder =
+    new GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.auth.port"          -> wireMockPort,
+        "microservice.services.agent-mapping.port" -> wireMockPort,
+        "application.router"                       -> "testOnlyDoNotUseInAppConf.Routes",
+        "authentication.login-callback.url"        -> "somehost"
+      )
       .overrides(new TestGuiceModule)
-  }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {
@@ -58,9 +59,8 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
 
   protected implicit val materializer: Materializer = app.materializer
 
-  protected def fakeRequest(endpointMethod: String, endpointPath: String) = {
+  protected def fakeRequest(endpointMethod: String, endpointPath: String) =
     FakeRequest(endpointMethod, endpointPath).withSession(SessionKeys.authToken -> "Bearer XYZ")
-  }
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])

@@ -24,22 +24,20 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 
 package object controllers {
 
-  private val utrConstraint: Constraint[String] = Constraint[String] {
-    fieldValue: String =>
-      Constraints.nonEmpty(fieldValue) match {
-        case i: Invalid => i
-        case _ if ! Utr.isValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
-        case _ => Valid
-      }
+  private val utrConstraint: Constraint[String] = Constraint[String] { fieldValue: String =>
+    Constraints.nonEmpty(fieldValue) match {
+      case i: Invalid                    => i
+      case _ if !Utr.isValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
+      case _                             => Valid
+    }
   }
 
-  private val arnConstraint: Constraint[String] = Constraint[String] {
-    fieldValue: String =>
-      Constraints.nonEmpty(fieldValue) match {
-        case i: Invalid => i
-        case _ if ! Arn.isValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
-        case _ => Valid
-      }
+  private val arnConstraint: Constraint[String] = Constraint[String] { fieldValue: String =>
+    Constraints.nonEmpty(fieldValue) match {
+      case i: Invalid                    => i
+      case _ if !Arn.isValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
+      case _                             => Valid
+    }
   }
 
   def utr: Mapping[String] = text verifying utrConstraint
