@@ -19,32 +19,32 @@ package uk.gov.hmrc.agentmappingfrontend.auth
 import play.api.Environment
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
+import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.{authorisedEnrolments, credentials}
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.{allEnrolments, credentials}
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object Auth {
 
   val validEnrolments: Set[String] = Set(
-    `IR-SA-AGENT`,
-    `HMCE-VAT-AGNT`,
-    `HMRC-CHAR-AGENT`,
-    `HMRC-GTS-AGNT`,
-    `HMRC-MGD-AGNT`,
-    `HMRC-NOVRN-AGNT`,
-    `IR-CT-AGENT`,
-    `IR-PAYE-AGENT`,
-    `IR-SDLT-AGENT`
+    `IR-SA-AGENT`, //IRAgentReference
+    `HMCE-VAT-AGNT`, //AgentRefNo
+    `HMRC-CHAR-AGENT`, //AGENTCHARID
+    `HMRC-GTS-AGNT`, //HMRCGTSAGENTREF
+    `HMRC-MGD-AGNT`, //HMRCMGDAGENTREF
+    `HMRC-NOVRN-AGNT`, //VATAgentRefNo
+    `IR-CT-AGENT`, //IRAgentReference
+    `IR-PAYE-AGENT`, //IRAgentReference
+    `IR-SDLT-AGENT` //STORN
   )
 
 }
@@ -52,6 +52,7 @@ object Auth {
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
+
   def appConfig: AppConfig
 
   def withAuthorisedAgent(body: => Future[Result])(
@@ -65,9 +66,9 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway) and Agent)
-      .retrieve(authorisedEnrolments and credentials) {
-        case justAuthorisedEnrolments ~ creds =>
-          val activeEnrolments = justAuthorisedEnrolments.enrolments.filter(_.isActivated).map(_.key)
+      .retrieve(allEnrolments and credentials) {
+        case agentEnrolments ~ creds =>
+          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
           val eligible = activeEnrolments.nonEmpty && activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
           audit(AuditData(activeEnrolments, eligible, creds))
           if (eligible) {
