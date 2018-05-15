@@ -17,14 +17,14 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import java.net.URL
-import javax.inject.{Inject, Named, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Named, Singleton}
 import play.api.http.Status
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentmappingfrontend.model.{Identifier, SaMapping, VatMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.{SaMapping, VatMapping}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.http._
 
@@ -42,9 +42,9 @@ class MappingConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def createMapping(utr: Utr, arn: Arn, identifiers: Seq[Identifier])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def createMapping(utr: Utr, arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     monitor(s"ConsumedAPI-Mapping-CreateMapping-PUT") {
-      httpPut.PUT(createUrl(utr, arn, identifiers), "").map {
+      httpPut.PUT(createUrl(utr, arn), "").map {
         r => r.status
       }.recover {
         case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
@@ -54,8 +54,8 @@ class MappingConnector @Inject()(
     }
   }
 
-  private def createUrl(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): String = {
-    new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}").toString
+  private def createUrl(utr: Utr, arn: Arn): String = {
+    new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}").toString
   }
 
   private def deleteUrl(arn: Arn): String = {

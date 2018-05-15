@@ -18,18 +18,18 @@ object MappingStubs {
   val saJsonBody = Json.toJson(SaMappings(listOfSaMappings))
   val vatJsonBody = Json.toJson(VatMappings(listOfVatMappings))
 
-  def mappingIsCreated(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}"))
+  def mappingIsCreated(utr: Utr, arn: Arn): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}"))
         willReturn aResponse().withStatus(201))
   }
 
-  def mappingExists(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}"))
+  def mappingExists(utr: Utr, arn: Arn): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}"))
       willReturn aResponse().withStatus(409))
   }
 
-  def mappingKnownFactsIssue(utr: Utr, arn: Arn, identifiers: Seq[Identifier]): Unit = {
-    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}/${identifiers.mkString("~")}"))
+  def mappingKnownFactsIssue(utr: Utr, arn: Arn): Unit = {
+    stubFor(put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}"))
       willReturn aResponse().withStatus(403))
   }
 

@@ -43,7 +43,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     val appConfig = app.injector.instanceOf[AppConfig]
 
     def testWithAuthorisedSAAgent = {
-      await(withAuthorisedAgent(){ request => Future.successful(Ok(request.identifiers.mkString("~")))})
+      await(withAuthorisedAgent { Future.successful(Ok("Done."))})
     }
   }
 
@@ -64,7 +64,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
            |  }}""".stripMargin)
       val result = TestController.testWithAuthorisedSAAgent
       status(result) shouldBe 200
-      bodyOf(result) shouldBe "IRAgentReference~fooSaAgentReference"
+      bodyOf(result) shouldBe "Done."
     }
 
     "redirect to not-enrolled if an agent is not enrolled for IR-SA-AGENT" in {

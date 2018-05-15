@@ -14,20 +14,29 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.model
+package uk.gov.hmrc.agentmappingfrontend.controllers
 
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.play.test.UnitSpec
 
-class IdentifierSpec extends UnitSpec {
+class MappingFormSpec extends UnitSpec {
 
-  "Identifier" should {
-    "parse a string having valid format" in {
-      Identifier.parse("FOo~BaR") shouldBe Identifier("FOo", "BaR")
-    }
-    "throw an exception if string representation is not valid" in {
-      an[IllegalArgumentException] shouldBe thrownBy(Identifier.parse(""))
-      an[IllegalArgumentException] shouldBe thrownBy(Identifier.parse("FOoBar"))
-      an[IllegalArgumentException] shouldBe thrownBy(Identifier.parse("FOo~Bar~123"))
+  "MappingController form" should {
+
+    val form = MappingController.mappingForm
+
+    val value = MappingForm(
+      arn = Arn("TARN0000001"),
+      utr = Utr("2000000000"))
+
+    val fieldValues = Map(
+      "arn.arn" -> "TARN0000001",
+      "utr.value" -> "2000000000"
+    )
+
+    "bind all input fields and return MappingForm and fill it back" in {
+      form.bind(fieldValues).value shouldBe Some(value)
+      form.fill(value).data shouldBe fieldValues
     }
   }
 

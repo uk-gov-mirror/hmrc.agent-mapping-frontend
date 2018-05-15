@@ -1,14 +1,12 @@
 package uk.gov.hmrc.agentmappingfrontend.support
 
-import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.auth.core.InsufficientEnrolments
-import uk.gov.hmrc.domain.SaAgentReference
 
-case class SampleUser(authoriseJsonResponse: String, identifier: Seq[Identifier] = Seq.empty, throwException: Option[Exception] = None)
+case class SampleUser(authoriseJsonResponse: String, activeEnrolments: Set[String], throwException: Option[Exception] = None)
 
 object SampleUsers {
 
-  val anSAEnrolledAgent = SampleUser(
+  val eligibleAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"IR-SA-AGENT", "identifiers": [
@@ -21,10 +19,10 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("IRAgentReference","HZ1234"))
+    activeEnrolments = Set("IR-SA-AGENT")
   )
 
-  val anVATEnrolledAgent = SampleUser(
+  val vatEnrolledAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"HMCE-VAT-AGNT", "identifiers": [
@@ -37,10 +35,10 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("AgentRefNo","HZ1234"))
+    activeEnrolments = Set("HMCE-VAT-AGNT")
   )
 
-  val anSAEnrolledAgentInactive = SampleUser(
+  val saEnrolledAgentInactive = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"IR-SA-AGENT",
@@ -55,10 +53,10 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("IRAgentReference","HZ1234"))
+    activeEnrolments = Set()
   )
 
-  val anVATEnrolledAgentInactive = SampleUser(
+  val vatEnrolledAgentInactive = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"HMCE-VAT-AGNT",
@@ -73,10 +71,10 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("AgentRefNo","HZ1234"))
+    activeEnrolments = Set()
   )
 
-  val anAgentNotEnrolled = SampleUser(
+  val agentNotEnrolled = SampleUser(
     s"""{
        | "authorisedEnrolments": [],
        | "affinityGroup": "Agent",
@@ -85,8 +83,40 @@ object SampleUsers {
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    identifier = Seq(Identifier("IRAgentReference","HZ1234"))
+    activeEnrolments = Set()
   )
 
-  val individual = SampleUser("", Seq.empty, Some(InsufficientEnrolments()))
+  val mtdAgent = SampleUser(
+    s"""{
+       |  "authorisedEnrolments": [
+       |   { "key":"HMRC-AS-AGENT", "identifiers": [
+       |      { "key":"AgentReferenceNumber", "value": "TARN0000001" }
+       |    ]}
+       |  ],
+       |  "affinityGroup": "Agent",
+       |  "credentials": {
+       |    "providerId": "12345-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
+       |}""".stripMargin,
+    activeEnrolments = Set("HMRC-AS-AGENT")
+  )
+
+  val notEligibleAgent = SampleUser(
+    s"""{
+       |  "authorisedEnrolments": [
+       |   { "key":"FOO-AGENT", "identifiers": [
+       |      { "key":"fooIdentifier", "value": "foo123" }
+       |    ]}
+       |  ],
+       |  "affinityGroup": "Agent",
+       |  "credentials": {
+       |    "providerId": "12345-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
+       |}""".stripMargin,
+    activeEnrolments = Set("FOO-AGENT")
+  )
+
+  val individual = SampleUser("", Set.empty, Some(InsufficientEnrolments()))
 }

@@ -17,46 +17,32 @@
 package uk.gov.hmrc.agentmappingfrontend.audit
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.mvc.Request
 import uk.gov.hmrc.agentmappingfrontend.audit.AgentFrontendMappingEvent.AgentFrontendMappingEvent
-import uk.gov.hmrc.agentmappingfrontend.model.Identifier
+import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.agentmappingfrontend.model.Names._
 
 import scala.concurrent.Future
 import scala.util.Try
-import uk.gov.hmrc.http.HeaderCarrier
+
+case class AuditData(activeEnrolments: Set[String], eligible: Boolean, creds: Credentials)
 
 object AuditService {
 
-  val fieldsByIdentifierKey = Map(
-    IRAgentReference->"isEnrolledSAAgent",
-    AgentRefNo -> "isEnrolledVATAgent"
-  )
-  val identifiersByKey = Map(
-    IRAgentReference->"saAgentRef",
-    AgentRefNo -> "vatAgentRef"
-  )
-
-  def toDetailFields(identifier: Identifier): Seq[(String,Any)] = {
-    Seq(
-      fieldsByIdentifierKey(identifier.key) -> identifier.activated
-    ) ++ (
-      if(identifier.activated) Seq(identifiersByKey(identifier.key) -> identifier.value) else Seq.empty
-      )
-  }
-
-  def auditCheckAgentRefCodeEvent(identifier: Option[Identifier], authProviderId: Option[String], authProviderType: Option[String])
-                                 (auditService: AuditService)
+  def auditCheckAgentRefCodeEvent(auditService: AuditService)
+                                 (auditData: AuditData)
                                  (implicit hc: HeaderCarrier, request: Request[Any]): Unit = {
     val event = createEvent(AgentFrontendMappingEvent.CheckAgentRefCode, "check-agent-ref-code",
-        identifier.map(toDetailFields).getOrElse(Seq("isEnrolledSAAgent"->false,"isEnrolledVATAgent"->false))
-        ++ authProviderId.map(v => Seq("authProviderId" -> v)).getOrElse(Seq.empty)
-        ++ authProviderType.map(v => Seq("authProviderType" -> v)).getOrElse(Seq.empty)
+      Seq(
+        "eligible" -> auditData.eligible,
+        "activeEnrolments" -> auditData.activeEnrolments.mkString(","),
+        "authProviderId" -> auditData.creds.providerId,
+        "authProviderType" -> auditData.creds.providerType
+      )
     )
     auditService.send(event)
   }
@@ -77,10 +63,6 @@ object AuditService {
 
 trait AuditService {
   def send(event: DataEvent)(implicit hc: HeaderCarrier): Future[Unit]
-}
-
-object NoOpAuditService extends AuditService {
-  override def send(event: DataEvent)(implicit hc: HeaderCarrier): Future[Unit] = Future.successful(())
 }
 
 @Singleton

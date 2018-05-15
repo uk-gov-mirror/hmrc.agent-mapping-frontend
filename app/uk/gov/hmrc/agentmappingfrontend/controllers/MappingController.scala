@@ -17,17 +17,15 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.{Configuration, Environment}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
-import uk.gov.hmrc.agentmappingfrontend.auth.{AgentRequest, AuthActions}
+import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.model.Identifier
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -48,16 +46,7 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
                                  )(implicit val appConfig: AppConfig)
   extends FrontendController with I18nSupport with AuthActions {
 
-  private val mappingForm = Form(
-    mapping(
-      "arn" -> mapping(
-        "arn" -> arn
-      )(Arn.apply)(Arn.unapply),
-      "utr" -> mapping(
-        "value" -> utr
-      )(Utr.apply)(Utr.unapply)
-    )(MappingForm.apply)(MappingForm.unapply)
-  )
+  import MappingController.mappingForm
 
   val root: Action[AnyContent] = ActionWithMdc {
     Redirect(routes.MappingController.start())
@@ -68,31 +57,28 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   }
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent() {
-      implicit request: AgentRequest[AnyContent] =>
-        successful(Redirect(routes.MappingController.showAddCode()))
+    withAuthorisedAgent {
+      successful(Redirect(routes.MappingController.showAddCode()))
     }
   }
 
   def showAddCode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(auditService) {
-      implicit request: AgentRequest[AnyContent] =>
-        successful(Ok(html.add_code(mappingForm, request.identifiers)))
-    }
+    withAuthorisedAgentAudited {
+      successful(Ok(html.add_code(mappingForm)))
+    }(AuditService.auditCheckAgentRefCodeEvent(auditService))
   }
 
   def submitAddCode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent() {
-      implicit request: AgentRequest[AnyContent] =>
-        mappingForm.bindFromRequest.fold(
+    withAuthorisedAgent {
+      mappingForm.bindFromRequest.fold(
           formWithErrors => {
-            successful(Ok(html.add_code(formWithErrors, request.identifiers)))
+            successful(Ok(html.add_code(formWithErrors)))
           },
           mappingData => {
-            mappingConnector.createMapping(mappingData.utr, mappingData.arn, request.identifiers) map { r: Int =>
+            mappingConnector.createMapping(mappingData.utr, mappingData.arn) map { r: Int =>
               r match {
                 case CREATED => Redirect(routes.MappingController.complete())
-                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference."), request.identifiers))
+                case FORBIDDEN => Ok(html.add_code(mappingForm.withGlobalError("These details don't match our records. Check your account number and tax reference.")))
                 case CONFLICT => Redirect(routes.MappingController.alreadyMapped())
               }
             }
@@ -103,21 +89,33 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
 
 
   val complete: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent() {
-      implicit request =>
-        successful(Ok(html.complete()))
+    withAuthorisedAgent {
+      successful(Ok(html.complete()))
     }
   }
 
 
   val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent() {
-      implicit request =>
-        successful(Ok(html.already_mapped()))
+    withAuthorisedAgent {
+      successful(Ok(html.already_mapped()))
     }
   }
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok(html.not_enrolled())
   }
+}
+
+object MappingController {
+
+  val mappingForm = Form(
+    mapping(
+      "arn" -> mapping(
+        "arn" -> arn
+      )(Arn.apply)(Arn.unapply),
+      "utr" -> mapping(
+        "value" -> utr
+      )(Utr.apply)(Utr.unapply)
+    )(MappingForm.apply)(MappingForm.unapply)
+  )
 }

@@ -22,30 +22,21 @@ trait AuthStubs {
     givenUnauthorisedWith("MissingBearerToken")
   }
 
-  case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
-
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String) = authenticated(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn), isAgent = true)
-
-  def authenticated[A](request: FakeRequest[A], enrolment: Enrolment, isAgent: Boolean): FakeRequest[A] = {
+  def givenAuthorisedFor(serviceName: String): Unit = {
     givenAuthorisedFor(
-      s"""
-         |{
-         |  "authorise": [
-         |    { "identifiers":[], "state":"Activated", "enrolment": "${enrolment.serviceName}" },
-         |    { "authProviders": ["GovernmentGateway"] }
+      "{}",
+      s"""{
+         |  "authorisedEnrolments": [
+         |   { "key":"$serviceName", "identifiers": [
+         |      { "key":"foo", "value": "foo" }
+         |    ]}
          |  ],
-         |  "retrieve":["authorisedEnrolments"]
-         |}
-           """.stripMargin,
-      s"""
-         |{
-         |"authorisedEnrolments": [
-         |  { "key":"${enrolment.serviceName}", "identifiers": [
-         |    {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
-         |  ]}
-         |]}
-          """.stripMargin)
-    request.withSession(SessionKeys.authToken -> "Bearer XYZ")
+         |  "affinityGroup": "Agent",
+         |  "credentials": {
+         |    "providerId": "12345-credId",
+         |    "providerType": "GovernmentGateway"
+         |  }
+         |}""".stripMargin)
   }
 
   def givenUnauthorisedWith(mdtpDetail: String): Unit = {
