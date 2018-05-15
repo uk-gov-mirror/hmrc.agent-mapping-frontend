@@ -41,7 +41,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     val appName = "agent-mapping-frontend"
 
     val loggerDateFormat: Option[String] = configuration.getString("logger.json.dateformat")
-    Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+    Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
 

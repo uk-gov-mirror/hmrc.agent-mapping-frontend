@@ -46,6 +46,13 @@ trait AuthStubs {
         .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
   }
 
+  def givenAuthorisationFailsWith5xx(): Unit = {
+    stubFor(post(urlEqualTo("/auth/authorise"))
+      .willReturn(aResponse()
+        .withStatus(500))
+    )
+  }
+
   def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
     stubFor(post(urlEqualTo("/auth/authorise"))
       .atPriority(1)
