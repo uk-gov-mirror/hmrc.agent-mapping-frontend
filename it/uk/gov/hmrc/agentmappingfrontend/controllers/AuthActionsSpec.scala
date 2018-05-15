@@ -34,16 +34,18 @@ import scala.concurrent.Future
 class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
   object TestController extends AuthActions {
-    override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+    override def authConnector: AuthConnector =
+      app.injector.instanceOf[AuthConnector]
     implicit val hc = HeaderCarrier()
-    implicit val request = FakeRequest("GET","/foo").withSession(SessionKeys.authToken -> "Bearer XYZ")
+    implicit val request = FakeRequest("GET", "/foo").withSession(
+      SessionKeys.authToken -> "Bearer XYZ")
 
     val env = app.injector.instanceOf[Environment]
     val config = app.injector.instanceOf[Configuration]
     val appConfig = app.injector.instanceOf[AppConfig]
 
     def testWithAuthorisedSAAgent = {
-      await(withAuthorisedAgent { Future.successful(Ok("Done."))})
+      await(withAuthorisedAgent { Future.successful(Ok("Done.")) })
     }
   }
 
@@ -61,7 +63,8 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
            |  "credentials": {
            |    "providerId": "12345-credId",
            |    "providerType": "GovernmentGateway"
-           |  }}""".stripMargin)
+           |  }}""".stripMargin
+      )
       val result = TestController.testWithAuthorisedSAAgent
       status(result) shouldBe 200
       bodyOf(result) shouldBe "Done."
@@ -79,17 +82,21 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
            |  "credentials": {
            |    "providerId": "12345-credId",
            |    "providerType": "GovernmentGateway"
-           |  }}""".stripMargin)
+           |  }}""".stripMargin
+      )
       val result = TestController.testWithAuthorisedSAAgent
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
+      result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController
+        .notEnrolled()
+        .url
     }
 
     "redirect to sign-in if an agent is not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithAuthorisedSAAgent
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo","utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder
+        .encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 }

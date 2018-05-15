@@ -52,7 +52,9 @@ lazy val root = (project in file("."))
     publishingSettings,
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
-    routesImport ++= Seq("uk.gov.hmrc.agentmappingfrontend.controllers.UrlBinders._")
+    routesImport ++= Seq("uk.gov.hmrc.agentmappingfrontend.controllers.UrlBinders._"),
+    scalafmtOnCompile in Compile := true,
+    scalafmtOnCompile in Test := true
   )
   .configs(IntegrationTest)
   .settings(
@@ -60,9 +62,12 @@ lazy val root = (project in file("."))
     Defaults.itSettings,
     unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
     parallelExecution in IntegrationTest := false,
-    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value)
+    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
+    scalafmtOnCompile in IntegrationTest := true
   )
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+
+inConfig(IntegrationTest)(scalafmtCoreSettings)
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
   tests.map { test =>

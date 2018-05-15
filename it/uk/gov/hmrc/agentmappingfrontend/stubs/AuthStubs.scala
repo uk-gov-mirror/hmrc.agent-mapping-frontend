@@ -10,11 +10,9 @@ trait AuthStubs {
 
   def givenUserIsAuthenticated(user: SampleUser) = {
     user.throwException.fold {
-      givenAuthorisedFor(
-        "{}",
-        user.authoriseJsonResponse)
-    } {
-      e => givenUnauthorisedWith(e.getClass.getSimpleName)
+      givenAuthorisedFor("{}", user.authoriseJsonResponse)
+    } { e =>
+      givenUnauthorisedWith(e.getClass.getSimpleName)
     }
   }
 
@@ -36,36 +34,45 @@ trait AuthStubs {
          |    "providerId": "12345-credId",
          |    "providerType": "GovernmentGateway"
          |  }
-         |}""".stripMargin)
-  }
-
-  def givenUnauthorisedWith(mdtpDetail: String): Unit = {
-    stubFor(post(urlEqualTo("/auth/authorise"))
-      .willReturn(aResponse()
-        .withStatus(401)
-        .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
-  }
-
-  def givenAuthorisationFailsWith5xx(): Unit = {
-    stubFor(post(urlEqualTo("/auth/authorise"))
-      .willReturn(aResponse()
-        .withStatus(500))
+         |}""".stripMargin
     )
   }
 
-  def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
-    stubFor(post(urlEqualTo("/auth/authorise"))
-      .atPriority(1)
-      .withRequestBody(equalToJson(payload, true, true))
-      .willReturn(aResponse()
-        .withStatus(200)
-        .withHeader("Content-Type", "application/json")
-        .withBody(responseBody)))
+  def givenUnauthorisedWith(mdtpDetail: String): Unit = {
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
+  }
 
-    stubFor(post(urlEqualTo("/auth/authorise")).atPriority(2)
-      .willReturn(aResponse()
-        .withStatus(401)
-        .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
+  def givenAuthorisationFailsWith5xx(): Unit = {
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(aResponse()
+          .withStatus(500)))
+  }
+
+  def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .atPriority(1)
+        .withRequestBody(equalToJson(payload, true, true))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withHeader("Content-Type", "application/json")
+            .withBody(responseBody)))
+
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .atPriority(2)
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate",
+                        "MDTP detail=\"InsufficientEnrolments\"")))
   }
 
   def verifyAuthoriseAttempt(): Unit = {

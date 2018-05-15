@@ -24,14 +24,16 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
 
-class SignedOutController @Inject()(appConfig: AppConfig) extends FrontendController {
+class SignedOutController @Inject()(appConfig: AppConfig)
+    extends FrontendController {
 
   def signOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Redirect(appConfig.signOutUrl)
   }
 
-  def signOutAndRedirect: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(appConfig.signOutAndRedirectUrl)
+  def signOutAndRedirect: Action[AnyContent] = Action.async {
+    implicit request =>
+      Future successful Redirect(appConfig.signOutAndRedirectUrl)
   }
 
 }

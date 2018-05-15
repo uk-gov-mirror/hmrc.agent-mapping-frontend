@@ -28,7 +28,8 @@ package object controllers {
     fieldValue: String =>
       Constraints.nonEmpty(fieldValue) match {
         case i: Invalid => i
-        case _ if ! Utr.isValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
+        case _ if !Utr.isValid(fieldValue) =>
+          Invalid(ValidationError("error.utr.invalid"))
         case _ => Valid
       }
   }
@@ -37,7 +38,8 @@ package object controllers {
     fieldValue: String =>
       Constraints.nonEmpty(fieldValue) match {
         case i: Invalid => i
-        case _ if ! Arn.isValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
+        case _ if !Arn.isValid(fieldValue) =>
+          Invalid(ValidationError("error.arn.invalid"))
         case _ => Valid
       }
   }

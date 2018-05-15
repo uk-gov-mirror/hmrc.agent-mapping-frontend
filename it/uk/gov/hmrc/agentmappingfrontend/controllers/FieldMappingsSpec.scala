@@ -15,19 +15,25 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
     }
 
     "give \"error.required\" error when it is not supplied" in {
-      utrMapping.bind(Map.empty).left.value should contain only FormError("testKey", "error.required")
+      utrMapping.bind(Map.empty).left.value should contain only FormError(
+        "testKey",
+        "error.required")
     }
 
     "give \"error.required\" error when it is empty" in {
-      bind("").left.value should contain only FormError("testKey", "error.required")
+      bind("").left.value should contain only FormError("testKey",
+                                                        "error.required")
     }
 
     "give \"error.required\" error when it only contains a space" in {
-      bind(" ").left.value should contain only FormError("testKey", "error.required")
+      bind(" ").left.value should contain only FormError("testKey",
+                                                         "error.required")
     }
 
     "give \"error.utr.invalid\" error when it is invalid" in {
-      bind("20000000000").left.value should contain only FormError("testKey", "error.utr.invalid")
+      bind("20000000000").left.value should contain only FormError(
+        "testKey",
+        "error.utr.invalid")
     }
   }
 
@@ -41,19 +47,25 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
     }
 
     "give \"error.required\" error when it is not supplied" in {
-      arnMapping.bind(Map.empty).left.value should contain only FormError("testKey", "error.required")
+      arnMapping.bind(Map.empty).left.value should contain only FormError(
+        "testKey",
+        "error.required")
     }
 
     "give \"error.required\" error when it is empty" in {
-      bind("").left.value should contain only FormError("testKey", "error.required")
+      bind("").left.value should contain only FormError("testKey",
+                                                        "error.required")
     }
 
     "give \"error.required\" error when it only contains a space" in {
-      bind(" ").left.value should contain only FormError("testKey", "error.required")
+      bind(" ").left.value should contain only FormError("testKey",
+                                                         "error.required")
     }
 
     "give \"error.arn.invalid\" error when it is invalid" in {
-      bind("ARN0000001").left.value should contain only FormError("testKey", "error.arn.invalid")
+      bind("ARN0000001").left.value should contain only FormError(
+        "testKey",
+        "error.arn.invalid")
     }
   }
 }

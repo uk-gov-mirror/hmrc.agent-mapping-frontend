@@ -34,33 +34,49 @@ trait AppConfig {
   val authenticationLoginCallbackUrl: String
 }
 
-trait StrictConfig{
+trait StrictConfig {
   def configuration: Configuration
-  def loadConfig(key: String): String = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
+  def loadConfig(key: String): String =
+    configuration
+      .getString(key)
+      .getOrElse(throw new Exception(s"Missing configuration key: $key"))
 }
 
 @Singleton
-class FrontendAppConfig @Inject()(val environment: Environment, val configuration: Configuration)
-  extends AppConfig with ServicesConfig with StrictConfig  {
+class FrontendAppConfig @Inject()(val environment: Environment,
+                                  val configuration: Configuration)
+    extends AppConfig
+    with ServicesConfig
+    with StrictConfig {
 
   override val runModeConfiguration: Configuration = configuration
   override protected def mode: Mode = environment.mode
 
-  private lazy val contactHost = runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
+  private lazy val contactHost =
+    runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
   private val contactFormServiceIdentifier = "AOSS"
 
-  override lazy val analyticsToken: String = loadConfig(s"google-analytics.token")
+  override lazy val analyticsToken: String = loadConfig(
+    s"google-analytics.token")
   override lazy val analyticsHost: String = loadConfig(s"google-analytics.host")
-  override lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
-  override lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  override lazy val reportAProblemPartialUrl =
+    s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
+  override lazy val reportAProblemNonJSUrl =
+    s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
-  private lazy val companyAuthFrontendExternalUrl = loadConfig("microservice.services.company-auth-frontend.external-url")
-  private lazy val signOutPath = loadConfig("microservice.services.company-auth-frontend.sign-out.path")
-  private lazy val signOutContinueUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.continue-url")
-  private lazy val signOutRedirectUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.redirect-url")
-  override lazy val signOutUrl: String = s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutContinueUrl)}"
-  override lazy val signOutAndRedirectUrl: String = s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutRedirectUrl)}"
-  override lazy val authenticationLoginCallbackUrl: String = loadConfig("authentication.login-callback.url")
+  private lazy val companyAuthFrontendExternalUrl = loadConfig(
+    "microservice.services.company-auth-frontend.external-url")
+  private lazy val signOutPath = loadConfig(
+    "microservice.services.company-auth-frontend.sign-out.path")
+  private lazy val signOutContinueUrl = loadConfig(
+    "microservice.services.company-auth-frontend.sign-out.continue-url")
+  private lazy val signOutRedirectUrl = loadConfig(
+    "microservice.services.company-auth-frontend.sign-out.redirect-url")
+  override lazy val signOutUrl: String =
+    s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutContinueUrl)}"
+  override lazy val signOutAndRedirectUrl: String =
+    s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutRedirectUrl)}"
+  override lazy val authenticationLoginCallbackUrl: String = loadConfig(
+    "authentication.login-callback.url")
 
 }
-

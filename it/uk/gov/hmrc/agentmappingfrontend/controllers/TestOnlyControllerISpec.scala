@@ -7,7 +7,8 @@ import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 
 class TestOnlyControllerISpec extends BaseControllerISpec {
 
-  private lazy val controller: TestOnlyController = app.injector.instanceOf[TestOnlyController]
+  private lazy val controller: TestOnlyController =
+    app.injector.instanceOf[TestOnlyController]
 
   val arn = Arn("ARN0001")
   val sa = "AgentCode1"

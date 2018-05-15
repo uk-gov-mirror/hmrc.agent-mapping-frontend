@@ -26,23 +26,33 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
-import uk.gov.hmrc.agentmappingfrontend.support.{AuditSupport, EndpointBehaviours, WireMockSupport}
+import uk.gov.hmrc.agentmappingfrontend.support.{
+  AuditSupport,
+  EndpointBehaviours,
+  WireMockSupport
+}
 import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
+abstract class BaseControllerISpec
+    extends UnitSpec
+    with OneAppPerSuite
+    with WireMockSupport
+    with EndpointBehaviours
+    with AuditSupport {
 
   override implicit lazy val app: Application = appBuilder.build()
 
   protected def appBuilder: GuiceApplicationBuilder = {
-    new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.agent-mapping.port" -> wireMockPort,
-      "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
-      "authentication.login-callback.url" -> "somehost"
-    )
+    new GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.auth.port" -> wireMockPort,
+        "microservice.services.agent-mapping.port" -> wireMockPort,
+        "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
+        "authentication.login-callback.url" -> "somehost"
+      )
       .overrides(new TestGuiceModule)
   }
 
@@ -51,7 +61,8 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
       bind(classOf[AuditService]).toInstance(testAuditService)
       bind(classOf[HttpFilters]).to(classOf[NoHttpFilters])
       bind(classOf[AuditConnector]).toInstance(new AuditConnector {
-        override def auditingConfig: AuditingConfig = AuditingConfig(None, enabled = false)
+        override def auditingConfig: AuditingConfig =
+          AuditingConfig(None, enabled = false)
       })
     }
   }
@@ -59,10 +70,13 @@ abstract class BaseControllerISpec extends UnitSpec with OneAppPerSuite with Wir
   protected implicit val materializer: Materializer = app.materializer
 
   protected def fakeRequest(endpointMethod: String, endpointPath: String) = {
-    FakeRequest(endpointMethod, endpointPath).withSession(SessionKeys.authToken -> "Bearer XYZ")
+    FakeRequest(endpointMethod, endpointPath).withSession(
+      SessionKeys.authToken -> "Bearer XYZ")
   }
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]
-  private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
-  protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
+  private implicit val messages: Messages =
+    messagesApi.preferred(Seq.empty[Lang])
+  protected def htmlEscapedMessage(key: String): String =
+    HtmlFormat.escape(Messages(key)).toString
 }
