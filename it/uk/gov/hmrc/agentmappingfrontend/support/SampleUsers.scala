@@ -6,7 +6,7 @@ case class SampleUser(authoriseJsonResponse: String, activeEnrolments: Set[Strin
 
 object SampleUsers {
 
-  val aValidlyEnrolledAgent = SampleUser(
+  val eligibleAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"IR-SA-AGENT", "identifiers": [
@@ -22,7 +22,7 @@ object SampleUsers {
     activeEnrolments = Set("IR-SA-AGENT")
   )
 
-  val anVATEnrolledAgent = SampleUser(
+  val vatEnrolledAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"HMCE-VAT-AGNT", "identifiers": [
@@ -38,7 +38,7 @@ object SampleUsers {
     activeEnrolments = Set("HMCE-VAT-AGNT")
   )
 
-  val anSAEnrolledAgentInactive = SampleUser(
+  val saEnrolledAgentInactive = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"IR-SA-AGENT",
@@ -56,7 +56,7 @@ object SampleUsers {
     activeEnrolments = Set()
   )
 
-  val anVATEnrolledAgentInactive = SampleUser(
+  val vatEnrolledAgentInactive = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"HMCE-VAT-AGNT",
@@ -74,7 +74,7 @@ object SampleUsers {
     activeEnrolments = Set()
   )
 
-  val anAgentNotEnrolled = SampleUser(
+  val agentNotEnrolled = SampleUser(
     s"""{
        | "authorisedEnrolments": [],
        | "affinityGroup": "Agent",
@@ -86,7 +86,7 @@ object SampleUsers {
     activeEnrolments = Set()
   )
 
-  val anMTDAgent = SampleUser(
+  val mtdAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"HMRC-AS-AGENT", "identifiers": [
@@ -102,7 +102,7 @@ object SampleUsers {
     activeEnrolments = Set("HMRC-AS-AGENT")
   )
 
-  val aStrangeAgent = SampleUser(
+  val notEligibleAgent = SampleUser(
     s"""{
        |  "authorisedEnrolments": [
        |   { "key":"FOO-AGENT", "identifiers": [

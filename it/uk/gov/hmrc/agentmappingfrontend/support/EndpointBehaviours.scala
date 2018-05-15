@@ -45,29 +45,29 @@ trait EndpointBehaviours extends AuthStubs {
     behave like anAuthenticatedEndpoint(endpointMethod, endpointPath, doRequest)
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but is not validly enrolled" in {
-      givenUserIsAuthenticated(aStrangeAgent)
+      givenUserIsAuthenticated(notEligibleAgent)
       val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
 
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, aStrangeAgent.activeEnrolments)
+      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, notEligibleAgent.activeEnrolments)
     }
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but has an HMRC-AS-AGENT enrolment" in {
-      givenUserIsAuthenticated(anMTDAgent)
+      givenUserIsAuthenticated(mtdAgent)
       val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
 
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, anMTDAgent.activeEnrolments)
+      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAgent.activeEnrolments)
     }
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but has an inactive enrolment" in {
-      givenUserIsAuthenticated(anSAEnrolledAgentInactive)
+      givenUserIsAuthenticated(saEnrolledAgentInactive)
       val request = fakeRequest(endpointMethod,endpointPath)
       val result = await(doRequest(request))
 

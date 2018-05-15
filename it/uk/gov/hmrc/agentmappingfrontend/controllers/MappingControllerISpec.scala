@@ -7,7 +7,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.auth.Auth
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{aValidlyEnrolledAgent, anVATEnrolledAgent}
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, vatEnrolledAgent}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 
 class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
@@ -55,37 +55,37 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       expectCheckAgentRefCodeAudit = true)(callEndpointWith)
 
     "display the add code page if the current user is logged in and has legacy agent enrolment for SA" in {
-      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      givenUserIsAuthenticated(eligibleAgent)
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       bodyOf(result) should include("Connect to your agent services account")
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = aValidlyEnrolledAgent.activeEnrolments)
+      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = eligibleAgent.activeEnrolments)
     }
 
     "display the add code page if the current user is logged in and has legacy agent enrolment for VAT" in {
-      givenUserIsAuthenticated(anVATEnrolledAgent)
+      givenUserIsAuthenticated(vatEnrolledAgent)
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       bodyOf(result) should include("Connect to your agent services account")
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = anVATEnrolledAgent.activeEnrolments)
+      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = vatEnrolledAgent.activeEnrolments)
     }
 
     "display the SA Agent Reference if the current user is logged in and has legacy agent enrolment for SA" in {
-      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      givenUserIsAuthenticated(eligibleAgent)
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = aValidlyEnrolledAgent.activeEnrolments)
+      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = eligibleAgent.activeEnrolments)
     }
 
     "display the VAT Agent Reference if the current user is logged in and has legacy agent enrolment for VAT" in {
-      givenUserIsAuthenticated(anVATEnrolledAgent)
+      givenUserIsAuthenticated(vatEnrolledAgent)
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = anVATEnrolledAgent.activeEnrolments)
+      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = vatEnrolledAgent.activeEnrolments)
     }
   }
 
@@ -97,7 +97,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
 
     "redirect to complete if the user enters an ARN and UTR that match the known facts for SA" in {
-      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      givenUserIsAuthenticated(eligibleAgent)
       mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"))
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
       val result = callEndpointWith(request)
@@ -107,7 +107,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "redirect to complete if the user enters an ARN and UTR that match the known facts for VAT" in {
-      givenUserIsAuthenticated(anVATEnrolledAgent)
+      givenUserIsAuthenticated(vatEnrolledAgent)
       mappingIsCreated(Utr("2000000000"),Arn("TARN0000001"))
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
       val result = callEndpointWith(request)
@@ -117,7 +117,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "redirect to the already-mapped page if the mapping already exists for SA" in new App {
-      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      givenUserIsAuthenticated(eligibleAgent)
       mappingExists(Utr("2000000000"),Arn("TARN0000001"))
 
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
@@ -128,7 +128,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "redirect to the already-mapped page if the mapping already exists for VAT" in new App {
-      givenUserIsAuthenticated(anVATEnrolledAgent)
+      givenUserIsAuthenticated(vatEnrolledAgent)
       mappingExists(Utr("2000000000"),Arn("TARN0000001"))
 
       val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
@@ -140,7 +140,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "redisplay the form " when {
       "there is no ARN " in {
-        givenUserIsAuthenticated(aValidlyEnrolledAgent)
+        givenUserIsAuthenticated(eligibleAgent)
         val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000")
         val result = callEndpointWith(request)
 
@@ -150,7 +150,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       }
 
       "the arn is invalid" in {
-        givenUserIsAuthenticated(aValidlyEnrolledAgent)
+        givenUserIsAuthenticated(eligibleAgent)
         val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "ARN0000001", "utr.value" -> "2000000000")
         val result = callEndpointWith(request)
 
@@ -161,7 +161,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       }
 
       "there is no UTR " in {
-        givenUserIsAuthenticated(aValidlyEnrolledAgent)
+        givenUserIsAuthenticated(eligibleAgent)
         val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001")
         val result = callEndpointWith(request)
 
@@ -171,7 +171,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       }
 
       "the utr is invalid" in {
-        givenUserIsAuthenticated(aValidlyEnrolledAgent)
+        givenUserIsAuthenticated(eligibleAgent)
         val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "notautr")
         val result = callEndpointWith(request)
 
@@ -182,7 +182,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       }
 
       "the known facts check fails" in {
-        givenUserIsAuthenticated(aValidlyEnrolledAgent)
+        givenUserIsAuthenticated(eligibleAgent)
         mappingKnownFactsIssue(Utr("2000000000"),Arn("TARN0000001"))
 
         val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("arn.arn" -> "TARN0000001", "utr.value" -> "2000000000")
@@ -200,7 +200,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
 
     "display the complete page for an arn and ir sa agent reference" in {
-      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      givenUserIsAuthenticated(eligibleAgent)
       val request = fakeRequest(GET, s"/agent-mapping/complete")
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
@@ -211,7 +211,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "display the complete page for an arn and vat agent reference" in {
-      givenUserIsAuthenticated(anVATEnrolledAgent)
+      givenUserIsAuthenticated(vatEnrolledAgent)
       val request = fakeRequest(GET, s"/agent-mapping/complete")
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
@@ -233,7 +233,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   "already mapped " should {
     "contain a message indicating that the user has already mapped all of her non-mtd identifiers" in {
-      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      givenUserIsAuthenticated(eligibleAgent)
       val request = fakeRequest(GET, "/agent-mapping/already-mapped")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
