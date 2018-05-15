@@ -11,7 +11,7 @@ object SampleUsers {
 
   val eligibleAgent = SampleUser(
     s"""{
-       |  "authorisedEnrolments": [
+       |  "allEnrolments": [
        |   { "key":"IR-SA-AGENT", "identifiers": [
        |      { "key":"IRAgentReference", "value": "HZ1234" }
        |    ]}
@@ -27,7 +27,7 @@ object SampleUsers {
 
   val vatEnrolledAgent = SampleUser(
     s"""{
-       |  "authorisedEnrolments": [
+       |  "allEnrolments": [
        |   { "key":"HMCE-VAT-AGNT", "identifiers": [
        |      { "key":"AgentRefNo", "value": "HZ1234" }
        |    ]}
@@ -43,7 +43,7 @@ object SampleUsers {
 
   val saEnrolledAgentInactive = SampleUser(
     s"""{
-       |  "authorisedEnrolments": [
+       |  "allEnrolments": [
        |   { "key":"IR-SA-AGENT",
        |     "identifiers": [
        |        { "key":"IRAgentReference", "value": "HZ1234" }
@@ -61,7 +61,7 @@ object SampleUsers {
 
   val vatEnrolledAgentInactive = SampleUser(
     s"""{
-       |  "authorisedEnrolments": [
+       |  "allEnrolments": [
        |   { "key":"HMCE-VAT-AGNT",
        |     "identifiers": [
        |        { "key":"AgentRefNo", "value": "HZ1234" }
@@ -79,7 +79,7 @@ object SampleUsers {
 
   val agentNotEnrolled = SampleUser(
     s"""{
-       | "authorisedEnrolments": [],
+       | "allEnrolments": [],
        | "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
@@ -91,7 +91,7 @@ object SampleUsers {
 
   val mtdAgent = SampleUser(
     s"""{
-       |  "authorisedEnrolments": [
+       |  "allEnrolments": [
        |   { "key":"HMRC-AS-AGENT", "identifiers": [
        |      { "key":"AgentReferenceNumber", "value": "TARN0000001" }
        |    ]}
@@ -107,7 +107,7 @@ object SampleUsers {
 
   val notEligibleAgent = SampleUser(
     s"""{
-       |  "authorisedEnrolments": [
+       |  "allEnrolments": [
        |   { "key":"FOO-AGENT", "identifiers": [
        |      { "key":"fooIdentifier", "value": "foo123" }
        |    ]}

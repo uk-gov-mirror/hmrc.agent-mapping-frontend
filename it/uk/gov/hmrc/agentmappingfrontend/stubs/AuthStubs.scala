@@ -22,7 +22,7 @@ trait AuthStubs {
     givenAuthorisedFor(
       "{}",
       s"""{
-         |  "authorisedEnrolments": [
+         |  "allEnrolments": [
          |   { "key":"$serviceName", "identifiers": [
          |      { "key":"foo", "value": "foo" }
          |    ]}

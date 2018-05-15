@@ -52,7 +52,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |  "authorisedEnrolments": [
+           |  "allEnrolments": [
            |    { "key":"IR-SA-AGENT", "identifiers": [
            |      { "key":"IRAgentReference", "value": "fooSaAgentReference" }
            |    ]}
@@ -71,7 +71,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       givenAuthorisedFor(
         "{}",
         s"""{
-           |  "authorisedEnrolments": [
+           |  "allEnrolments": [
            |    { "key":"IR-FOO-AGENT", "identifiers": [
            |     { "key":"IRAgentReference", "value": "fooSaAgentReference" }
            |    ]}
