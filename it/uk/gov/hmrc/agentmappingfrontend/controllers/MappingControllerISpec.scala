@@ -223,11 +223,21 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   }
 
  "not enrolled " should {
-   "contain a message indicating if the user has not enrolled for IR-SA-AGENT" in {
+   "contain a message indicating that the user is not enrolled for a valid non-mtd enrolment" in {
      val request = fakeRequest(GET, "/agent-mapping/not-enrolled")
      val result = callEndpointWith(request)
      status(result) shouldBe 200
      bodyOf(result) should include(htmlEscapedMessage("notEnrolled.p1"))
    }
  }
+
+  "already mapped " should {
+    "contain a message indicating that the user has already mapped all of her non-mtd identifiers" in {
+      givenUserIsAuthenticated(aValidlyEnrolledAgent)
+      val request = fakeRequest(GET, "/agent-mapping/already-mapped")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 200
+      bodyOf(result) should include(htmlEscapedMessage("alreadyMapped.p1"))
+    }
+  }
 }

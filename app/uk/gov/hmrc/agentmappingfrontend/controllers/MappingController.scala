@@ -66,19 +66,19 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
   }
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent {
+    withAuthorisedAgent {
       successful(Redirect(routes.MappingController.showAddCode()))
-    }()
+    }
   }
 
   def showAddCode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent {
+    withAuthorisedAgentAudited {
       successful(Ok(html.add_code(mappingForm)))
     }(AuditService.auditCheckAgentRefCodeEvent(auditService))
   }
 
   def submitAddCode: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent {
+    withAuthorisedAgent {
       mappingForm.bindFromRequest.fold(
           formWithErrors => {
             successful(Ok(html.add_code(formWithErrors)))
@@ -93,21 +93,21 @@ class MappingController @Inject()(override val messagesApi: MessagesApi,
             }
           }
         )
-    }()
+    }
   }
 
 
   val complete: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent {
+    withAuthorisedAgent {
       successful(Ok(html.complete()))
-    }()
+    }
   }
 
 
   val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent {
+    withAuthorisedAgent {
       successful(Ok(html.already_mapped()))
-    }()
+    }
   }
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>

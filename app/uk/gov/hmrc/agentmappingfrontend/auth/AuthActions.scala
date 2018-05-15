@@ -54,9 +54,14 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   def env: Environment
   def appConfig: AppConfig
 
-  def withAuthorisedAsAgent(body: => Future[Result])
-                           (audit: AuditData => Unit = _ => ())
-                           (implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  def withAuthorisedAgent(body: => Future[Result])
+                         (implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+    withAuthorisedAgentAudited(body)(_ =>())
+  }
+
+  def withAuthorisedAgentAudited(body: => Future[Result])
+                         (audit: AuditData => Unit = _ => ())
+                         (implicit request: Request[AnyContent], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(AuthProviders(GovernmentGateway) and Agent)
       .retrieve(authorisedEnrolments and credentials){
         case justAuthorisedEnrolments ~ creds =>
