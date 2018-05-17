@@ -74,7 +74,11 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           if (eligible) {
             body
           } else {
-            Future.failed(InsufficientEnrolments())
+            if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
+              Future.failed(new AuthorisationException("Invalid enrolment, should be non-MTD one.") {})
+            } else {
+              Future.failed(InsufficientEnrolments())
+            }
           }
       }
       .recover {

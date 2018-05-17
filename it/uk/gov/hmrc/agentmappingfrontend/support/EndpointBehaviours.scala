@@ -59,15 +59,14 @@ trait EndpointBehaviours extends AuthStubs {
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, notEligibleAgent.activeEnrolments)
     }
 
-    "render the not-enrolled page if the current user is logged with affinity group Agent but has an HMRC-AS-AGENT enrolment" in {
+    "redirect to the sign-in page if the current user is logged with affinity group Agent but has an HMRC-AS-AGENT enrolment" in {
       givenUserIsAuthenticated(mtdAgent)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
-
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAgent.activeEnrolments)
+      result.header.headers("Location") should include("/gg/sign-in")
+      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, Set("HMRC-AS-AGENT"))
     }
 
     "render the not-enrolled page if the current user is logged with affinity group Agent but has an inactive enrolment" in {
