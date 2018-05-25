@@ -27,7 +27,6 @@ trait AuthStubs {
          |      { "key":"foo", "value": "foo" }
          |    ]}
          |  ],
-         |  "affinityGroup": "Agent",
          |  "credentials": {
          |    "providerId": "12345-credId",
          |    "providerType": "GovernmentGateway"

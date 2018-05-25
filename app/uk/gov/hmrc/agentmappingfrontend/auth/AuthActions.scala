@@ -23,7 +23,6 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
-import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.{allEnrolments, credentials}
@@ -65,7 +64,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
-    authorised(AuthProviders(GovernmentGateway) and Agent)
+    authorised(AuthProviders(GovernmentGateway))
       .retrieve(allEnrolments and credentials) {
         case agentEnrolments ~ creds =>
           val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
@@ -74,15 +73,19 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           if (eligible) {
             body
           } else {
-            if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
-              Future.failed(new AuthorisationException("Invalid enrolment, should be non-MTD one.") {})
+            val hasOnlyIneligibleEnrolments =
+              activeEnrolments.intersect(Set(`HMRC-AS-AGENT`, `HMRC-AGENT-AGENT`)).nonEmpty
+            val hasNoEnrolments = agentEnrolments.enrolments.isEmpty
+            val redirectRoute = if (hasOnlyIneligibleEnrolments || hasNoEnrolments) {
+              routes.MappingController.alreadyMapped()
             } else {
-              Future.failed(InsufficientEnrolments())
+              routes.MappingController.notEnrolled()
             }
+
+            Future.successful(Redirect(redirectRoute))
           }
       }
       .recover {
-        case _: InsufficientEnrolments => Redirect(routes.MappingController.notEnrolled())
         case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
       }
 

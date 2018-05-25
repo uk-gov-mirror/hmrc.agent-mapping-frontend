@@ -16,7 +16,6 @@ object SampleUsers {
        |      { "key":"IRAgentReference", "value": "HZ1234" }
        |    ]}
        |  ],
-       |  "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
@@ -32,7 +31,6 @@ object SampleUsers {
        |      { "key":"AgentRefNo", "value": "HZ1234" }
        |    ]}
        |  ],
-       |  "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
@@ -50,7 +48,6 @@ object SampleUsers {
        |      ],
        |     "state": "Inactive" }
        |  ],
-       |  "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
@@ -68,7 +65,6 @@ object SampleUsers {
        |      ],
        |     "state": "Inactive" }
        |  ],
-       |  "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
@@ -80,7 +76,6 @@ object SampleUsers {
   val agentNotEnrolled = SampleUser(
     s"""{
        | "allEnrolments": [],
-       | "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
@@ -89,14 +84,13 @@ object SampleUsers {
     activeEnrolments = Set()
   )
 
-  val mtdAgent = SampleUser(
+  val mtdAsAgent = SampleUser(
     s"""{
        |  "allEnrolments": [
        |   { "key":"HMRC-AS-AGENT", "identifiers": [
        |      { "key":"AgentReferenceNumber", "value": "TARN0000001" }
        |    ]}
        |  ],
-       |  "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
@@ -105,20 +99,34 @@ object SampleUsers {
     activeEnrolments = Set("HMRC-AS-AGENT")
   )
 
-  val notEligibleAgent = SampleUser(
+  val mtdAgentAgent = SampleUser(
     s"""{
        |  "allEnrolments": [
-       |   { "key":"FOO-AGENT", "identifiers": [
-       |      { "key":"fooIdentifier", "value": "foo123" }
+       |   { "key":"HMRC-AGENT-AGENT", "identifiers": [
+       |      { "key":"AgentRefNumber", "value": "TARN0000001" }
        |    ]}
        |  ],
-       |  "affinityGroup": "Agent",
        |  "credentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
        |}""".stripMargin,
-    activeEnrolments = Set("FOO-AGENT")
+    activeEnrolments = Set("HMRC-AGENT-AGENT")
+  )
+
+  val notEligibleAgent = SampleUser(
+    s"""{
+       |  "allEnrolments": [
+       |   { "key":"FOO", "identifiers": [
+       |      { "key":"fooIdentifier", "value": "foo123" }
+       |    ]}
+       |  ],
+       |  "credentials": {
+       |    "providerId": "12345-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
+       |}""".stripMargin,
+    activeEnrolments = Set("FOO")
   )
 
   val individual = SampleUser("", Set.empty, Some(InsufficientEnrolments()))

@@ -52,7 +52,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     val endpoint = "/agent-mapping/add-code"
 
-    behave like anEndpointReachableGivenAgentAffinityGroupAndValidEnrolment(
+    behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
       GET,
       endpoint,
       expectCheckAgentRefCodeAudit = true)(callEndpointWith)
@@ -96,7 +96,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     val endpoint = "/agent-mapping/add-code"
 
-    behave like anEndpointReachableGivenAgentAffinityGroupAndValidEnrolment(
+    behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
       POST,
       endpoint,
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
@@ -208,7 +208,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   "complete" should {
 
-    behave like anEndpointReachableGivenAgentAffinityGroupAndValidEnrolment(
+    behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
       GET,
       s"/agent-mapping/complete",
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)

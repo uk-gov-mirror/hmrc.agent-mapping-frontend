@@ -32,4 +32,5 @@ object Names {
   val `IR-SDLT-AGENT` = "IR-SDLT-AGENT"
 
   val `HMRC-AS-AGENT` = "HMRC-AS-AGENT"
+  val `HMRC-AGENT-AGENT` = "HMRC-AGENT-AGENT"
 }
