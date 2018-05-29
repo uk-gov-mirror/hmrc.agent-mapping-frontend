@@ -7,7 +7,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.auth.Auth
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, vatEnrolledAgent}
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 
 class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
@@ -238,6 +238,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   "not enrolled " should {
     "contain a message indicating that the user is not enrolled for a valid non-mtd enrolment" in {
+      givenUserIsAuthenticated(agentNotEnrolled)
       val request = fakeRequest(GET, "/agent-mapping/not-enrolled")
       val result = callEndpointWith(request)
       status(result) shouldBe 200

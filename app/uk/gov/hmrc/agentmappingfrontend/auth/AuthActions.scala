@@ -54,6 +54,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def appConfig: AppConfig
 
+  def withBasicAuth[A](body: => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway)) {
+      body
+    } recover {
+      case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+    }
+
   def withAuthorisedAgent(body: => Future[Result])(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
