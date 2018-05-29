@@ -44,6 +44,9 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
     def testWithAuthorisedAgent =
       await(withAuthorisedAgent { Future.successful(Ok("Done.")) })
+
+    def testWithBasicAuth =
+      await(withBasicAuth { Future.successful(Ok("Done.")) })
   }
 
   private val eligibleEnrolments = Map(
@@ -175,6 +178,22 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     "redirect to sign-in if an agent is not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithAuthorisedAgent
+      status(result) shouldBe 303
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+    }
+  }
+
+  "withBasicAuth" should {
+    "check if the user is logged in" in {
+      givenAuthorisedFor("{}", s"""{}""".stripMargin)
+      val result = TestController.testWithBasicAuth
+      status(result) shouldBe 200
+      bodyOf(result) shouldBe "Done."
+    }
+
+    "redirect to sign-in if a user is not logged in" in {
+      givenUnauthorisedWith("MissingBearerToken")
+      val result = TestController.testWithBasicAuth
       status(result) shouldBe 303
       result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
     }

@@ -97,13 +97,15 @@ class MappingController @Inject()(
   }
 
   val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent {
+    withBasicAuth {
       successful(Ok(html.already_mapped()))
     }
   }
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(html.not_enrolled())
+    withBasicAuth {
+      Future successful Ok(html.not_enrolled())
+    }
   }
 }
 
