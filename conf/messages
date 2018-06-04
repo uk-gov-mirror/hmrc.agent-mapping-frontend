@@ -6,14 +6,26 @@ connectAgentServices.title=Connect to your agent services account
 connectAgentServices.label.accountNumber=Agent services account number
 connectAgentServices.label.utrOrTaxReference=Self Assessment UTR or Corporation Tax reference
 
-connectAgentServices.start.title=Add your existing clients to your agent services account
-connectAgentServices.start.p1=Connect each of your agent Government Gateway IDs so your accounting software will be able to access your Self Assessment or VAT client information.
-connectAgentServices.start.p2=You can only add IDs linked to your business. We can''t process client IDs.
+connectAgentServices.start.title=Link your current Self Assessment and VAT clients to your agent services account
+connectAgentServices.start.h2=What you need to know
+connectAgentServices.start.p1=Use this service to allow your agent services account to access your current client relationships.
+connectAgentServices.start.p2=If your clients sign up to report their income and expenses, or their VAT returns, through software, you will then be able to:
+connectAgentServices.start.l1.1=use software to access information about these clients
+connectAgentServices.start.l1.2=act on your client''s behalf for these services without having to ask for their authorisation again
 connectAgentServices.start.beforeYouStart=Before you start
 connectAgentServices.start.youWillNeed=You will need:
-connectAgentServices.start.l1=each of the agent Government Gateway IDs used by your business for Self Assessment or VAT clients
-connectAgentServices.start.l2=your agent services account number
-connectAgentServices.start.l3=your business''s tax reference (sometimes called a UTR)
+connectAgentServices.start.summary=When to use this service
+connectAgentServices.start.details.p1=You should use this service if you expect to provide any of the following services for clients:
+connectAgentServices.start.details.l1.1=report their income and expenses through software
+connectAgentServices.start.details.l1.2=report their VAT returns through software
+connectAgentServices.start.details.p2=This service will not allow you to access these services on your client''s behalf:
+connectAgentServices.start.details.l2.1=register a client''s trust
+connectAgentServices.start.details.l2.2=view a client''s PAYE income record
+connectAgentServices.start.l2.1=your agent services account number (for example, XARN-123-4567) as shown on your <a href="{0}" id="accountHome">account homepage</a>
+connectAgentServices.start.l2.2=your Self Assessment Unique Taxpayer Reference (UTR) as a sole trader or partnership, or your company UTR as a limited company
+connectAgentServices.start.l2.3=login details for each of the agent Government Gateway accounts your business uses for your Income Tax Self Assessment and VAT clients.
+connectAgentServices.start.p3=On the next screen, sign in with one of these accounts to start linking your existing clients.
+connectAgentServices.start.p4=You will need to repeat this process for each Government Gateway account your business uses.
 
 #Already mapped
 alreadyMapped.title=This ID is already connected to your account
@@ -32,7 +44,7 @@ connectionComplete.p1=If you need to add another agent Government Gateway ID, si
 button.connect=Connect
 button.repeatProcess=Repeat process with another ID
 button.signOut=Sign out
-button.startNow=Start now
+button.startNow=Sign in with another account
 
 #Errors
 error.summary.heading=Something''s wrong
