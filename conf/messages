@@ -27,9 +27,10 @@ connectAgentServices.start.l2.3=login details for each of the agent Government G
 connectAgentServices.start.p3=On the next screen, sign in with one of these accounts to start linking your existing clients.
 connectAgentServices.start.p4=You will need to repeat this process for each Government Gateway account your business uses.
 
-#Already mapped
-alreadyMapped.title=This ID is already connected to your account
-alreadyMapped.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+#Already linked
+alreadyMapped.title=There is a problem
+alreadyMapped.p1=This Government Gateway account is already linked to your agent services account.
+alreadyMapped.p2=If you need to link a different Government Gateway account, sign in with the login details for that account.
 
 #Not enrolled
 notEnrolled.title=You can''t connect this ID

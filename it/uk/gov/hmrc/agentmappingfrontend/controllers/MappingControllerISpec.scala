@@ -248,10 +248,14 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   "already mapped " should {
     "contain a message indicating that the user has already mapped all of her non-mtd identifiers" in {
       givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, "/agent-mapping/already-mapped")
+      val request = fakeRequest(GET, "/agent-mapping/errors/already-linked")
       val result = callEndpointWith(request)
+      val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("alreadyMapped.p1"))
+      resultBody should include(htmlEscapedMessage("alreadyMapped.title"))
+      resultBody should include(htmlEscapedMessage("alreadyMapped.p1"))
+      resultBody should include(htmlEscapedMessage("alreadyMapped.p2"))
+      resultBody should include(htmlEscapedMessage("button.startNow"))
     }
   }
 }
