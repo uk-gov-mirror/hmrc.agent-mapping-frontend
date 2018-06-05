@@ -16,3 +16,5 @@ addSbtPlugin("uk.gov.hmrc" % "sbt-git-versioning" % "0.9.0")
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.15")
+
+addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.8")

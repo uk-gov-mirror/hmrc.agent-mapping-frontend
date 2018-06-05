@@ -9,6 +9,7 @@ import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.http.InternalServerException
 
 class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
@@ -148,8 +149,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     "redirect to complete if the user enters an ARN and UTR that match the known facts for SA" in {
       givenUserIsAuthenticated(eligibleAgent)
       mappingIsCreated(Utr("2000000000"), Arn("TARN0000001"))
-      val request =
-        fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000").withSession(("mappingArn", "TARN0000001"))
+      val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000")
+        .withSession(("mappingArn", "TARN0000001"))
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
@@ -228,29 +229,37 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
       GET,
-      s"/agent-mapping/complete",
+      routes.MappingController.complete.url,
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
 
     "display the complete page for an arn and ir sa agent reference" in {
       givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, s"/agent-mapping/complete")
+      val request = fakeRequest(GET, routes.MappingController.complete.url).withSession(("mappingArn", "TARN0000001"))
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
       resultBody should include(htmlEscapedMessage("connectionComplete.title"))
       resultBody should include(htmlEscapedMessage("button.repeatProcess"))
-      resultBody should include(htmlEscapedMessage("button.signOut"))
+      resultBody should include(htmlEscapedMessage("link.finishSignOut"))
+      resultBody should include("TARN0000001")
+      resultBody should include("12345-credId")
     }
 
     "display the complete page for an arn and vat agent reference" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      val request = fakeRequest(GET, s"/agent-mapping/complete")
+      val request = fakeRequest(GET, routes.MappingController.complete.url).withSession(("mappingArn", "TARN0000001"))
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
       resultBody should include(htmlEscapedMessage("connectionComplete.title"))
       resultBody should include(htmlEscapedMessage("button.repeatProcess"))
-      resultBody should include(htmlEscapedMessage("button.signOut"))
+      resultBody should include(htmlEscapedMessage("link.finishSignOut"))
+    }
+
+    "InternalServerError due no ARN found after mapping complete" in {
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = fakeRequest(GET, routes.MappingController.complete.url)
+      an[InternalServerException] shouldBe thrownBy(callEndpointWith(request))
     }
   }
 

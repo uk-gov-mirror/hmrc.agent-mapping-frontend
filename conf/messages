@@ -1,4 +1,5 @@
 #Common
+app.name=Agent services account
 servicename.titleSuffix=- Agent services account - GOV.UK
 
 #Connect agent services
@@ -54,12 +55,23 @@ noMatch.p1=We could not find any records that match the details you entered.
 noMatch.try-again.button=Try again
 
 #Connection complete
-connectionComplete.title=You''ve connected this Government Gateway ID
-connectionComplete.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+connectionComplete.title=You have link this Government Gateway account
+connectionComplete.header1=Government Gateway account
+connectionComplete.header2=is now linked to your agent services account
+connectionComplete.h3.1=What you can do next
+connectionComplete.p1=Your agent services account can now access your current client relationships linked to this Government Gateway account.
+connectionComplete.p2=So if your clients are signed up to report their income and expenses, or their VAT returns, through software, you can now:
+connectionComplete.l1=use software to access information about these clients
+connectionComplete.l2=act on your client''s behalf for these services without having to ask for their authorisation again
+connectionComplete.p3=You will still need to use your software or Government Gateway accounts to manage your client lists.
+connectionComplete.h3.2=If you use more than one Government Gateway account
+connectionComplete.p4=You will need to repeat this process for each Government Gateway account your business uses.
+connectionComplete.p5=Sign in using a different Government Gateway account to start linking it to your agent services account.
 
-#Buttons
+#Buttons/links
+button.repeatProcess=Sign in to link another account
+link.finishSignOut=Finish and sign out
 button.continue=Continue
-button.repeatProcess=Repeat process with another ID
 button.signOut=Sign out
 button.startNow=Sign in with another account
 button.back=Back

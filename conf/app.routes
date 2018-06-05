@@ -7,10 +7,12 @@ GET         /enter-account-number                         uk.gov.hmrc.agentmappi
 POST        /enter-account-number                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitEnterAccountNo
 GET         /enter-utr                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showEnterUtr
 POST        /enter-utr                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitEnterUtr
-GET         /complete                                     uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete
+GET         /account-linked                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete
 GET         /errors/already-linked                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped
 GET         /not-enrolled                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled
 GET         /no-match                                     uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.noMatch
 
 GET         /signed-out                                   uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
 GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect
+
+GET         /assets/*file                                 controllers.Assets.at(path="/public", file)

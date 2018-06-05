@@ -64,13 +64,13 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
     }
 
-  def withAuthorisedAgent(body: => Future[Result])(
+  def withAuthorisedAgent(body: String => Future[Result])(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     withAuthorisedAgentAudited(body)(_ => ())
 
-  def withAuthorisedAgentAudited(body: => Future[Result])(audit: AuditData => Unit = _ => ())(
+  def withAuthorisedAgentAudited(body: String => Future[Result])(audit: AuditData => Unit = _ => ())(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -81,7 +81,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           val eligible = activeEnrolments.nonEmpty && activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
           audit(AuditData(activeEnrolments, eligible, creds))
           if (eligible) {
-            body
+            body(creds.providerId)
           } else {
             val hasOnlyIneligibleEnrolments =
               activeEnrolments.intersect(Set(`HMRC-AS-AGENT`, `HMRC-AGENT-AGENT`)).nonEmpty

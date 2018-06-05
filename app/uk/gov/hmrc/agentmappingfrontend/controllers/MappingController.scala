@@ -30,6 +30,7 @@ import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future
@@ -61,19 +62,19 @@ class MappingController @Inject()(
   }
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent {
+    withAuthorisedAgent { providerId =>
       successful(Redirect(routes.MappingController.showEnterAccountNo))
     }
   }
 
   def showEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgentAudited {
+    withAuthorisedAgentAudited { providerId =>
       successful(Ok(html.enter_account_number(mappingFormArn)))
     }(AuditService.auditCheckAgentRefCodeEvent(auditService))
   }
 
   def submitEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent {
+    withAuthorisedAgent { providerId =>
       mappingFormArn.bindFromRequest.fold(
         formWithErrors => {
           successful(Ok(html.enter_account_number(formWithErrors)))
@@ -86,7 +87,7 @@ class MappingController @Inject()(
   }
 
   def showEnterUtr: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent {
+    withAuthorisedAgent { providerId =>
       request.session.get("mappingArn").isDefined match {
         case true  => successful(Ok(html.enter_utr(mappingFormUtr)))
         case false => successful(Redirect(routes.MappingController.showEnterAccountNo()))
@@ -95,7 +96,7 @@ class MappingController @Inject()(
   }
 
   def submitEnterUtr: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent {
+    withAuthorisedAgent { providerId =>
       mappingFormUtr.bindFromRequest.fold(
         formWithErrors => {
           successful(Ok(html.enter_utr(formWithErrors)))
@@ -115,9 +116,13 @@ class MappingController @Inject()(
     }
   }
 
-  val complete: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent {
-      successful(Ok(html.complete()))
+  def complete(): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent { providerId =>
+      val arn = request.session
+        .get("mappingArn")
+        .getOrElse(
+          throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn"))
+      successful(Ok(html.complete(providerId, arn)))
     }
   }
 
