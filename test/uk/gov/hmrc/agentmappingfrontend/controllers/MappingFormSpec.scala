@@ -21,21 +21,27 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class MappingFormSpec extends UnitSpec {
 
-  "MappingController form" should {
+  "Arn MappingController.mappingFormArn" should {
+    val arnForm = MappingController.mappingFormArn
 
-    val form = MappingController.mappingForm
+    "valid arn bind" in {
+      arnForm.bind(Map("arn.arn" -> "TARN0000001")).get.arn shouldBe Arn("TARN0000001")
+    }
 
-    val value = MappingForm(arn = Arn("TARN0000001"), utr = Utr("2000000000"))
-
-    val fieldValues = Map(
-      "arn.arn"   -> "TARN0000001",
-      "utr.value" -> "2000000000"
-    )
-
-    "bind all input fields and return MappingForm and fill it back" in {
-      form.bind(fieldValues).value shouldBe Some(value)
-      form.fill(value).data shouldBe fieldValues
+    "invalid arn reject" in {
+      arnForm.bind(Map("arn.arn" -> "invalidArn")).errors.head.messages.head shouldBe "error.arn.invalid"
     }
   }
 
+  "Utr MappingController.mappingFormUtr" should {
+    val utrForm = MappingController.mappingFormUtr
+
+    "valid utr bind" in {
+      utrForm.bind(Map("utr.value" -> "2000000000")).get.utr shouldBe Utr("2000000000")
+    }
+
+    "invalid utr reject" in {
+      utrForm.bind(Map("utr.value" -> "invalidUtr")).errors.head.messages.head shouldBe "error.utr.invalid"
+    }
+  }
 }

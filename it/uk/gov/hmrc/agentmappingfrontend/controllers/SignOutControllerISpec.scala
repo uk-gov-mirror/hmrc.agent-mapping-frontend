@@ -19,11 +19,11 @@ class SignOutControllerISpec extends BaseControllerISpec {
   }
 
   "sign out and redirect" should {
-    "redirect to /agent-mapping/add-code" in {
+    "redirect to /agent-mapping/enter-account-number" in {
       val result = await(controller.signOutAndRedirect(fakeRequest))
 
       status(result) shouldBe 303
-      redirectLocation(result).get should include("agent-mapping%2Fadd-code")
+      redirectLocation(result).get should include("agent-mapping%2Fenter-account-number")
     }
   }
 }

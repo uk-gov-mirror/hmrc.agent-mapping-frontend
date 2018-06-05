@@ -2,9 +2,20 @@
 servicename.titleSuffix=- Agent services account - GOV.UK
 
 #Connect agent services
-connectAgentServices.title=Connect to your agent services account
-connectAgentServices.label.accountNumber=Agent services account number
-connectAgentServices.label.utrOrTaxReference=Self Assessment UTR or Corporation Tax reference
+enter-account-number.title=What is your agent services account number?
+enter-account-number.details.heading=For example, XARN1234567
+enter-account-number.details.summary=Where to find your agent services account number
+enter-account-number.details.content=You can find this on your agent services account homepage. Your account number starts with a letter, then ARN and 7 numbers.
+
+enter-utr.title=What is your business''s Unique Taxpayer Reference (UTR)?
+enter-utr.hint=Enter the last 10 digits only. For example, 1234567890
+enter-utr.details.heading=Where to find your business''s UTR
+enter-utr.details.content.h2=Your business''s UTR will be your:
+enter-utr.details.content.l1=company UTR for a limited company
+enter-utr.details.content.l2=Self Assessment UTR for an ordinary business partnership
+enter-utr.details.content.l3=individual Self Assessment UTR for a sole trader
+enter-utr.details.content.p1=If you have a company UTR, you can usually find this in the header of letters from HMRC, next to headings such as ''Tax Reference'', ''UTR'' or ''Official Use''.
+enter-utr.details.content.p2=If you have a Self Assessment UTR, you will <a href={0} id="findUtrLink" target="_blank">find your UTR (opens in a new window)</a> on the letter HMRC sent you when you registered for Self Assessment.
 
 connectAgentServices.start.title=Link your current Self Assessment and VAT clients to your agent services account
 connectAgentServices.start.h2=What you need to know
@@ -21,7 +32,7 @@ connectAgentServices.start.details.l1.2=report their VAT returns through softwar
 connectAgentServices.start.details.p2=This service will not allow you to access these services on your client''s behalf:
 connectAgentServices.start.details.l2.1=register a client''s trust
 connectAgentServices.start.details.l2.2=view a client''s PAYE income record
-connectAgentServices.start.l2.1=your agent services account number (for example, XARN-123-4567) as shown on your <a href="{0}" id="accountHome">account homepage</a>
+connectAgentServices.start.l2.1=your agent services account number (for example, XARN1234567) as shown on your <a href="{0}" id="accountHome">account homepage</a>
 connectAgentServices.start.l2.2=your Self Assessment Unique Taxpayer Reference (UTR) as a sole trader or partnership, or your company UTR as a limited company
 connectAgentServices.start.l2.3=login details for each of the agent Government Gateway accounts your business uses for your Income Tax Self Assessment and VAT clients.
 connectAgentServices.start.p3=On the next screen, sign in with one of these accounts to start linking your existing clients.
@@ -37,17 +48,24 @@ notEnrolled.title=You can''t connect this ID
 notEnrolled.p1=You can only add Government Gateway IDs linked to your business. We can''t process client IDs.
 notEnrolled.p2=If you need to add another agent Government Gateway ID, sign out and repeat the process.
 
+#No match
+noMatch.title=There is a problem
+noMatch.p1=We could not find any records that match the details you entered.
+noMatch.try-again.button=Try again
+
 #Connection complete
 connectionComplete.title=You''ve connected this Government Gateway ID
 connectionComplete.p1=If you need to add another agent Government Gateway ID, sign out and repeat the process.
 
 #Buttons
-button.connect=Connect
+button.continue=Continue
 button.repeatProcess=Repeat process with another ID
 button.signOut=Sign out
 button.startNow=Sign in with another account
+button.back=Back
 
 #Errors
+error.prefix=Error:
 error.summary.heading=Something''s wrong
 error.utr.invalid = Check you have entered a valid UTR or tax reference
 error.arn.invalid = Check you have entered a valid account number

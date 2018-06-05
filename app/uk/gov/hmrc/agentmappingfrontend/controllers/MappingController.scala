@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -34,7 +35,9 @@ import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 import scala.concurrent.Future
 import scala.concurrent.Future.successful
 
-case class MappingForm(arn: Arn, utr: Utr)
+case class MappingFormArn(arn: Arn)
+
+case class MappingFormUtr(utr: Utr)
 
 @Singleton
 class MappingController @Inject()(
@@ -46,7 +49,8 @@ class MappingController @Inject()(
   val config: Configuration)(implicit val appConfig: AppConfig)
     extends FrontendController with I18nSupport with AuthActions {
 
-  import MappingController.mappingForm
+  import MappingController.mappingFormArn
+  import MappingController.mappingFormUtr
 
   val root: Action[AnyContent] = ActionWithMdc {
     Redirect(routes.MappingController.start())
@@ -58,32 +62,53 @@ class MappingController @Inject()(
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent {
-      successful(Redirect(routes.MappingController.showAddCode()))
+      successful(Redirect(routes.MappingController.showEnterAccountNo))
     }
   }
 
-  def showAddCode: Action[AnyContent] = Action.async { implicit request =>
+  def showEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgentAudited {
-      successful(Ok(html.add_code(mappingForm)))
+      successful(Ok(html.enter_account_number(mappingFormArn)))
     }(AuditService.auditCheckAgentRefCodeEvent(auditService))
   }
 
-  def submitAddCode: Action[AnyContent] = Action.async { implicit request =>
+  def submitEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent {
-      mappingForm.bindFromRequest.fold(
+      mappingFormArn.bindFromRequest.fold(
         formWithErrors => {
-          successful(Ok(html.add_code(formWithErrors)))
+          successful(Ok(html.enter_account_number(formWithErrors)))
         },
-        mappingData => {
-          mappingConnector.createMapping(mappingData.utr, mappingData.arn) map { r: Int =>
-            r match {
-              case CREATED => Redirect(routes.MappingController.complete())
-              case FORBIDDEN =>
-                Ok(
-                  html.add_code(mappingForm.withGlobalError(
-                    "These details don't match our records. Check your account number and tax reference.")))
-              case CONFLICT => Redirect(routes.MappingController.alreadyMapped())
-            }
+        formArn => {
+          successful(Redirect(routes.MappingController.showEnterUtr).addingToSession(("mappingArn", formArn.arn.value)))
+        }
+      )
+    }
+  }
+
+  def showEnterUtr: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent {
+      request.session.get("mappingArn").isDefined match {
+        case true  => successful(Ok(html.enter_utr(mappingFormUtr)))
+        case false => successful(Redirect(routes.MappingController.showEnterAccountNo()))
+      }
+    }
+  }
+
+  def submitEnterUtr: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent {
+      mappingFormUtr.bindFromRequest.fold(
+        formWithErrors => {
+          successful(Ok(html.enter_utr(formWithErrors)))
+        },
+        formWithUtr => {
+          request.session.get("mappingArn") match {
+            case Some(arn) =>
+              mappingConnector.createMapping(formWithUtr.utr, Arn(arn)) map {
+                case CREATED   => Redirect(routes.MappingController.complete())
+                case FORBIDDEN => Redirect(routes.MappingController.noMatch())
+                case CONFLICT  => Redirect(routes.MappingController.alreadyMapped())
+              }
+            case None => successful(Redirect(routes.MappingController.showEnterAccountNo()))
           }
         }
       )
@@ -104,21 +129,31 @@ class MappingController @Inject()(
 
   val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      Future successful Ok(html.not_enrolled())
+      successful(Ok(html.not_enrolled()))
+    }
+  }
+
+  val noMatch: Action[AnyContent] = Action.async { implicit request =>
+    withBasicAuth {
+      successful(Ok(html.no_match()))
     }
   }
 }
 
 object MappingController {
-
-  val mappingForm = Form(
+  val mappingFormArn = Form(
     mapping(
       "arn" -> mapping(
         "arn" -> arn
-      )(Arn.apply)(Arn.unapply),
+      )(Arn.apply)(Arn.unapply)
+    )(MappingFormArn.apply)(MappingFormArn.unapply)
+  )
+
+  val mappingFormUtr = Form(
+    mapping(
       "utr" -> mapping(
         "value" -> utr
       )(Utr.apply)(Utr.unapply)
-    )(MappingForm.apply)(MappingForm.unapply)
+    )(MappingFormUtr.apply)(MappingFormUtr.unapply)
   )
 }
