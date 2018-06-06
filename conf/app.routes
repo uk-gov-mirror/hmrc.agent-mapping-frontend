@@ -10,7 +10,7 @@ POST        /enter-utr                                    uk.gov.hmrc.agentmappi
 GET         /account-linked                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete
 GET         /errors/already-linked                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped
 GET         /errors/not-enrolled                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled
-GET         /no-match                                     uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.noMatch
+GET         /errors/no-match                              uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.noMatch
 
 GET         /signed-out                                   uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
 GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect
