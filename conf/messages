@@ -40,17 +40,15 @@ connectAgentServices.start.p3=On the next screen, sign in with one of these acco
 connectAgentServices.start.p4=You will need to repeat this process for each Government Gateway account your business uses.
 
 #Already linked
-alreadyMapped.title=There is a problem
 alreadyMapped.p1=This Government Gateway account is already linked to your agent services account.
 alreadyMapped.p2=If you need to link a different Government Gateway account, sign in with the login details for that account.
 
 #Not enrolled
-notEnrolled.title=You can''t connect this ID
-notEnrolled.p1=You can only add Government Gateway IDs linked to your business. We can''t process client IDs.
-notEnrolled.p2=If you need to add another agent Government Gateway ID, sign out and repeat the process.
+notEnrolled.p1=You cannot link this Government Gateway account to your agent services account.
+notEnrolled.p2=You can only link Government Gateway accounts registered to your business.
+notEnrolled.p3=If you need to link another Government Gateway account, sign in with the login details for that account.
 
 #No match
-noMatch.title=There is a problem
 noMatch.p1=We could not find any records that match the details you entered.
 noMatch.try-again.button=Try again
 
@@ -77,6 +75,7 @@ button.startNow=Sign in with another account
 button.back=Back
 
 #Errors
+error.title=There is a problem
 error.prefix=Error:
 error.summary.heading=Something''s wrong
 error.utr.invalid = Check you have entered a valid UTR or tax reference

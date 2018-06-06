@@ -20,9 +20,9 @@
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = Messages("alreadyMapped.title"), bodyClasses = None) {
+@html.main_template(appConfig, title = Messages("error.title"), bodyClasses = None) {
 
-<h1 class="heading-xlarge">@Messages("alreadyMapped.title")</h1>
+<h1 class="heading-xlarge">@Messages("error.title")</h1>
 
 <p>@Messages("alreadyMapped.p1")</p>
 <p>@Messages("alreadyMapped.p2")</p>

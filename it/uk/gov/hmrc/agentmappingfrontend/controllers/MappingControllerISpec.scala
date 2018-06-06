@@ -266,7 +266,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   "not enrolled " should {
     "contain a message indicating that the user is not enrolled for a valid non-mtd enrolment" in {
       givenUserIsAuthenticated(agentNotEnrolled)
-      val request = fakeRequest(GET, "/agent-mapping/not-enrolled")
+      val request = fakeRequest(GET, routes.MappingController.notEnrolled.url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       bodyOf(result) should include(htmlEscapedMessage("notEnrolled.p1"))
@@ -280,7 +280,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
-      resultBody should include(htmlEscapedMessage("alreadyMapped.title"))
+      resultBody should include(htmlEscapedMessage("error.title"))
       resultBody should include(htmlEscapedMessage("alreadyMapped.p1"))
       resultBody should include(htmlEscapedMessage("alreadyMapped.p2"))
       resultBody should include(htmlEscapedMessage("button.startNow"))
