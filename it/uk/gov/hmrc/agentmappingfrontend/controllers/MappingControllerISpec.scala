@@ -276,7 +276,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   "already mapped " should {
     "contain a message indicating that the user has already mapped all of her non-mtd identifiers" in {
       givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, "/agent-mapping/errors/already-linked")
+      val request = fakeRequest(GET, routes.MappingController.alreadyMapped.url)
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
