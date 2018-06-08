@@ -35,8 +35,6 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   "startSubmit" should {
 
-    behave like anAuthenticatedEndpoint(GET, "/agent-mapping/start-submit", callEndpointWith)
-
     Auth.validEnrolments.foreach { serviceName =>
       s"redirect to the enter-account-number if the current user is logged in and has legacy agent enrolment for $serviceName" in {
         givenAuthorisedFor(serviceName)

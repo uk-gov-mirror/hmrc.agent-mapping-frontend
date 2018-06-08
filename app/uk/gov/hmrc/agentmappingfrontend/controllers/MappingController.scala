@@ -62,9 +62,7 @@ class MappingController @Inject()(
   }
 
   def startSubmit: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent { providerId =>
-      successful(Redirect(routes.MappingController.showEnterAccountNo))
-    }
+    successful(Redirect(routes.MappingController.showEnterAccountNo).withNewSession)
   }
 
   def showEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
