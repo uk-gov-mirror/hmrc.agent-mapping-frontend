@@ -35,6 +35,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
   object TestController extends AuthActions {
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+
     implicit val hc = HeaderCarrier()
     implicit val request = FakeRequest("GET", "/foo").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
@@ -46,7 +47,10 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       await(withAuthorisedAgent { providerId => Future.successful(Ok("Done.")) })
 
     def testWithBasicAuth =
-      await(withBasicAuth { Future.successful(Ok("Done.")) })
+      await(withBasicAuth { Future.successful(Ok("Done."))})
+
+    def testWithCheckForArn =
+      await(withCheckForArn { optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))})
   }
 
   private val eligibleEnrolments = Map(
@@ -58,7 +62,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     "HMRC-NOVRN-AGNT" -> "VATAgentRefNo",
     "IR-CT-AGENT" -> "IRAgentReference",
     "IR-PAYE-AGENT" -> "IRAgentReference",
-    "IR-SDLT-AGENT" ->"STORN"
+    "IR-SDLT-AGENT" -> "STORN"
   )
 
   "withAuthorisedAgent" should {
@@ -66,7 +70,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       Auth.validEnrolments.forall(eligibleEnrolments.contains) shouldBe true
     }
 
-    eligibleEnrolments.foreach{ case (enrolment, identifier) =>
+    eligibleEnrolments.foreach { case (enrolment, identifier) =>
       s"check if agent is enrolled for the eligible enrolment $enrolment and extract $identifier" in {
         givenAuthorisedFor(
           "{}",
@@ -102,7 +106,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
              |  ]
              |}
              """.stripMargin
-          }.mkString("[", ", ", "]")
+        }.mkString("[", ", ", "]")
 
         givenAuthorisedFor(
           "{}",
@@ -196,6 +200,45 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       val result = TestController.testWithBasicAuth
       status(result) shouldBe 303
       result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+    }
+  }
+
+  "withCheckForArn - extract HMRC-AS-AGENT EnrolmentIdentifier" should {
+    "return EnrolmentIdentifier if user has HMRC-AS-AGENT enrolment" in {
+      givenAuthorisedFor(
+        "{}",
+        s"""{
+           |  "allEnrolments": [
+           |    {
+           |      "key":"HMRC-AS-AGENT",
+           |      "identifiers": [ { "key":"AgentReferenceNumber", "value": "TARN0000001" } ],
+           |      "state": "active"
+           |    }
+           |  ],
+           |  "credentials": {
+           |    "providerId": "12345-credId",
+           |    "providerType": "GovernmentGateway"
+           |  }}""".stripMargin
+      )
+      val result = TestController.testWithCheckForArn
+      status(result) shouldBe 200
+      bodyOf(result) should include("Some(EnrolmentIdentifier(AgentReferenceNumber,TARN0000001))")
+    }
+
+    "return None when user has no HMRC-AS-AGENT enrolment" in {
+      givenAuthorisedFor("{}",s"""{}""".stripMargin)
+
+      val result = TestController.testWithCheckForArn
+      status(result) shouldBe 200
+      bodyOf(result) should include("None")
+    }
+
+    "return None no Bearer Token" in {
+      givenUserIsNotAuthenticated
+
+      val result = TestController.testWithCheckForArn
+      status(result) shouldBe 200
+      bodyOf(result) should include("None")
     }
   }
 }

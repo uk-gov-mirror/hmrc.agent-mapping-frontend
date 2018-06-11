@@ -25,7 +25,17 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   }
 
   "start" should {
-    "display the start page" in {
+    "display the start page with ARN if user has HMRC-AS-AGENT" in {
+      givenUserIsAuthenticated(mtdAsAgent)
+      val request = FakeRequest(GET, "/agent-mapping/start")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 200
+      bodyOf(result) should include(htmlEscapedMessage("connectAgentServices.start.title"))
+      bodyOf(result) should include("TARN0000001")
+    }
+
+    "display the start page for unAuthenticated user" in {
+      givenUserIsNotAuthenticated
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200

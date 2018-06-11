@@ -17,9 +17,9 @@
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.auth.core.EnrolmentIdentifier
 
-
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(enrolmentIdentifier: Option[EnrolmentIdentifier])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("connectAgentServices.start.title"), bodyClasses = None) {
     <h1 class="heading-xlarge">@Messages("connectAgentServices.start.title")</h1>
@@ -54,10 +54,21 @@
 
     <h2 class="heading-medium">@Messages("connectAgentServices.start.beforeYouStart")</h2>
 
-    <p>@Messages("connectAgentServices.start.youWillNeed")</p>
+
+    @if(enrolmentIdentifier.isDefined) {
+        <p class="panel panel-border-wide">@Messages("connectAgentServices.start.l2.1.dynamic-arn", enrolmentIdentifier.get.value)</p>
+        <p>@Messages("connectAgentServices.start.youWillAlsoNeed")</p>
+    } else {
+        <p>@Messages("connectAgentServices.start.youWillNeed")</p>
+    }
+
 
     <ul class="list list-bullet">
-        <li>@Html(Messages("connectAgentServices.start.l2.1", appConfig.agentServicesFrontendExternalUrl))</li>
+
+
+        @if(!enrolmentIdentifier.isDefined) {
+            <li>@Html(Messages("connectAgentServices.start.l2.1", appConfig.agentServicesFrontendExternalUrl))</li>
+        }
         <li>@Messages("connectAgentServices.start.l2.2")</li>
         <li>@Messages("connectAgentServices.start.l2.3")</li>
     </uL>

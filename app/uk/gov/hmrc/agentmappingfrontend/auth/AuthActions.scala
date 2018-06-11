@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.auth
 
 import play.api.Environment
+import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
@@ -99,4 +100,17 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
       }
 
+  def withCheckForArn(body: Option[EnrolmentIdentifier] => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
+      .retrieve(allEnrolments) {
+        case agentEnrolments =>
+          body(agentEnrolments.getEnrolment("HMRC-AS-AGENT").flatMap(_.getIdentifier("AgentReferenceNumber")))
+      }
+      .recoverWith {
+        case _: JsResultException      => body(None)
+        case _: AuthorisationException => body(None)
+      }
 }
