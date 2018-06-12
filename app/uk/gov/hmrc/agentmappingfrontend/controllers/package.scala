@@ -26,7 +26,7 @@ package object controllers {
 
   private val utrConstraint: Constraint[String] = Constraint[String] { fieldValue: String =>
     Constraints.nonEmpty(fieldValue) match {
-      case i: Invalid                    => i
+      case i: Invalid                    => Invalid(ValidationError("error.utr.blank"))
       case _ if !Utr.isValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
       case _                             => Valid
     }

@@ -207,7 +207,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include("This field is required")
+        bodyOf(result) should include(htmlEscapedMessage("error.utr.blank"))
       }
 
       "the utr is invalid" in {
@@ -217,7 +217,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include("Check you have entered a valid UTR or tax reference")
+        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid"))
       }
 
       "the known facts check fails" in {

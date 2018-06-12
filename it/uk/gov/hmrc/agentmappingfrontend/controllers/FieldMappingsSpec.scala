@@ -14,16 +14,16 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
       bind("2000000000") shouldBe Right("2000000000")
     }
 
-    "give \"error.required\" error when it is not supplied" in {
+    "unreachable by user, Give \"error.required\" error if somehow supplied Map.empty" in {
       utrMapping.bind(Map.empty).left.value should contain only FormError("testKey", "error.required")
     }
 
     "give \"error.required\" error when it is empty" in {
-      bind("").left.value should contain only FormError("testKey", "error.required")
+      bind("").left.value should contain only FormError("testKey", "error.utr.blank")
     }
 
     "give \"error.required\" error when it only contains a space" in {
-      bind(" ").left.value should contain only FormError("testKey", "error.required")
+      bind(" ").left.value should contain only FormError("testKey", "error.utr.blank")
     }
 
     "give \"error.utr.invalid\" error when it is invalid" in {
