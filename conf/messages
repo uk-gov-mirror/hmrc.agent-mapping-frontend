@@ -80,7 +80,7 @@ button.back=Back
 error.title=There is a problem
 error.prefix=Error:
 error.summary.heading=Something''s wrong
-error.utr.blank= Enter your business's Unique Taxpayer Reference (UTR)
+error.utr.blank= Enter your business''s Unique Taxpayer Reference (UTR)
 error.utr.invalid = Unique Taxpayer Reference (UTR) must be 10 numbers
 error.arn.invalid = Check you have entered a valid account number
 
