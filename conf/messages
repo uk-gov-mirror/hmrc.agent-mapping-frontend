@@ -16,7 +16,7 @@ enter-utr.details.content.l1=company UTR for a limited company
 enter-utr.details.content.l2=Self Assessment UTR for an ordinary business partnership
 enter-utr.details.content.l3=individual Self Assessment UTR for a sole trader
 enter-utr.details.content.p1=If you have a company UTR, you can usually find this in the header of letters from HMRC, next to headings such as ''Tax Reference'', ''UTR'' or ''Official Use''.
-enter-utr.details.content.p2=If you have a Self Assessment UTR, you will <a href={0} id="findUtrLink" target="_blank">find your UTR (opens in a new window)</a> on the letter HMRC sent you when you registered for Self Assessment.
+enter-utr.details.content.p2=If you have a Self Assessment UTR, you will <a href={0} id="findUtrLink" target="_blank" rel="noopener noreferrer">find your UTR (opens in a new window)</a> on the letter HMRC sent you when you registered for Self Assessment.
 
 connectAgentServices.start.title=Link your current Self Assessment and VAT clients to your agent services account
 connectAgentServices.start.h2=What you need to know
