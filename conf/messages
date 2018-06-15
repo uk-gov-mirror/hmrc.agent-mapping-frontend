@@ -81,7 +81,8 @@ error.title=There is a problem
 error.prefix=Error:
 error.summary.heading=Something''s wrong
 error.utr.blank= Enter your business''s Unique Taxpayer Reference (UTR)
-error.utr.invalid = Unique Taxpayer Reference (UTR) must be 10 numbers
+error.utr.invalid.format = Unique Taxpayer Reference (UTR) must only include numbers and spaces
+error.utr.invalid.length = Unique Taxpayer Reference (UTR) must be 10 numbers
 error.arn.invalid = Agent services account number must only include letters A to Z, numbers and hyphens, like XARN-123-4567 or XARN1234567
 error.arn.blank = Enter your agent services account number
 
