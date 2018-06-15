@@ -28,8 +28,24 @@ class MappingFormSpec extends UnitSpec {
       arnForm.bind(Map("arn.arn" -> "TARN0000001")).get.arn shouldBe Arn("TARN0000001")
     }
 
+    "valid arn bind with hyphens" in {
+      arnForm.bind(Map("arn.arn" -> "TARN-000-0001")).get.arn shouldBe Arn("TARN0000001")
+    }
+
     "invalid arn reject" in {
       arnForm.bind(Map("arn.arn" -> "invalidArn")).errors.head.messages.head shouldBe "error.arn.invalid"
+    }
+
+    "reject invalid arn if it contains spaces" in {
+      arnForm.bind(Map("arn.arn" -> "TARN 000 0001")).errors.head.messages.head shouldBe "error.arn.invalid"
+    }
+
+    "reject invalid arn if it contains an unpermitted characters " in {
+      arnForm.bind(Map("arn.arn" -> "TARN.000.0001")).errors.head.messages.head shouldBe "error.arn.invalid"
+    }
+
+    "reject invalid arn if it contains hyphens in different format" in {
+      arnForm.bind(Map("arn.arn" -> "TARN-0000-001")).errors.head.messages.head shouldBe "error.arn.invalid"
     }
   }
 

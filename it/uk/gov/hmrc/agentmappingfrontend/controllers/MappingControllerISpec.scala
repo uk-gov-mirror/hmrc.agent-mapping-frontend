@@ -31,7 +31,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       bodyOf(result) should include(htmlEscapedMessage("connectAgentServices.start.title"))
-      bodyOf(result) should include("TARN0000001")
+      bodyOf(result) should include("TARN-000-0001")
     }
 
     "display the start page for unAuthenticated user" in {
@@ -112,9 +112,24 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       result.session(request).get("mappingArn") shouldBe Some("TARN0000001")
     }
 
+    "redirect and add arn to session when arn in hyphen pattern is entered" in {
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = createRequest("TARN-000-0001")
+      val result = callEndpointWith(request)
+      redirectLocation(result) shouldBe Some(routes.MappingController.showEnterUtr.url)
+      result.session(request).get("mappingArn") shouldBe Some("TARN0000001")
+    }
+
     "re-enter arn since invalid" in {
       givenUserIsAuthenticated(eligibleAgent)
       val result = callEndpointWith(createRequest("invalidArn"))
+      status(result) shouldBe 200
+      bodyOf(result) should include(htmlEscapedMessage("error.arn.invalid"))
+    }
+
+    "re-enter arn if an arn entered with invalid format" in {
+      givenUserIsAuthenticated(eligibleAgent)
+      val result = callEndpointWith(createRequest("TARN-0000-001"))
       status(result) shouldBe 200
       bodyOf(result) should include(htmlEscapedMessage("error.arn.invalid"))
     }
@@ -249,7 +264,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       resultBody should include(htmlEscapedMessage("connectionComplete.title"))
       resultBody should include(htmlEscapedMessage("button.repeatProcess"))
       resultBody should include(htmlEscapedMessage("link.finishSignOut"))
-      resultBody should include("TARN0000001")
+      resultBody should include("TARN-000-0001")
       resultBody should include("12345-credId")
     }
 

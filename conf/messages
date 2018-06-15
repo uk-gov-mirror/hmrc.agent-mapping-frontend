@@ -4,7 +4,7 @@ servicename.titleSuffix=- Agent services account - GOV.UK
 
 #Connect agent services
 enter-account-number.title=What is your agent services account number?
-enter-account-number.details.heading=For example, XARN1234567
+enter-account-number.details.heading=For example, XARN-123-4567
 enter-account-number.details.summary=Where to find your agent services account number
 enter-account-number.details.content=You can find this on your agent services account homepage. Your account number starts with a letter, then ARN and 7 numbers.
 
@@ -34,7 +34,7 @@ connectAgentServices.start.details.l1.2=report their VAT returns through softwar
 connectAgentServices.start.details.p2=This service will not allow you to access these services on your client''s behalf:
 connectAgentServices.start.details.l2.1=register a client''s trust
 connectAgentServices.start.details.l2.2=view a client''s PAYE income record
-connectAgentServices.start.l2.1=your agent services account number (for example, XARN1234567) as shown on your <a href="{0}" id="accountHome">account homepage</a> - you will need this account number when you use the service
+connectAgentServices.start.l2.1=your agent services account number (for example, XARN-123-4567) as shown on your <a href="{0}" id="accountHome">account homepage</a> - you will need this account number when you use the service
 connectAgentServices.start.l2.1.dynamic-arn=Make sure you make a note of your agent services account number, which is {0}. You will need this account number when you use the service.
 connectAgentServices.start.l2.2=your Self Assessment Unique Taxpayer Reference (UTR) as a sole trader or partnership, or your company UTR as a limited company
 connectAgentServices.start.l2.3=login details for each of the agent Government Gateway accounts your business uses for your Income Tax Self Assessment and VAT clients.

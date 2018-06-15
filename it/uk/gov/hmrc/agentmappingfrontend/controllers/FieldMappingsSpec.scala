@@ -55,5 +55,9 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
     "give \"error.arn.invalid\" error when it is invalid" in {
       bind("ARN0000001").left.value should contain only FormError("testKey", "error.arn.invalid")
     }
+
+    "give \"error.arn.invalid\" error when it is invalid with hyphens in different places" in {
+      bind("TARN-0000-001").left.value should contain only FormError("testKey", "error.arn.invalid")
+    }
   }
 }
