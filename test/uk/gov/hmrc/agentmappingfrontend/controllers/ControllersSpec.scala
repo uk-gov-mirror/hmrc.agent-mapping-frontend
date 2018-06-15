@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 
 class ControllersSpec extends UnitSpec {
 
@@ -43,6 +43,31 @@ class ControllersSpec extends UnitSpec {
 
     "return None when the input arn string is in an invalid pattern" in {
       normalizeArn("TARN 00 0001") shouldBe None
+    }
+
+    "prettify method for Utr" should {
+      "return utr in expected format" in {
+        prettify(Utr("1097172564")) shouldBe "10971 72564"
+      }
+
+      "return exception when input arn is invalid" in {
+        an[Exception] shouldBe thrownBy(prettify(Utr("1102696864.")))
+      }
+    }
+
+    "normalizeUtr" should {
+
+      "return a valid utr when the input utr string contains spaces" in {
+        normalizeUtr("10 9    71 72564 ") shouldBe Some(Utr("1097172564"))
+      }
+
+      "return a valid utr when the input utr string is in default utr pattern" in {
+        normalizeUtr("1097172564") shouldBe Some(Utr("1097172564"))
+      }
+
+      "return None when the input arn string is in an invalid pattern" in {
+        normalizeUtr("1097172564.") shouldBe None
+      }
     }
   }
 }

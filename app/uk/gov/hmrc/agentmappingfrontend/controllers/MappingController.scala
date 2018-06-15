@@ -157,7 +157,7 @@ object MappingController {
     mapping(
       "utr" -> mapping(
         "value" -> utr
-      )(Utr.apply)(Utr.unapply)
+      )(normalizeUtr(_).getOrElse(throw new Exception("Invalid Utr after validation")))(utr => Some(utr.value))
     )(MappingFormUtr.apply)(MappingFormUtr.unapply)
   )
 }

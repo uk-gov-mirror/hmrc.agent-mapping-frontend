@@ -63,5 +63,13 @@ class MappingFormSpec extends UnitSpec {
     "Utr Blank" in {
       utrForm.bind(Map("utr.value" -> "")).errors.head.messages.head shouldBe "error.utr.blank"
     }
+
+    "Utr after prettify display" in {
+      utrForm.bind(Map("utr.value" -> "20000 00000")).get.utr shouldBe Utr("2000000000")
+    }
+
+    "Utr with random spaces" in {
+      utrForm.bind(Map("utr.value" -> "      20 000 0000     0")).get.utr shouldBe Utr("2000000000")
+    }
   }
 }

@@ -9,7 +9,7 @@ enter-account-number.details.summary=Where to find your agent services account n
 enter-account-number.details.content=You can find this on your agent services account homepage. Your account number starts with a letter, then ARN and 7 numbers.
 
 enter-utr.title=What is your business''s Unique Taxpayer Reference (UTR)?
-enter-utr.hint=Enter the last 10 digits only. For example, 1234567890
+enter-utr.hint=Enter the last 10 digits only. For example, 12345 67890
 enter-utr.details.heading=Where to find your business''s UTR
 enter-utr.details.content.h2=Your business''s UTR will be your:
 enter-utr.details.content.l1=company UTR for a limited company
@@ -82,7 +82,8 @@ error.prefix=Error:
 error.summary.heading=Something''s wrong
 error.utr.blank= Enter your business''s Unique Taxpayer Reference (UTR)
 error.utr.invalid = Unique Taxpayer Reference (UTR) must be 10 numbers
-error.arn.invalid = Check you have entered a valid account number
+error.arn.invalid = Agent services account number must only include letters A to Z, numbers and hyphens, like XARN-123-4567 or XARN1234567
+error.arn.blank = Enter your agent services account number
 
 #TestOnly
 view.mappings.title=Here are your Mappings

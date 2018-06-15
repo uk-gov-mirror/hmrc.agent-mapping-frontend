@@ -26,17 +26,17 @@ package object controllers {
 
   private val utrConstraint: Constraint[String] = Constraint[String] { fieldValue: String =>
     Constraints.nonEmpty(fieldValue) match {
-      case i: Invalid                    => Invalid(ValidationError("error.utr.blank"))
-      case _ if !Utr.isValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
-      case _                             => Valid
+      case i: Invalid                   => Invalid(ValidationError("error.utr.blank"))
+      case _ if !isUtrValid(fieldValue) => Invalid(ValidationError("error.utr.invalid"))
+      case _                            => Valid
     }
   }
 
   private val arnConstraint: Constraint[String] = Constraint[String] { fieldValue: String =>
     Constraints.nonEmpty(fieldValue) match {
-      case i: Invalid                => i
-      case _ if !isValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
-      case _                         => Valid
+      case i: Invalid                   => Invalid(ValidationError("error.arn.blank"))
+      case _ if !isArnValid(fieldValue) => Invalid(ValidationError("error.arn.invalid"))
+      case _                            => Valid
     }
   }
 
@@ -44,7 +44,9 @@ package object controllers {
 
   def arn: Mapping[String] = text verifying arnConstraint
 
-  private def isValid(arnStr: String): Boolean = normalizeArn(arnStr).nonEmpty
+  private def isArnValid(arnStr: String): Boolean = normalizeArn(arnStr).nonEmpty
+
+  private def isUtrValid(utrStr: String): Boolean = normalizeUtr(utrStr).nonEmpty
 
   def normalizeArn(arnStr: String): Option[Arn] = {
     val hyphenPattern = """([A-Z]ARN-\d{3}-\d{4})""".r
@@ -59,6 +61,11 @@ package object controllers {
     formattedArn.flatMap(arn => if (Arn.isValid(arn)) Some(Arn(arn)) else None)
   }
 
+  def normalizeUtr(utrStr: String): Option[Utr] = {
+    val formattedUtr = utrStr.replace(" ", "")
+    if (Utr.isValid(formattedUtr)) Some(Utr(formattedUtr)) else None
+  }
+
   def prettify(arn: Arn): String = {
     val unapplyPattern = """([A-Z]ARN)(\d{3})(\d{4})""".r
 
@@ -67,4 +74,12 @@ package object controllers {
       .map(_.mkString("-"))
       .getOrElse(throw new Exception(s"The arn contains an invalid value ${arn.value}"))
   }
+
+  def prettify(utr: Utr): String =
+    if (utr.value.trim.length == 10) {
+      val (first, last) = utr.value.trim.splitAt(5)
+      s"$first $last"
+    } else {
+      throw new Exception(s"The utr contains an invalid value ${utr.value}")
+    }
 }

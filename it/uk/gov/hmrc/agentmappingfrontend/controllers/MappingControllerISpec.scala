@@ -138,7 +138,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       givenUserIsAuthenticated(eligibleAgent)
       val result = callEndpointWith(createRequest(""))
       status(result) shouldBe 200
-      bodyOf(result) should include("This field is required")
+      bodyOf(result) should include(htmlEscapedMessage("error.arn.blank"))
     }
   }
 

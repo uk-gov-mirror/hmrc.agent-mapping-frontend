@@ -44,12 +44,12 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
       arnMapping.bind(Map.empty).left.value should contain only FormError("testKey", "error.required")
     }
 
-    "give \"error.required\" error when it is empty" in {
-      bind("").left.value should contain only FormError("testKey", "error.required")
+    "give \"error.arn.blank\" error when it is empty" in {
+      bind("").left.value should contain only FormError("testKey", "error.arn.blank")
     }
 
-    "give \"error.required\" error when it only contains a space" in {
-      bind(" ").left.value should contain only FormError("testKey", "error.required")
+    "give \"error.arn.blank\" error when it only contains a space" in {
+      bind(" ").left.value should contain only FormError("testKey", "error.arn.blank")
     }
 
     "give \"error.arn.invalid\" error when it is invalid" in {
