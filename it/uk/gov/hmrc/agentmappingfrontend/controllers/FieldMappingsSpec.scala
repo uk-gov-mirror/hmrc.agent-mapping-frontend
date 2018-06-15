@@ -26,8 +26,12 @@ class FieldMappingsSpec extends UnitSpec with EitherValues {
       bind(" ").left.value should contain only FormError("testKey", "error.utr.blank")
     }
 
-    "give \"error.utr.invalid.length\" error when it has wrong length" in {
+    "give \"error.utr.invalid.length\" error when it has wrong long length" in {
       bind("20000000000").left.value should contain only FormError("testKey", "error.utr.invalid.length")
+    }
+
+    "give \"error.utr.invalid.length\" error when it has wrong short length" in {
+      bind("20000").left.value should contain only FormError("testKey", "error.utr.invalid.length")
     }
 
     "give \"error.utr.invalid.format\" error when it has wrong format" in {

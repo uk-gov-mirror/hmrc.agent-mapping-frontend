@@ -236,10 +236,20 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       }
 
 
-      "the utr has wrong length" in {
+      "the utr has wrong long length" in {
         givenUserIsAuthenticated(eligibleAgent)
         val request =
           fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "200000000099").withSession(("mappingArn", "TARN0000001"))
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 200
+        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.length"))
+      }
+
+      "the utr has wrong short length" in {
+        givenUserIsAuthenticated(eligibleAgent)
+        val request =
+          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000").withSession(("mappingArn", "TARN0000001"))
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
