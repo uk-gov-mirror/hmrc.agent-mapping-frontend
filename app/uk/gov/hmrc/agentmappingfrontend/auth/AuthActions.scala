@@ -86,8 +86,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           } else {
             val hasOnlyIneligibleEnrolments =
               activeEnrolments.intersect(Set(`HMRC-AS-AGENT`, `HMRC-AGENT-AGENT`)).nonEmpty
-            val hasNoEnrolments = agentEnrolments.enrolments.isEmpty
-            val redirectRoute = if (hasOnlyIneligibleEnrolments || hasNoEnrolments) {
+            val redirectRoute = if (hasOnlyIneligibleEnrolments) {
               routes.MappingController.alreadyMapped()
             } else {
               routes.MappingController.notEnrolled()

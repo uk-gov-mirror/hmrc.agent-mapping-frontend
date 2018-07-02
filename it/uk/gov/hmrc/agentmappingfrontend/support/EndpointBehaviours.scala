@@ -78,7 +78,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.alreadyMapped().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, agentNotEnrolled.activeEnrolments)
     }
