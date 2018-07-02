@@ -55,7 +55,7 @@ noMatch.p1=We could not find any records that match the details you entered.
 noMatch.try-again.button=Try again
 
 #Connection complete
-connectionComplete.title=You have link this Government Gateway account
+connectionComplete.title=This Government Gateway account is now linked to your agent services account
 connectionComplete.header1=Government Gateway account
 connectionComplete.header2=is now linked to your agent services account
 connectionComplete.h3.1=What you can do next
