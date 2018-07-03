@@ -133,50 +133,63 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       "agent has both HMRC-AS-AGENT and HMRC-AGENT-AGENT enrolments" in {
         behave like testRedirectToAlreadyMapped(("HMRC-AS-AGENT", "AgentReferenceNumber"), ("HMRC-AGENT-AGENT", "AgentRefNumber"))
       }
+    }
+
+    "redirect to /not-enrolled" when {
+      "agent has only 'non-agent' enrolments" in {
+        givenAuthorisedFor(
+          "{}",
+          s"""{
+             |  "allEnrolments": [
+             |    { "key":"IR-SA", "identifiers": [
+             |     { "key":"UTR", "value": "fooReference" }
+             |    ]}
+             |  ],
+             |  "credentials": {
+             |    "providerId": "12345-credId",
+             |    "providerType": "GovernmentGateway"
+             |  }}""".stripMargin
+        )
+        val result = TestController.testWithAuthorisedAgent
+        status(result) shouldBe 303
+        result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
+      }
+
+      "agent has only inactive (but otherwise eligible) enrolments" in {
+        givenAuthorisedFor(
+          "{}",
+          s"""{
+             |  "allEnrolments": [
+             |    {
+             |      "key":"IR-SA-AGENT",
+             |      "identifiers": [ { "key":"IRAgentReference", "value": "fooReference" } ],
+             |      "state": "Inactive"
+             |    }
+             |  ],
+             |  "credentials": {
+             |    "providerId": "12345-credId",
+             |    "providerType": "GovernmentGateway"
+             |  }}""".stripMargin
+        )
+        val result = TestController.testWithAuthorisedAgent
+        status(result) shouldBe 303
+        result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
+      }
 
       "agent has no enrolments" in {
-        behave like testRedirectToAlreadyMapped()
+        givenAuthorisedFor(
+          "{}",
+          s"""{
+             |  "allEnrolments": [],
+             |  "credentials": {
+             |    "providerId": "12345-credId",
+             |    "providerType": "GovernmentGateway"
+             |  }}""".stripMargin
+        )
+        val result = TestController.testWithAuthorisedAgent
+        status(result) shouldBe 303
+        result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
       }
-    }
-
-    "redirect to /not-enrolled if an agent has only 'non-agent' enrolments" in {
-      givenAuthorisedFor(
-        "{}",
-        s"""{
-           |  "allEnrolments": [
-           |    { "key":"IR-SA", "identifiers": [
-           |     { "key":"UTR", "value": "fooReference" }
-           |    ]}
-           |  ],
-           |  "credentials": {
-           |    "providerId": "12345-credId",
-           |    "providerType": "GovernmentGateway"
-           |  }}""".stripMargin
-      )
-      val result = TestController.testWithAuthorisedAgent
-      status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
-    }
-
-    "redirect to /not-enrolled if an agent has only inactive (but otherwise eligible) enrolments" in {
-      givenAuthorisedFor(
-        "{}",
-        s"""{
-           |  "allEnrolments": [
-           |    {
-           |      "key":"IR-SA-AGENT",
-           |      "identifiers": [ { "key":"IRAgentReference", "value": "fooReference" } ],
-           |      "state": "Inactive"
-           |    }
-           |  ],
-           |  "credentials": {
-           |    "providerId": "12345-credId",
-           |    "providerType": "GovernmentGateway"
-           |  }}""".stripMargin
-      )
-      val result = TestController.testWithAuthorisedAgent
-      status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
     }
 
     "redirect to sign-in if an agent is not logged in" in {
