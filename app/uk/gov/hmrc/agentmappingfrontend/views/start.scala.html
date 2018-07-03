@@ -56,18 +56,12 @@
 
     @if(arnOpt.isDefined) {
         <p class="panel panel-border-wide">@Messages("connectAgentServices.start.l2.1.dynamic-arn", arnOpt.get)</p>
-        <p>@Messages("connectAgentServices.start.youWillAlsoNeed")</p>
     } else {
-        <p>@Messages("connectAgentServices.start.youWillNeed")</p>
+        <p class="panel panel-border-wide margin-bottom-40">@Html(Messages("connectAgentServices.start.l2.1", appConfig.agentServicesFrontendExternalUrl))</p>
     }
-
+    <p>@Messages("connectAgentServices.start.youWillAlsoNeed")</p>
 
     <ul class="list list-bullet">
-
-
-        @if(!arnOpt.isDefined) {
-            <li>@Html(Messages("connectAgentServices.start.l2.1", appConfig.agentServicesFrontendExternalUrl))</li>
-        }
         <li>@Messages("connectAgentServices.start.l2.2")</li>
         <li>@Messages("connectAgentServices.start.l2.3")</li>
     </uL>
