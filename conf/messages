@@ -44,6 +44,10 @@ connectAgentServices.start.p4=You will need to repeat this process for each Gove
 alreadyMapped.p1=This Government Gateway account is already linked to your agent services account.
 alreadyMapped.p2=If you need to link a different Government Gateway account, sign in with the login details for that account.
 
+#Incorrect account
+incorrectAccount.p1=You tried to sign into the Government Gateway with your agent services account login details.
+incorrectAccount.p2=You need to sign in with a Government Gateway account that your business uses for your Income Tax Self Assessment and VAT clients.
+
 #Not enrolled
 notEnrolled.p1=You cannot link this Government Gateway account to your agent services account.
 notEnrolled.p2=You can only link Government Gateway accounts registered to your business.
@@ -70,10 +74,12 @@ connectionComplete.p5=Sign in using a different Government Gateway account to st
 #Buttons/links
 button.repeatProcess=Sign in to link another account
 link.finishSignOut=Finish and sign out
+link.goToASAccount=Go to your agent services account
 button.continue=Continue
 button.signOut=Sign out
 button.startNow=Sign in with another account
 button.back=Back
+button.tryAgain=Try again
 
 #Errors
 error.title=There is a problem

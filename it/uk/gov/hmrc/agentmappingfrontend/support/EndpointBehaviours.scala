@@ -49,18 +49,18 @@ trait EndpointBehaviours extends AuthStubs {
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, notEligibleAgent.activeEnrolments)
     }
 
-    "redirect to /already-mapped page if the current user has an HMRC-AS-AGENT enrolment" in {
+    "redirect to /incorrect-account page if the current user has an HMRC-AS-AGENT enrolment" in {
       givenUserIsAuthenticated(mtdAsAgent)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.alreadyMapped().url
+      result.header.headers("Location") shouldBe routes.MappingController.incorrectAccount().url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAsAgent.activeEnrolments)
     }
 
-    "redirect to /already-mapped page if the current user has an HMRC-AGENT-AGENT enrolment" in {
+    "redirect to /already-linked page if the current user has an HMRC-AGENT-AGENT enrolment" in {
       givenUserIsAuthenticated(mtdAgentAgent)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))
@@ -71,8 +71,7 @@ trait EndpointBehaviours extends AuthStubs {
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAgentAgent.activeEnrolments)
     }
 
-
-    "redirect to /already-mapped page if the current user has no enrolments" in {
+    "redirect to /not-enrolled page if the current user has no enrolments" in {
       givenUserIsAuthenticated(agentNotEnrolled)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = await(doRequest(request))

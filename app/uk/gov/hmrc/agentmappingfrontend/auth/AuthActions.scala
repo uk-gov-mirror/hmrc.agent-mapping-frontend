@@ -79,14 +79,14 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       .retrieve(allEnrolments and credentials) {
         case agentEnrolments ~ creds =>
           val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
-          val eligible = activeEnrolments.nonEmpty && activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
-          audit(AuditData(activeEnrolments, eligible, creds))
-          if (eligible) {
+          val hasEligibleAgentEnrolments = activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
+          audit(AuditData(activeEnrolments, hasEligibleAgentEnrolments, creds))
+          if (hasEligibleAgentEnrolments) {
             body(creds.providerId)
           } else {
-            val hasOnlyIneligibleEnrolments =
-              activeEnrolments.intersect(Set(`HMRC-AS-AGENT`, `HMRC-AGENT-AGENT`)).nonEmpty
-            val redirectRoute = if (hasOnlyIneligibleEnrolments) {
+            val redirectRoute = if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
+              routes.MappingController.incorrectAccount()
+            } else if (activeEnrolments.contains(`HMRC-AGENT-AGENT`)) {
               routes.MappingController.alreadyMapped()
             } else {
               routes.MappingController.notEnrolled()

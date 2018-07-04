@@ -142,6 +142,12 @@ class MappingController @Inject()(
       successful(Ok(html.no_match()))
     }
   }
+
+  val incorrectAccount: Action[AnyContent] = Action.async { implicit request =>
+    withBasicAuth {
+      successful(Ok(html.incorrect_account()))
+    }
+  }
 }
 
 object MappingController {

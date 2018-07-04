@@ -330,4 +330,30 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       resultBody should include(htmlEscapedMessage("button.startNow"))
     }
   }
+
+  "incorrectAccount" should {
+    trait IncorrectAccountFixture {
+      givenUserIsAuthenticated(mtdAsAgent)
+      val request = fakeRequest(GET, routes.MappingController.incorrectAccount().url)
+      val result = callEndpointWith(request)
+      val resultBody: String = bodyOf(result)
+    }
+
+    "contain a Try Again button for signing in again and repeating the journey" in new IncorrectAccountFixture {
+      resultBody should include(htmlEscapedMessage("button.tryAgain"))
+      resultBody should include(""" href="/agent-mapping/signed-out-redirect" """)
+    }
+
+    "contain a link to Agent Services Account homepage" in new IncorrectAccountFixture {
+      resultBody should include(htmlEscapedMessage("link.goToASAccount"))
+      resultBody should include(""" href="http://localhost:9401/agent-services-account" """)
+    }
+
+    "return 200 response and contain appropriate content" in new IncorrectAccountFixture {
+      status(result) shouldBe 200
+      resultBody should include(htmlEscapedMessage("error.title"))
+      resultBody should include(htmlEscapedMessage("incorrectAccount.p1"))
+      resultBody should include(htmlEscapedMessage("incorrectAccount.p2"))
+    }
+  }
 }

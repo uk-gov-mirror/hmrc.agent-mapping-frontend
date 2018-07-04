@@ -8,9 +8,10 @@ POST        /enter-account-number                         uk.gov.hmrc.agentmappi
 GET         /enter-utr                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showEnterUtr
 POST        /enter-utr                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitEnterUtr
 GET         /account-linked                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete
-GET         /error/already-linked                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped
-GET         /error/not-enrolled                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled
-GET         /error/no-match                              uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.noMatch
+GET         /error/already-linked                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped
+GET         /error/not-enrolled                           uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled
+GET         /error/no-match                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.noMatch
+GET         /error/incorrect-account                      uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.incorrectAccount
 
 GET         /signed-out                                   uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
 GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect
