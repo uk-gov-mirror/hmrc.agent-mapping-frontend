@@ -68,6 +68,11 @@ class MappingFormSpec extends UnitSpec {
       utrForm.bind(Map("utr.value" -> "20000")).errors.head.messages.head shouldBe "error.utr.invalid.length"
     }
 
+    "reject utr strings in wrong length" in {
+      utrForm.bind(Map("utr.value" -> "2000000 00")).errors.head.messages.head shouldBe "error.utr.invalid.length"
+      utrForm.bind(Map("utr.value" -> "200 000 00")).errors.head.messages.head shouldBe "error.utr.invalid.length"
+    }
+
     "Utr Blank" in {
       utrForm.bind(Map("utr.value" -> "")).errors.head.messages.head shouldBe "error.utr.blank"
     }

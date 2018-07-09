@@ -256,6 +256,16 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.length"))
       }
 
+      "the utr with spaces has wrong length" in {
+        givenUserIsAuthenticated(eligibleAgent)
+        val request =
+          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "200000 000").withSession(("mappingArn", "TARN0000001"))
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 200
+        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.length"))
+      }
+
       "the known facts check fails" in {
         givenUserIsAuthenticated(eligibleAgent)
         mappingKnownFactsIssue(Utr("2000000000"), Arn("TARN0000001"))
