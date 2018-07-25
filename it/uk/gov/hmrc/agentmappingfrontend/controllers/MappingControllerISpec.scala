@@ -7,7 +7,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.auth.Auth
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
 import uk.gov.hmrc.http.InternalServerException
 
@@ -30,7 +30,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("connectAgentServices.start.title"))
+      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.title")
       bodyOf(result) should include("TARN-000-0001")
     }
 
@@ -39,7 +39,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("connectAgentServices.start.title"))
+      checkHtmlResultContainsMsgs(result,"connectAgentServices.start.title")
     }
   }
 
@@ -70,7 +70,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("enter-account-number.title"))
+      checkHtmlResultContainsMsgs(result,"enter-account-number.title")
       verifyCheckAgentRefCodeAuditEvent(activeEnrolments = eligibleAgent.activeEnrolments)
     }
 
@@ -79,7 +79,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, endpoint)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("enter-account-number.title"))
+      checkHtmlResultContainsMsgs(result,"enter-account-number.title")
       verifyCheckAgentRefCodeAuditEvent(activeEnrolments = vatEnrolledAgent.activeEnrolments)
     }
 
@@ -124,21 +124,21 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       givenUserIsAuthenticated(eligibleAgent)
       val result = callEndpointWith(createRequest("invalidArn"))
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("error.arn.invalid"))
+      checkHtmlResultContainsMsgs(result,"error.arn.invalid")
     }
 
     "re-enter arn if an arn entered with invalid format" in {
       givenUserIsAuthenticated(eligibleAgent)
       val result = callEndpointWith(createRequest("TARN-0000-001"))
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("error.arn.invalid"))
+      checkHtmlResultContainsMsgs(result,"error.arn.invalid")
     }
 
     "re-enter arn since empty" in {
       givenUserIsAuthenticated(eligibleAgent)
       val result = callEndpointWith(createRequest(""))
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("error.arn.blank"))
+      checkHtmlResultContainsMsgs(result,"error.arn.blank")
     }
   }
 
@@ -222,7 +222,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include(htmlEscapedMessage("error.utr.blank"))
+        checkHtmlResultContainsMsgs(result, "error.utr.blank")
       }
 
       "the utr is invalid" in {
@@ -232,7 +232,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.format"))
+        checkHtmlResultContainsMsgs(result,"error.utr.invalid.format")
       }
 
 
@@ -243,7 +243,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.length"))
+        checkHtmlResultContainsMsgs(result,"error.utr.invalid.length")
       }
 
       "the utr has wrong short length" in {
@@ -253,7 +253,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.length"))
+        checkHtmlResultContainsMsgs(result,"error.utr.invalid.length")
       }
 
       "the utr with spaces has wrong length" in {
@@ -263,7 +263,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val result = callEndpointWith(request)
 
         status(result) shouldBe 200
-        bodyOf(result) should include(htmlEscapedMessage("error.utr.invalid.length"))
+        checkHtmlResultContainsMsgs(result, "error.utr.invalid.length")
       }
 
       "the known facts check fails" in {
@@ -286,28 +286,18 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       routes.MappingController.complete.url,
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
 
-    "display the complete page for an arn and ir sa agent reference" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.complete.url).withSession(("mappingArn", "TARN0000001"))
-      val result = callEndpointWith(request)
-      val resultBody: String = bodyOf(result)
-      status(result) shouldBe 200
-      resultBody should include(htmlEscapedMessage("connectionComplete.title"))
-      resultBody should include(htmlEscapedMessage("button.repeatProcess"))
-      resultBody should include(htmlEscapedMessage("link.finishSignOut"))
-      resultBody should include("TARN-000-0001")
-      resultBody should include("12345-credId")
-    }
-
-    "display the complete page for an arn and vat agent reference" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      val request = fakeRequest(GET, routes.MappingController.complete.url).withSession(("mappingArn", "TARN0000001"))
-      val result = callEndpointWith(request)
-      val resultBody: String = bodyOf(result)
-      status(result) shouldBe 200
-      resultBody should include(htmlEscapedMessage("connectionComplete.title"))
-      resultBody should include(htmlEscapedMessage("button.repeatProcess"))
-      resultBody should include(htmlEscapedMessage("link.finishSignOut"))
+    for(user <- Seq(eligibleAgent, vatEnrolledAgent)) {
+      s"display the complete page with correct content for a user with enrolments: ${user.activeEnrolments.mkString(", ")}" in {
+        givenUserIsAuthenticated(user)
+        val request = fakeRequest(GET, routes.MappingController.complete.url).withSession(("mappingArn", "TARN0000001"))
+        val result = callEndpointWith(request)
+        status(result) shouldBe 200
+        checkHtmlResultContainsMsgs(result, "connectionComplete.title",
+          "button.repeatProcess",
+          "link.finishSignOut",
+          "connectionComplete.banner.header",
+          "connectionComplete.banner.paragraph")
+      }
     }
 
     "InternalServerError due no ARN found after mapping complete" in {
@@ -323,7 +313,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, routes.MappingController.notEnrolled.url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("notEnrolled.p1"))
+      checkHtmlResultContainsMsgs(result,"notEnrolled.p1")
     }
   }
 
@@ -332,12 +322,11 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       givenUserIsAuthenticated(eligibleAgent)
       val request = fakeRequest(GET, routes.MappingController.alreadyMapped.url)
       val result = callEndpointWith(request)
-      val resultBody: String = bodyOf(result)
       status(result) shouldBe 200
-      resultBody should include(htmlEscapedMessage("error.title"))
-      resultBody should include(htmlEscapedMessage("alreadyMapped.p1"))
-      resultBody should include(htmlEscapedMessage("alreadyMapped.p2"))
-      resultBody should include(htmlEscapedMessage("button.startNow"))
+      checkHtmlResultContainsMsgs(result, "error.title",
+        "alreadyMapped.p1",
+        "alreadyMapped.p2",
+        "button.startNow")
     }
   }
 
@@ -350,20 +339,21 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "contain a Try Again button for signing in again and repeating the journey" in new IncorrectAccountFixture {
-      resultBody should include(htmlEscapedMessage("button.tryAgain"))
+      checkHtmlResultContainsMsgs(result, "button.tryAgain")
       resultBody should include(""" href="/agent-mapping/signed-out-redirect" """)
     }
 
     "contain a link to Agent Services Account homepage" in new IncorrectAccountFixture {
-      resultBody should include(htmlEscapedMessage("link.goToASAccount"))
+      checkHtmlResultContainsMsgs(result,"link.goToASAccount")
       resultBody should include(""" href="http://localhost:9401/agent-services-account" """)
     }
 
     "return 200 response and contain appropriate content" in new IncorrectAccountFixture {
       status(result) shouldBe 200
-      resultBody should include(htmlEscapedMessage("error.title"))
-      resultBody should include(htmlEscapedMessage("incorrectAccount.p1"))
-      resultBody should include(htmlEscapedMessage("incorrectAccount.p2"))
+      checkHtmlResultContainsMsgs(result,"error.title",
+        "incorrectAccount.p1",
+        "incorrectAccount.p2"
+      )
     }
   }
 }

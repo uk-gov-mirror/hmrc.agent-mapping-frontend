@@ -116,12 +116,12 @@ class MappingController @Inject()(
   }
 
   def complete(): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent { providerId =>
+    withAuthorisedAgent { _ =>
       val arn = request.session
         .get("mappingArn")
         .getOrElse(
           throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn"))
-      successful(Ok(html.complete(providerId, prettify(Arn(arn)))))
+      successful(Ok(html.complete(prettify(Arn(arn)))))
     }
   }
 

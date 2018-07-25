@@ -23,6 +23,7 @@ import play.api.Application
 import play.api.http.{HttpFilters, NoHttpFilters}
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
@@ -31,6 +32,7 @@ import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
+import play.api.test.Helpers._
 
 abstract class BaseControllerISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours with AuditSupport {
@@ -65,4 +67,20 @@ abstract class BaseControllerISpec
   private val messagesApi = app.injector.instanceOf[MessagesApi]
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
   protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
+
+  protected def checkHtmlResultContainsMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+
+    expectedMessageKeys.foreach { messageKey =>
+      withClue(s"Expected message key '$messageKey' to exist: ") {
+        Messages.isDefinedAt(messageKey) shouldBe true
+      }
+
+      val expectedContent = Messages(messageKey)
+      withClue(s"Expected content ('$expectedContent') for message key '$messageKey' to be in request body: ") {
+        bodyOf(result) should include(htmlEscapedMessage(expectedContent))
+      }
+    }
+  }
 }
