@@ -2,6 +2,7 @@
 
 GET         /                                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
 GET         /start                                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
+GET         /sign-in-required                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.needAgentServicesAccount
 GET         /start-submit                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.startSubmit
 GET         /enter-account-number                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showEnterAccountNo
 POST        /enter-account-number                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitEnterAccountNo
@@ -15,5 +16,6 @@ GET         /error/incorrect-account                      uk.gov.hmrc.agentmappi
 
 GET         /signed-out                                   uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
 GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect
+GET         /re-log-in-redirect                           uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.reLogForMappingStart
 
 GET         /assets/*file                                 controllers.Assets.at(path="/public", file)

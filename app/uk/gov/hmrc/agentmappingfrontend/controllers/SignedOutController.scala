@@ -34,4 +34,7 @@ class SignedOutController @Inject()(appConfig: AppConfig) extends FrontendContro
     Future successful Redirect(appConfig.signOutAndRedirectUrl)
   }
 
+  def reLogForMappingStart: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Redirect(appConfig.signInAndContinue).withNewSession
+  }
 }

@@ -25,26 +25,56 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   }
 
   "start" should {
-    "display the start page with ARN if user has HMRC-AS-AGENT" in {
+    "200 the start page if user has HMRC-AS-AGENT" in {
       givenUserIsAuthenticated(mtdAsAgent)
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsMsgs(result, "connectAgentServices.start.title")
-      bodyOf(result) should include("TARN-000-0001")
     }
 
-    "display the start page for unAuthenticated user" in {
+    "303 the /sign-in-required for unAuthenticated" in {
       givenUserIsNotAuthenticated
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
+      redirectLocation(result) shouldBe Some(routes.MappingController.needAgentServicesAccount().url)
+    }
+
+    "303 to /sign-in-required when user without HMRC-AS-AGENT/ARN" in {
+      givenAuthorisedFor("notHMRCASAGENT")
+      val request = FakeRequest(GET, "/agent-mapping/start")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.needAgentServicesAccount().url)
+    }
+  }
+
+  "/sign-in-required" should {
+    "200 the /start/sign-in-required page when not logged in" in {
+      givenUserIsNotAuthenticated
+      val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
+      val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"connectAgentServices.start.title")
+      checkHtmlResultContainsMsgs(result, "start.not-signed-in.title")
+    }
+
+    "200 the /sign-in-required page as NO ARN is found" in {
+      givenAuthorisedFor("notHMRCASAGENT")
+      val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 200
+      checkHtmlResultContainsMsgs(result, "start.not-signed-in.title")
+    }
+
+    "303 the /start page when user has HMRC-AS-AGENT/ARN" in {
+      givenUserIsAuthenticated(mtdAsAgent)
+      val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
+      val result = callEndpointWith(request)
+      redirectLocation(result) shouldBe Some(routes.MappingController.start().url)
     }
   }
 
   "startSubmit" should {
-
     Auth.validEnrolments.foreach { serviceName =>
       s"redirect to the enter-account-number if the current user is logged in and has legacy agent enrolment for $serviceName" in {
         givenAuthorisedFor(serviceName)

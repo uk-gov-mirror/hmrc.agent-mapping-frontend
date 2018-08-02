@@ -26,4 +26,13 @@ class SignOutControllerISpec extends BaseControllerISpec {
       redirectLocation(result).get should include("agent-mapping%2Fenter-account-number")
     }
   }
+
+  "reLog and redirect" should {
+    "redirect to /agent-mapping/start" in {
+      val result = await(controller.reLogForMappingStart(fakeRequest))
+
+      status(result) shouldBe 303
+      redirectLocation(result).get should include("agent-mapping%2Fstart")
+    }
+  }
 }
