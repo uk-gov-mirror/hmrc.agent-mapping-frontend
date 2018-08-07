@@ -44,7 +44,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, notEligibleAgent.activeEnrolments)
     }
@@ -55,7 +55,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.incorrectAccount().url
+      result.header.headers("Location") shouldBe routes.MappingController.incorrectAccount(id = "someArnRefForMapping").url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAsAgent.activeEnrolments)
     }
@@ -66,7 +66,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.alreadyMapped().url
+      result.header.headers("Location") shouldBe routes.MappingController.alreadyMapped(id = "someArnRefForMapping").url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAgentAgent.activeEnrolments)
     }
@@ -77,7 +77,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, agentNotEnrolled.activeEnrolments)
     }
@@ -88,7 +88,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled().url
+      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
 
       verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false)
     }

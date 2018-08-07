@@ -17,9 +17,6 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.data.Forms._
-import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.{Configuration, Environment}
@@ -27,8 +24,10 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
@@ -36,20 +35,17 @@ import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 import scala.concurrent.Future.successful
 
 case class MappingFormArn(arn: Arn)
-case class MappingFormUtr(utr: Utr)
 
 @Singleton
 class MappingController @Inject()(
   override val messagesApi: MessagesApi,
   val authConnector: AuthConnector,
   mappingConnector: MappingConnector,
+  repository: MappingArnRepository,
   auditService: AuditService,
   val env: Environment,
   val config: Configuration)(implicit val appConfig: AppConfig)
     extends FrontendController with I18nSupport with AuthActions {
-
-  import MappingController.mappingFormArn
-  import MappingController.mappingFormUtr
 
   val root: Action[AnyContent] = ActionWithMdc {
     Redirect(routes.MappingController.start())
@@ -57,8 +53,11 @@ class MappingController @Inject()(
 
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
-      case Some(arn) => successful(Ok(html.start()))
-      case None      => successful(Redirect(routes.MappingController.needAgentServicesAccount))
+      case Some(arn) =>
+        for {
+          id <- repository.create(arn)
+        } yield Ok(html.start(id))
+      case None => successful(Redirect(routes.MappingController.needAgentServicesAccount))
     }
   }
 
@@ -69,108 +68,51 @@ class MappingController @Inject()(
     }
   }
 
-  def startSubmit: Action[AnyContent] = Action.async { implicit request =>
-    successful(Redirect(routes.MappingController.showEnterAccountNo).withNewSession)
-  }
-
-  def showEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgentAudited { providerId =>
-      successful(Ok(html.enter_account_number(mappingFormArn)))
-    }(AuditService.auditCheckAgentRefCodeEvent(auditService))
-  }
-
-  def submitEnterAccountNo: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent { providerId =>
-      mappingFormArn.bindFromRequest.fold(
-        formWithErrors => {
-          successful(Ok(html.enter_account_number(formWithErrors)))
-        },
-        formArn => {
-          successful(Redirect(routes.MappingController.showEnterUtr).addingToSession(("mappingArn", formArn.arn.value)))
+  def startSubmit(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      repository.findArn(id).flatMap {
+        case Some(arn) => {
+          for {
+            newRefForArn <- repository.create(arn)
+            doMappingResult <- mappingConnector.createMapping(arn).map {
+                                case CREATED =>
+                                  Redirect(routes.MappingController.complete(newRefForArn))
+                                case CONFLICT => Redirect(routes.MappingController.alreadyMapped(newRefForArn))
+                              }
+            _ <- repository.delete(id)
+          } yield doMappingResult
         }
-      )
-    }
-  }
-
-  def showEnterUtr: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent { providerId =>
-      request.session.get("mappingArn").isDefined match {
-        case true  => successful(Ok(html.enter_utr(mappingFormUtr)))
-        case false => successful(Redirect(routes.MappingController.showEnterAccountNo()))
+        case None =>
+          successful(Redirect(routes.MappingController.start()).withNewSession) //TODO APB-2866 might require some new Content for user to understand this
       }
     }
   }
 
-  def submitEnterUtr: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent { providerId: String =>
-      mappingFormUtr.bindFromRequest.fold(
-        formWithErrors => {
-          successful(Ok(html.enter_utr(formWithErrors)))
-        },
-        formWithUtr => {
-          request.session.get("mappingArn") match {
-            case Some(arn) =>
-              mappingConnector.createMapping(formWithUtr.utr, Arn(arn)) map {
-                case CREATED   => Redirect(routes.MappingController.complete())
-                case FORBIDDEN => Redirect(routes.MappingController.noMatch())
-                case CONFLICT  => Redirect(routes.MappingController.alreadyMapped())
-              }
-            case None => successful(Redirect(routes.MappingController.showEnterAccountNo()))
-          }
-        }
-      )
+  def complete(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      repository.findArn(id).map {
+        case Some(_) => Ok(html.complete(id))
+        case None =>
+          throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn")
+      }
     }
   }
 
-  def complete(): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent { _ =>
-      val arn = request.session
-        .get("mappingArn")
-        .getOrElse(
-          throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn"))
-      successful(Ok(html.complete(prettify(Arn(arn)))))
-    }
-  }
-
-  val alreadyMapped: Action[AnyContent] = Action.async { implicit request =>
+  def alreadyMapped(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      successful(Ok(html.already_mapped()))
+      successful(Ok(html.already_mapped(id)))
     }
   }
 
-  val notEnrolled: Action[AnyContent] = Action.async { implicit request =>
+  def notEnrolled(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      successful(Ok(html.not_enrolled()))
+      successful(Ok(html.not_enrolled(id)))
     }
   }
 
-  val noMatch: Action[AnyContent] = Action.async { implicit request =>
+  def incorrectAccount(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      successful(Ok(html.no_match()))
+      successful(Ok(html.incorrect_account(id)))
     }
   }
-
-  val incorrectAccount: Action[AnyContent] = Action.async { implicit request =>
-    withBasicAuth {
-      successful(Ok(html.incorrect_account()))
-    }
-  }
-}
-
-object MappingController {
-  val mappingFormArn = Form(
-    mapping(
-      "arn" -> mapping(
-        "arn" -> arn
-      )(normalizeArn(_).getOrElse(throw new Exception("Invalid Arn after validation")))(arn => Some(arn.value))
-    )(MappingFormArn.apply)(MappingFormArn.unapply)
-  )
-
-  val mappingFormUtr = Form(
-    mapping(
-      "utr" -> mapping(
-        "value" -> utr
-      )(normalizeUtr(_).getOrElse(throw new Exception("Invalid Utr after validation")))(utr => Some(utr.value))
-    )(MappingFormUtr.apply)(MappingFormUtr.unapply)
-  )
 }

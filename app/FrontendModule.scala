@@ -15,8 +15,8 @@
  */
 
 import java.net.URL
-import javax.inject.{Inject, Provider, Singleton}
 
+import javax.inject.{Inject, Provider, Singleton}
 import com.google.inject.AbstractModule
 import com.google.inject.name.{Named, Names}
 import org.slf4j.MDC
@@ -58,8 +58,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-mapping")
-
-    bindServiceConfigProperty[String]("logoutRedirectUrl")
   }
 
   private def bindBaseUrl(serviceName: String) =

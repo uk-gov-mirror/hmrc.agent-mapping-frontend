@@ -9,7 +9,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
   private val arn = Arn("ARN0001")
-  private val utr = Utr("2000000000")
 
   private def connector = app.injector.instanceOf[MappingConnector]
   private implicit val hc = HeaderCarrier()
@@ -17,19 +16,19 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
   "createMapping" should {
     "create a mapping" in {
       givenCleanMetricRegistry()
-      mappingIsCreated(utr, arn)
-      await(connector.createMapping(utr, arn)) shouldBe 201
+      mappingIsCreated(arn)
+      await(connector.createMapping(arn)) shouldBe 201
       timerShouldExistsAndBeenUpdated("ConsumedAPI-Mapping-CreateMapping-PUT")
     }
 
     "not create a mapping when one already exists" in {
-      mappingExists(utr, arn)
-      await(connector.createMapping(utr, arn)) shouldBe 409
+      mappingExists(arn)
+      await(connector.createMapping(arn)) shouldBe 409
     }
 
     "not create a mapping when there is a problem with the supplied known facts" in {
-      mappingKnownFactsIssue(utr, arn)
-      await(connector.createMapping(utr, arn)) shouldBe 403
+      mappingKnownFactsIssue(arn)
+      await(connector.createMapping(arn)) shouldBe 403
     }
   }
 

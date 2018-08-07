@@ -15,7 +15,7 @@ class MappingISpec extends UnitSpec with GuiceOneServerPerSuite with WireMockSup
   "Mapping application" should {
     "render an error if auth fails with 5xx" in {
       givenAuthorisationFailsWith5xx()
-      val response = await(ws.url(s"http://localhost:$port/agent-mapping/start-submit").get())
+      val response = await(ws.url(s"http://localhost:$port/agent-mapping/start-submit?id=doesNotMatterJustYet").get())
       response.status shouldBe 200
       response.body should include(htmlEscapedMessage("global.error.500.message"))
     }

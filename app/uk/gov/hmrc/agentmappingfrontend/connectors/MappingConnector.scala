@@ -41,10 +41,10 @@ class MappingConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def createMapping(utr: Utr, arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def createMapping(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Mapping-CreateMapping-PUT") {
       httpPut
-        .PUT(createUrl(utr, arn), "")
+        .PUT(createUrl(arn), "")
         .map { r =>
           r.status
         }
@@ -55,8 +55,8 @@ class MappingConnector @Inject()(
         }
     }
 
-  private def createUrl(utr: Utr, arn: Arn): String =
-    new URL(baseUrl, s"/agent-mapping/mappings/${utr.value}/${arn.value}").toString
+  private def createUrl(arn: Arn): String =
+    new URL(baseUrl, s"/agent-mapping/mappings/arn/${arn.value}").toString
 
   private def deleteUrl(arn: Arn): String =
     new URL(baseUrl, s"/agent-mapping/test-only/mappings/${arn.value}").toString

@@ -17,8 +17,10 @@
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
 
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@(idRefForArn: MappingArnResultId)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("error.title"), bodyClasses = None) {
 
@@ -28,5 +30,5 @@
     <p>@Messages("notEnrolled.p2")</p>
     <p>@Messages("notEnrolled.p3")</p>
 
-    <a href="@routes.SignedOutController.signOut" id="buttonSignOut" class="button" role="button">@Messages("button.startNow")</a>
+    <a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" id="buttonSignOut" class="button" role="button">@Messages("button.tryAgain")</a>
 }

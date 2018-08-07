@@ -14,19 +14,19 @@ object MappingStubs {
   val saJsonBody = Json.toJson(SaMappings(listOfSaMappings))
   val vatJsonBody = Json.toJson(VatMappings(listOfVatMappings))
 
-  def mappingIsCreated(utr: Utr, arn: Arn): Unit =
+  def mappingIsCreated(arn: Arn): Unit =
     stubFor(
-      put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}"))
+      put(urlPathEqualTo(s"/agent-mapping/mappings/arn/${arn.value}"))
         willReturn aResponse().withStatus(201))
 
-  def mappingExists(utr: Utr, arn: Arn): Unit =
+  def mappingExists(arn: Arn): Unit =
     stubFor(
-      put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}"))
+      put(urlPathEqualTo(s"/agent-mapping/mappings/arn/${arn.value}"))
         willReturn aResponse().withStatus(409))
 
-  def mappingKnownFactsIssue(utr: Utr, arn: Arn): Unit =
+  def mappingKnownFactsIssue(arn: Arn): Unit =
     stubFor(
-      put(urlPathEqualTo(s"/agent-mapping/mappings/${utr.value}/${arn.value}"))
+      put(urlPathEqualTo(s"/agent-mapping/mappings/arn/${arn.value}"))
         willReturn aResponse().withStatus(403))
 
   def saMappingsFound(arn: Arn): Unit =

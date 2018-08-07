@@ -5,13 +5,19 @@ import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.auth.Auth
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated, mappingKnownFactsIssue}
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.{mappingExists, mappingIsCreated}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.InternalServerException
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
+
+  private lazy val repo = app.injector.instanceOf[MappingArnRepository]
+
 
   def callEndpointWith[A: Writeable](request: Request[A]): Result = await(play.api.test.Helpers.route(app, request).get)
 
@@ -25,12 +31,13 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   }
 
   "start" should {
-    "200 the start page if user has HMRC-AS-AGENT" in {
+    "200 the start page if user has HMRC-AS-AGENT and 'Sign in with another account' button holds idReference to agent's ARN" in {
       givenUserIsAuthenticated(mtdAsAgent)
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.title")
+      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.title", "button.startNow")
+      bodyOf(result) should include("/signed-out-redirect?id=")
     }
 
     "303 the /sign-in-required for unAuthenticated" in {
@@ -63,10 +70,10 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result, "start.not-signed-in.title")
+      checkHtmlResultContainsMsgs(result, "start.not-signed-in.title", "button.signIn")
     }
 
-    "303 the /start page when user has HMRC-AS-AGENT/ARN" in {
+    "303 the /start page when user has HMRC-AS-AGENT/ARN and 'Sign in with another account' button holds idReference to agent's ARN" in {
       givenUserIsAuthenticated(mtdAsAgent)
       val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
       val result = callEndpointWith(request)
@@ -75,251 +82,58 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
   }
 
   "startSubmit" should {
+    val arn = Arn("TARN0000001")
     Auth.validEnrolments.foreach { serviceName =>
-      s"redirect to the enter-account-number if the current user is logged in and has legacy agent enrolment for $serviceName" in {
+      s"303 to /account-linked when successfully mapped legacy enrolment identifier for $serviceName, then test arnRef no longer valid" in {
+        val persistedMappingArnResultId = await(repo.create(arn))
+        mappingIsCreated(arn)
         givenAuthorisedFor(serviceName)
-        val request = fakeRequest(GET, "/agent-mapping/start-submit")
+        implicit val request = fakeRequest(GET, s"/agent-mapping/start-submit?id=$persistedMappingArnResultId")
         val result = callEndpointWith(request)
+
         status(result) shouldBe 303
-        redirectLocation(result).get shouldBe routes.MappingController.showEnterAccountNo().url
+        redirectLocation(result).get should include(routes.MappingController.complete(id = "").url)
+
+        givenAuthorisedFor(serviceName)
+        val requestWithUsedIdShouldFail = fakeRequest(GET, s"/agent-mapping/start-submit?id=$persistedMappingArnResultId")
+        val resultCopiedAttempt = callEndpointWith(requestWithUsedIdShouldFail)
+        redirectLocation(resultCopiedAttempt) shouldBe Some(routes.MappingController.start().url)
       }
     }
-  }
 
-  "show enter-account-number" should {
-
-    val endpoint = "/agent-mapping/enter-account-number"
-
-    behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
-      GET,
-      endpoint,
-      expectCheckAgentRefCodeAudit = true)(callEndpointWith)
-
-    "display the enter utr page if the current user is logged in and has legacy agent enrolment for SA" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, endpoint)
+    s"303 to /account-linked persistedMappingArnResultId is INVALID" in {
+      givenAuthorisedFor("IR-SA-AGENT")
+      val request = fakeRequest(GET, s"/agent-mapping/start-submit?id=meaninglessBlaBlaID")
       val result = callEndpointWith(request)
-      status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"enter-account-number.title")
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = eligibleAgent.activeEnrolments)
-    }
-
-    "display the enter utr page if the current user is logged in and has legacy agent enrolment for VAT" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      val request = fakeRequest(GET, endpoint)
-      val result = callEndpointWith(request)
-      status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"enter-account-number.title")
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = vatEnrolledAgent.activeEnrolments)
-    }
-
-    "display the SA Agent Reference if the current user is logged in and has legacy agent enrolment for SA" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, endpoint)
-      val result = callEndpointWith(request)
-      status(result) shouldBe 200
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = eligibleAgent.activeEnrolments)
-    }
-
-    "display the VAT Agent Reference if the current user is logged in and has legacy agent enrolment for VAT" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      val request = fakeRequest(GET, endpoint)
-      val result = callEndpointWith(request)
-      status(result) shouldBe 200
-      verifyCheckAgentRefCodeAuditEvent(activeEnrolments = vatEnrolledAgent.activeEnrolments)
-    }
-  }
-
-  "submit enter-account-number" should {
-    val createRequest = (arn: String) => fakeRequest(POST, routes.MappingController.submitEnterAccountNo.toString)
-      .withFormUrlEncodedBody("arn.arn" -> s"$arn")
-
-    "redirect and add arn to session" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = createRequest("TARN0000001")
-      val result = callEndpointWith(request)
-      redirectLocation(result) shouldBe Some(routes.MappingController.showEnterUtr.url)
-      result.session(request).get("mappingArn") shouldBe Some("TARN0000001")
-    }
-
-    "redirect and add arn to session when arn in hyphen pattern is entered" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = createRequest("TARN-000-0001")
-      val result = callEndpointWith(request)
-      redirectLocation(result) shouldBe Some(routes.MappingController.showEnterUtr.url)
-      result.session(request).get("mappingArn") shouldBe Some("TARN0000001")
-    }
-
-    "re-enter arn since invalid" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val result = callEndpointWith(createRequest("invalidArn"))
-      status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"error.arn.invalid")
-    }
-
-    "re-enter arn if an arn entered with invalid format" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val result = callEndpointWith(createRequest("TARN-0000-001"))
-      status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"error.arn.invalid")
-    }
-
-    "re-enter arn since empty" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val result = callEndpointWith(createRequest(""))
-      status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"error.arn.blank")
-    }
-  }
-
-  "show enter-utr" should {
-    def request = fakeRequest(GET, routes.MappingController.showEnterUtr.url)
-
-    "enter-utr arn found in session" in {
-      givenUserIsAuthenticated(eligibleAgent)
-
-      val result = callEndpointWith(request.withSession(("mappingArn", "TARN0000001")))
-      status(result) shouldBe 200
-    }
-
-    "redirect noArn go back to enter-account-number" in {
-      givenUserIsAuthenticated(eligibleAgent)
-
-      val result = callEndpointWith(request)
-      redirectLocation(result) shouldBe Some(routes.MappingController.showEnterAccountNo.url)
-    }
-  }
-
-  "submit add code" should {
-
-    val endpoint = "/agent-mapping/enter-utr"
-
-    behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
-      POST,
-      endpoint,
-      expectCheckAgentRefCodeAudit = false)(callEndpointWith)
-
-    "redirect to complete if the user enters an ARN and UTR that match the known facts for SA" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      mappingIsCreated(Utr("2000000000"), Arn("TARN0000001"))
-      val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000")
-        .withSession(("mappingArn", "TARN0000001"))
-      val result = callEndpointWith(request)
-
       status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.complete().url
+      redirectLocation(result).get shouldBe routes.MappingController.start().url
     }
 
-    "redirect to complete if the user enters an ARN and UTR that match the known facts for VAT" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      mappingIsCreated(Utr("2000000000"), Arn("TARN0000001"))
-      val request =
-        fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000").withSession(("mappingArn", "TARN0000001"))
-      val result = callEndpointWith(request)
+    s"303 to /already-mapped when all available identifiers have been mapped" in {
+      mappingExists(arn)
+      givenAuthorisedFor("IR-SA-AGENT")
+      val attempt2Id = await(repo.create(arn))
+      val attempt2Request = fakeRequest(GET, s"/agent-mapping/start-submit?id=$attempt2Id")
+      val attempt2Result = callEndpointWith(attempt2Request)
 
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.complete().url
-    }
-
-    "redirect to the already-mapped page if the mapping already exists for SA" in new App {
-      givenUserIsAuthenticated(eligibleAgent)
-      mappingExists(Utr("2000000000"), Arn("TARN0000001"))
-
-      val request =
-        fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000").withSession(("mappingArn", "TARN0000001"))
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.alreadyMapped().url
-    }
-
-    "redirect to the already-mapped page if the mapping already exists for VAT" in new App {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      mappingExists(Utr("2000000000"), Arn("TARN0000001"))
-
-      val request =
-        fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000").withSession(("mappingArn", "TARN0000001"))
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.alreadyMapped().url
-    }
-
-    "redisplay the form " when {
-      "there is no UTR " in {
-        givenUserIsAuthenticated(eligibleAgent)
-        val request = fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "").withSession(("mappingArn", "TARN0000001"))
-        val result = callEndpointWith(request)
-
-        status(result) shouldBe 200
-        checkHtmlResultContainsMsgs(result, "error.utr.blank")
-      }
-
-      "the utr is invalid" in {
-        givenUserIsAuthenticated(eligibleAgent)
-        val request =
-          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "invalidUtr").withSession(("mappingArn", "TARN0000001"))
-        val result = callEndpointWith(request)
-
-        status(result) shouldBe 200
-        checkHtmlResultContainsMsgs(result,"error.utr.invalid.format")
-      }
-
-
-      "the utr has wrong long length" in {
-        givenUserIsAuthenticated(eligibleAgent)
-        val request =
-          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "200000000099").withSession(("mappingArn", "TARN0000001"))
-        val result = callEndpointWith(request)
-
-        status(result) shouldBe 200
-        checkHtmlResultContainsMsgs(result,"error.utr.invalid.length")
-      }
-
-      "the utr has wrong short length" in {
-        givenUserIsAuthenticated(eligibleAgent)
-        val request =
-          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000").withSession(("mappingArn", "TARN0000001"))
-        val result = callEndpointWith(request)
-
-        status(result) shouldBe 200
-        checkHtmlResultContainsMsgs(result,"error.utr.invalid.length")
-      }
-
-      "the utr with spaces has wrong length" in {
-        givenUserIsAuthenticated(eligibleAgent)
-        val request =
-          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "200000 000").withSession(("mappingArn", "TARN0000001"))
-        val result = callEndpointWith(request)
-
-        status(result) shouldBe 200
-        checkHtmlResultContainsMsgs(result, "error.utr.invalid.length")
-      }
-
-      "the known facts check fails" in {
-        givenUserIsAuthenticated(eligibleAgent)
-        mappingKnownFactsIssue(Utr("2000000000"), Arn("TARN0000001"))
-
-        val request =
-          fakeRequest(POST, endpoint).withFormUrlEncodedBody("utr.value" -> "2000000000").withSession(("mappingArn", "TARN0000001"))
-        val result = callEndpointWith(request)
-
-        redirectLocation(result) shouldBe Some(routes.MappingController.noMatch.url)
-      }
+      status(attempt2Result) shouldBe 303
+      redirectLocation(attempt2Result).get should include(routes.MappingController.alreadyMapped(id = "").url)
     }
   }
 
   "complete" should {
+    val arn = Arn("TARN0000001")
 
     behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
       GET,
-      routes.MappingController.complete.url,
+      routes.MappingController.complete(id = "someArnRefForMapping").url,
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
 
     for(user <- Seq(eligibleAgent, vatEnrolledAgent)) {
       s"display the complete page with correct content for a user with enrolments: ${user.activeEnrolments.mkString(", ")}" in {
+        val persistedMappingArnResultId = await(repo.create(arn))
         givenUserIsAuthenticated(user)
-        val request = fakeRequest(GET, routes.MappingController.complete.url).withSession(("mappingArn", "TARN0000001"))
+        val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
         val result = callEndpointWith(request)
         status(result) shouldBe 200
         checkHtmlResultContainsMsgs(result, "connectionComplete.title",
@@ -328,49 +142,49 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
           "connectionComplete.banner.header",
           "connectionComplete.banner.paragraph")
       }
-    }
 
-    "InternalServerError due no ARN found after mapping complete" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.complete.url)
-      an[InternalServerException] shouldBe thrownBy(callEndpointWith(request))
+      s"return an exception when repository does not hold the record for the user with enrolment ${user.activeEnrolments.mkString(", ")}" in {
+        givenUserIsAuthenticated(user)
+        val request = fakeRequest(GET, routes.MappingController.complete(id = "someArnRefForMapping").url)
+        an[InternalServerException] shouldBe thrownBy(callEndpointWith(request))
+      }
     }
   }
 
   "not enrolled " should {
     "contain a message indicating that the user is not enrolled for a valid non-mtd enrolment" in {
       givenUserIsAuthenticated(agentNotEnrolled)
-      val request = fakeRequest(GET, routes.MappingController.notEnrolled.url)
+      val request = fakeRequest(GET, routes.MappingController.notEnrolled(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"notEnrolled.p1")
+      checkHtmlResultContainsMsgs(result,"notEnrolled.p1", "button.tryAgain")
     }
   }
 
   "already mapped " should {
     "contain a message indicating that the user has already mapped all of her non-mtd identifiers" in {
       givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.alreadyMapped.url)
+      val request = fakeRequest(GET, routes.MappingController.alreadyMapped(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsMsgs(result, "error.title",
         "alreadyMapped.p1",
         "alreadyMapped.p2",
-        "button.startNow")
+        "button.tryAgain")
     }
   }
 
   "incorrectAccount" should {
     trait IncorrectAccountFixture {
       givenUserIsAuthenticated(mtdAsAgent)
-      val request = fakeRequest(GET, routes.MappingController.incorrectAccount().url)
+      val request = fakeRequest(GET, routes.MappingController.incorrectAccount(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       val resultBody: String = bodyOf(result)
     }
 
     "contain a Try Again button for signing in again and repeating the journey" in new IncorrectAccountFixture {
       checkHtmlResultContainsMsgs(result, "button.tryAgain")
-      resultBody should include(""" href="/agent-mapping/signed-out-redirect" """)
+      resultBody should include(""" href="/agent-mapping/signed-out-redirect?id=""")
     }
 
     "contain a link to Agent Services Account homepage" in new IncorrectAccountFixture {

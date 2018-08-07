@@ -17,8 +17,9 @@
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.views.html
+@import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
 
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(idRefForArn: MappingArnResultId)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("error.title"), bodyClasses = None) {
 
@@ -27,5 +28,5 @@
 <p>@Messages("alreadyMapped.p1")</p>
 <p>@Messages("alreadyMapped.p2")</p>
 
-<a href="@routes.SignedOutController.signOut" class="button" id="buttonSignOut" role="button">@Messages("button.startNow")</a>
+<a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" class="button" id="buttonSignOut" role="button">@Messages("button.tryAgain")</a>
 }

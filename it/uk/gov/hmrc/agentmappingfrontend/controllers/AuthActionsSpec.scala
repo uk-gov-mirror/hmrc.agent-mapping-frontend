@@ -44,7 +44,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     val appConfig = app.injector.instanceOf[AppConfig]
 
     def testWithAuthorisedAgent =
-      await(withAuthorisedAgent { providerId => Future.successful(Ok("Done.")) })
+      await(withAuthorisedAgent("arnRefToTryAgain") { providerId => Future.successful(Ok("Done.")) })
 
     def testWithBasicAuth =
       await(withBasicAuth { Future.successful(Ok("Done."))})
@@ -125,7 +125,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     "redirect to /already-linked" when {
       "agent has just a HMRC-AGENT-AGENT enrolment but not HMRC-AS-AGENT" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.alreadyMapped().url,
+          expectedLocation = routes.MappingController.alreadyMapped(id = "arnRefToTryAgain").url,
           enrolments = "HMRC-AGENT-AGENT" -> "AgentRefNumber"
         )
       }
@@ -134,7 +134,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     "redirect to /not-enrolled" when {
       "agent has only 'non-agent' enrolments" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.notEnrolled().url,
+          expectedLocation = routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url,
           enrolments = "IR-SA" -> "UTR"
         )
       }
@@ -157,12 +157,12 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
         )
         val result = TestController.testWithAuthorisedAgent
         status(result) shouldBe 303
-        result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled().url
+        result.header.headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url
       }
 
       "agent has no enrolments" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.notEnrolled().url,
+          expectedLocation = routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url,
           enrolments = Seq() :_*
         )
       }
@@ -171,14 +171,14 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     "redirect to /incorrect-account" when {
       "agent has just a HMRC-AS-AGENT enrolment" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.incorrectAccount().url,
+          expectedLocation = routes.MappingController.incorrectAccount(id = "arnRefToTryAgain").url,
           enrolments = "HMRC-AS-AGENT" -> "AgentReferenceNumber"
         )
       }
 
       "agent has both HMRC-AS-AGENT and HMRC-AGENT-AGENT enrolments" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.incorrectAccount().url,
+          expectedLocation = routes.MappingController.incorrectAccount(id = "arnRefToTryAgain").url,
           enrolments = Seq("HMRC-AS-AGENT" -> "AgentReferenceNumber", "HMRC-AGENT-AGENT" -> "AgentRefNumber") :_*
         )
       }
@@ -227,7 +227,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       )
       val result = TestController.testWithCheckForArn
       status(result) shouldBe 200
-      bodyOf(result) should include("Some(EnrolmentIdentifier(AgentReferenceNumber,TARN0000001))")
+      bodyOf(result) should include("Some(Arn(TARN0000001)")
     }
 
     "return None when user has no HMRC-AS-AGENT enrolment" in {

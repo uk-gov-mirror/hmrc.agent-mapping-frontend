@@ -9,21 +9,12 @@ class SignOutControllerISpec extends BaseControllerISpec {
 
   private val fakeRequest = FakeRequest()
 
-  "sign out" should {
-    "redirect to /agent-mapping/start" in {
-      val result = await(controller.signOut(fakeRequest))
-
-      status(result) shouldBe 303
-      redirectLocation(result).get should include("agent-mapping%2Fstart")
-    }
-  }
-
   "sign out and redirect" should {
-    "redirect to /agent-mapping/enter-account-number" in {
-      val result = await(controller.signOutAndRedirect(fakeRequest))
+    "redirect to /agent-mapping/start-submit while holding arnRef for next mapping iteration" in {
+      val result = await(controller.signOutAndRedirect("someIdToRetrieveArnWithToMapAccount")(fakeRequest))
 
       status(result) shouldBe 303
-      redirectLocation(result).get should include("agent-mapping%2Fenter-account-number")
+      redirectLocation(result).get should include("agent-mapping%2Fstart-submit%3Fid%3DsomeIdToRetrieveArnWithToMapAccount")
     }
   }
 
@@ -32,7 +23,7 @@ class SignOutControllerISpec extends BaseControllerISpec {
       val result = await(controller.reLogForMappingStart(fakeRequest))
 
       status(result) shouldBe 303
-      redirectLocation(result).get should include("agent-mapping%2Fstart")
+      redirectLocation(result).get should include("agent-services-account")
     }
   }
 }

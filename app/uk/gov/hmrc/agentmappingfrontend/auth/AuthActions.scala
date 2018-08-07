@@ -24,6 +24,8 @@ import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.{allEnrolments, credentials}
@@ -65,13 +67,14 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
     }
 
-  def withAuthorisedAgent(body: String => Future[Result])(
+  def withAuthorisedAgent(idRefToArn: MappingArnResultId)(body: String => Future[Result])(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
-    withAuthorisedAgentAudited(body)(_ => ())
+    withAuthorisedAgentAudited(idRefToArn, body)(_ => ())
 
-  def withAuthorisedAgentAudited(body: String => Future[Result])(audit: AuditData => Unit = _ => ())(
+  def withAuthorisedAgentAudited(idRefToArn: MappingArnResultId, body: String => Future[Result])(
+    audit: AuditData => Unit = _ => ())(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -85,11 +88,11 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
             body(creds.providerId)
           } else {
             val redirectRoute = if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
-              routes.MappingController.incorrectAccount()
+              routes.MappingController.incorrectAccount(idRefToArn)
             } else if (activeEnrolments.contains(`HMRC-AGENT-AGENT`)) {
-              routes.MappingController.alreadyMapped()
+              routes.MappingController.alreadyMapped(idRefToArn)
             } else {
-              routes.MappingController.notEnrolled()
+              routes.MappingController.notEnrolled(idRefToArn)
             }
 
             Future.successful(Redirect(redirectRoute))
@@ -99,14 +102,18 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
       }
 
-  def withCheckForArn(body: Option[EnrolmentIdentifier] => Future[Result])(
+  def withCheckForArn(body: Option[Arn] => Future[Result])(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
       .retrieve(allEnrolments) {
         case agentEnrolments =>
-          body(agentEnrolments.getEnrolment("HMRC-AS-AGENT").flatMap(_.getIdentifier("AgentReferenceNumber")))
+          body(
+            agentEnrolments
+              .getEnrolment("HMRC-AS-AGENT")
+              .flatMap(_.getIdentifier("AgentReferenceNumber")
+                .map(identifier => Arn(identifier.value))))
       }
       .recoverWith {
         case _: JsResultException      => body(None)

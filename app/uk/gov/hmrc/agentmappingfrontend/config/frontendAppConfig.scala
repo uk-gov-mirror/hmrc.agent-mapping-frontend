@@ -28,11 +28,12 @@ trait AppConfig {
   val analyticsHost: String
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
-  val signOutUrl: String
-  val signOutAndRedirectUrl: String
+  val signOutRedirectUrl: String
   val signInAndContinue: String
   val authenticationLoginCallbackUrl: String
   val agentServicesFrontendExternalUrl: String
+  val companyAuthFrontendExternalUrl: String
+  val ggSignIn: String
 }
 
 trait StrictConfig {
@@ -61,18 +62,11 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
   override lazy val reportAProblemNonJSUrl =
     s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
-  private lazy val companyAuthFrontendExternalUrl = loadConfig(
+  override lazy val companyAuthFrontendExternalUrl = loadConfig(
     "microservice.services.company-auth-frontend.external-url")
 
-  private lazy val ggSignIn = loadConfig("microservice.services.company-auth-frontend.sign-in.path")
-  private lazy val signOutPath = loadConfig("microservice.services.company-auth-frontend.sign-out.path")
-  private lazy val signOutContinueUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.continue-url")
-  private lazy val signOutRedirectUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.redirect-url")
-
-  override lazy val signOutUrl: String =
-    s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutContinueUrl)}"
-  override lazy val signOutAndRedirectUrl: String =
-    s"$companyAuthFrontendExternalUrl$signOutPath?continue=${urlEncode(signOutRedirectUrl)}"
+  override lazy val ggSignIn = loadConfig("microservice.services.company-auth-frontend.sign-in.path")
+  override lazy val signOutRedirectUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.redirect-url")
   override lazy val authenticationLoginCallbackUrl: String = loadConfig("authentication.login-callback.url")
   override lazy val agentServicesFrontendExternalUrl = loadConfig(
     "microservice.services.agent-services-account-frontend.external-url")
