@@ -21,6 +21,10 @@ connectAgentServices.start.details.l2.2=view a client''s PAYE income record
 connectAgentServices.start.p3=You will need the login details for each of the agent Government Gateway accounts your business uses for your Income Tax Self Assessment and VAT clients.
 connectAgentServices.start.p4=On the next screen, sign in with one of these Government Gateway accounts to start linking your existing clients.
 connectAgentServices.start.p5=You will need to repeat this process for each Government Gateway account your business uses.
+#PageNotFound
+page-not-found.title=Page not found
+page-not-found.h1=Page not found
+page-not-found.p1=You need to sign in to your agent services account again.
 #Already linked
 alreadyMapped.p1=This Government Gateway account is already linked to your agent services account.
 alreadyMapped.p2=If you need to link a different Government Gateway account, sign in with the login details for that account.

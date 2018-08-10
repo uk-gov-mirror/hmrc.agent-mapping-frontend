@@ -83,7 +83,7 @@ class MappingController @Inject()(
           } yield doMappingResult
         }
         case None =>
-          successful(Redirect(routes.MappingController.start()).withNewSession) //TODO APB-2866 might require some new Content for user to understand this
+          successful(Ok(html.page_not_found()))
       }
     }
   }

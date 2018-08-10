@@ -97,7 +97,9 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         givenAuthorisedFor(serviceName)
         val requestWithUsedIdShouldFail = fakeRequest(GET, s"/agent-mapping/start-submit?id=$persistedMappingArnResultId")
         val resultCopiedAttempt = callEndpointWith(requestWithUsedIdShouldFail)
-        redirectLocation(resultCopiedAttempt) shouldBe Some(routes.MappingController.start().url)
+        status(resultCopiedAttempt) shouldBe 200
+        bodyOf(resultCopiedAttempt) should include(htmlEscapedMessage("page-not-found.title"))
+        bodyOf(resultCopiedAttempt) should include(routes.SignedOutController.reLogForMappingStart().url)
       }
     }
 
@@ -105,8 +107,9 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       givenAuthorisedFor("IR-SA-AGENT")
       val request = fakeRequest(GET, s"/agent-mapping/start-submit?id=meaninglessBlaBlaID")
       val result = callEndpointWith(request)
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe routes.MappingController.start().url
+      status(result) shouldBe 200
+      bodyOf(result) should include(htmlEscapedMessage("page-not-found.title"))
+      bodyOf(result) should include(routes.SignedOutController.reLogForMappingStart().url)
     }
 
     s"303 to /already-mapped when all available identifiers have been mapped" in {
