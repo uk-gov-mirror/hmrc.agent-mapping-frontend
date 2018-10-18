@@ -21,7 +21,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.{Named, Names}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.agentmappingfrontend.audit.{AuditService, AuditServiceImpl}
 import uk.gov.hmrc.agentmappingfrontend.config.{AppConfig, FrontendAppConfig}
 import uk.gov.hmrc.agentmappingfrontend.connectors.FrontendAuthConnector
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -54,7 +53,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bind(classOf[HttpPut]).to(classOf[HttpVerbs])
     bind(classOf[AuthConnector]).to(classOf[FrontendAuthConnector])
     bind(classOf[AppConfig]).to(classOf[FrontendAppConfig])
-    bind(classOf[AuditService]).to(classOf[AuditServiceImpl])
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-mapping")

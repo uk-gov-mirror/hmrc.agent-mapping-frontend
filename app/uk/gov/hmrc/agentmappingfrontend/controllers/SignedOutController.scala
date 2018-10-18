@@ -27,15 +27,15 @@ import scala.concurrent.Future
 
 class SignedOutController @Inject()(appConfig: AppConfig) extends FrontendController {
 
-  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>
     val url = s"${appConfig.signOutRedirectUrl}?id=$id"
     val signOutAndRedirectUrl: String =
       s"${appConfig.companyAuthFrontendExternalUrl}${appConfig.ggSignIn}?continue=${urlEncode(url)}"
 
-    Future successful Redirect(signOutAndRedirectUrl)
+    Redirect(signOutAndRedirectUrl)
   }
 
-  def reLogForMappingStart: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Redirect(appConfig.signInAndContinue).withNewSession
+  def reLogForMappingStart: Action[AnyContent] = Action { implicit request =>
+    Redirect(appConfig.signInAndContinue).withNewSession
   }
 }

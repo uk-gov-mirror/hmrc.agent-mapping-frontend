@@ -9,7 +9,7 @@ import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
 import uk.gov.hmrc.play.test.UnitSpec
 
 trait EndpointBehaviours extends AuthStubs {
-  me: UnitSpec with WireMockSupport with AuditSupport =>
+  me: UnitSpec with WireMockSupport =>
   type PlayRequest = Request[AnyContent] => Result
 
   protected def fakeRequest(endpointMethod: String, endpointPath: String): FakeRequest[AnyContentAsEmpty.type]
@@ -28,7 +28,6 @@ trait EndpointBehaviours extends AuthStubs {
 
       result.header.status shouldBe 303
       result.header.headers("Location") should include("/gg/sign-in")
-      auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
     }
   }
 
@@ -45,8 +44,6 @@ trait EndpointBehaviours extends AuthStubs {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
-
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, notEligibleAgent.activeEnrolments)
     }
 
     "redirect to /incorrect-account page if the current user has an HMRC-AS-AGENT enrolment" in {
@@ -56,8 +53,6 @@ trait EndpointBehaviours extends AuthStubs {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.incorrectAccount(id = "someArnRefForMapping").url
-
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAsAgent.activeEnrolments)
     }
 
     "redirect to /already-linked page if the current user has an HMRC-AGENT-AGENT enrolment" in {
@@ -67,8 +62,6 @@ trait EndpointBehaviours extends AuthStubs {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.alreadyMapped(id = "someArnRefForMapping").url
-
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, mtdAgentAgent.activeEnrolments)
     }
 
     "redirect to /not-enrolled page if the current user has no enrolments" in {
@@ -78,8 +71,6 @@ trait EndpointBehaviours extends AuthStubs {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
-
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false, agentNotEnrolled.activeEnrolments)
     }
 
     "render the /not-enrolled page if the current user has only inactive enrolments" in {
@@ -89,22 +80,7 @@ trait EndpointBehaviours extends AuthStubs {
 
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
-
-      verifyCheckAgentRefCodeAuditEvent(expectCheckAgentRefCodeAudit, false)
     }
   }
 
-  def verifyCheckAgentRefCodeAuditEvent(
-    expectCheckAgentRefCodeAudit: Boolean = true,
-    eligible: Boolean = true,
-    activeEnrolments: Set[String] = Set()) =
-    if (expectCheckAgentRefCodeAudit)
-      auditEventShouldHaveBeenSent("CheckAgentRefCode")(
-        auditDetail("authProviderType"       -> "GovernmentGateway")
-          and auditDetail("eligible"         -> eligible.toString)
-          and auditDetail("activeEnrolments" -> activeEnrolments.mkString(","))
-          and auditTagsNotEmpty("path", "X-Session-ID", "X-Request-ID", "clientIP", "clientPort")
-          and auditTag("transactionName" -> "check-agent-ref-code")
-      )
-    else auditEventShouldNotHaveBeenSent("CheckAgentRefCode")
 }

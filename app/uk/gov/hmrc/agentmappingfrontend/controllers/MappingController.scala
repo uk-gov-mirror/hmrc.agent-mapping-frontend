@@ -20,21 +20,17 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.agentmappingfrontend.audit.AuditService
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
 
 import scala.concurrent.Future.successful
-
-case class MappingFormArn(arn: Arn)
 
 @Singleton
 class MappingController @Inject()(
@@ -42,7 +38,6 @@ class MappingController @Inject()(
   val authConnector: AuthConnector,
   mappingConnector: MappingConnector,
   repository: MappingArnRepository,
-  auditService: AuditService,
   val env: Environment,
   val config: Configuration)(implicit val appConfig: AppConfig)
     extends FrontendController with I18nSupport with AuthActions {
@@ -53,18 +48,15 @@ class MappingController @Inject()(
 
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
-      case Some(arn) =>
-        for {
-          id <- repository.create(arn)
-        } yield Ok(html.start(id))
-      case None => successful(Redirect(routes.MappingController.needAgentServicesAccount))
+      case Some(arn) => repository.create(arn).map(id => Ok(html.start(id)))
+      case None      => successful(Redirect(routes.MappingController.needAgentServicesAccount))
     }
   }
 
   def needAgentServicesAccount: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
-      case None      => successful(Ok(html.start_sign_in_required()))
-      case Some(arn) => successful(Redirect(routes.MappingController.start()))
+      case Some(_) => successful(Redirect(routes.MappingController.start()))
+      case None    => successful(Ok(html.start_sign_in_required()))
     }
   }
 

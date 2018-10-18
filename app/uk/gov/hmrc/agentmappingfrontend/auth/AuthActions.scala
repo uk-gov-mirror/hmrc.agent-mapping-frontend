@@ -20,7 +20,6 @@ import play.api.Environment
 import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
-import uk.gov.hmrc.agentmappingfrontend.audit.AuditData
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
@@ -71,19 +70,12 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
-    withAuthorisedAgentAudited(idRefToArn, body)(_ => ())
-
-  def withAuthorisedAgentAudited(idRefToArn: MappingArnResultId, body: String => Future[Result])(
-    audit: AuditData => Unit = _ => ())(
-    implicit request: Request[AnyContent],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(allEnrolments and credentials) {
         case agentEnrolments ~ creds =>
           val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
           val hasEligibleAgentEnrolments = activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
-          audit(AuditData(activeEnrolments, hasEligibleAgentEnrolments, creds))
+
           if (hasEligibleAgentEnrolments) {
             body(creds.providerId)
           } else {
