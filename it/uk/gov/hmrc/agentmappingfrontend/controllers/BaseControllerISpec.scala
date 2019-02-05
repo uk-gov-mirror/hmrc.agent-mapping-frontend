@@ -52,7 +52,7 @@ abstract class BaseControllerISpec
     override def configure(): Unit = {
       bind(classOf[HttpFilters]).to(classOf[NoHttpFilters])
       bind(classOf[AuditConnector]).toInstance(new AuditConnector {
-        override def auditingConfig: AuditingConfig = AuditingConfig(None, enabled = false)
+        override def auditingConfig: AuditingConfig = AuditingConfig(None, enabled = false, auditSource = "agent-mapping")
       })
     }
   }
