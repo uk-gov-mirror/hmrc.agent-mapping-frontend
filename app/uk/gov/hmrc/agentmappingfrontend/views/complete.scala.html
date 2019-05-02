@@ -33,12 +33,7 @@
     <h2 class="heading-medium">@Messages("connectionComplete.h3.1")</h2>
 
     <p>@Messages("connectionComplete.p1")</p>
-    <p>@Messages("connectionComplete.p2")</p>
-
-    <ul class="list list-bullet">
-        <li>@Messages("connectionComplete.l1")</li>
-        <li>@Messages("connectionComplete.l2")</li>
-    </ul>
+    <p>@Html(Messages("connectionComplete.p2",Html("<a target='_blank' href='https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat'>"),Messages("connectionComplete.mtdLink"),Html("</a>")))</p>
 
     <p>@Messages("connectionComplete.p3")</p>
 
@@ -47,7 +42,7 @@
     <p>@Messages("connectionComplete.p4")</p>
     <p>@Messages("connectionComplete.p5")</p>
 
-    <p><a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" class="button" id="buttonRepeatProcess" role="button">@Messages("button.repeatProcess")</a></p>
+    <p><a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" id="buttonRepeatProcess" role="button">@Messages("button.repeatProcess")</a></p>
 
-    <p><a href="@routes.SignedOutController.reLogForMappingStart" id="buttonSignOut">@Messages("link.finishSignOut")</a></p>
+    <p><a href="@routes.SignedOutController.reLogForMappingStart" class="button" id="buttonSignOut" role="button">@Messages("link.finishSignOut")</a></p>
 }
