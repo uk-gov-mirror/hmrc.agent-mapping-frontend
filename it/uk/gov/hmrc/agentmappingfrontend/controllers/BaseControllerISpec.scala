@@ -66,7 +66,7 @@ abstract class BaseControllerISpec
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
   protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
 
-  protected def checkHtmlResultContainsMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+  protected def checkHtmlResultContainsEscapedMsgs(result: Result, expectedMessageKeys: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
 
@@ -78,6 +78,22 @@ abstract class BaseControllerISpec
       val expectedContent = Messages(messageKey)
       withClue(s"Expected content ('$expectedContent') for message key '$messageKey' to be in request body: ") {
         bodyOf(result) should include(htmlEscapedMessage(expectedContent))
+      }
+    }
+  }
+
+  protected def checkHtmlResultContainsMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+
+    expectedMessageKeys.foreach { messageKey =>
+      withClue(s"Expected message key '$messageKey' to exist: ") {
+        Messages.isDefinedAt(messageKey) shouldBe true
+      }
+
+      val expectedContent = Messages(messageKey)
+      withClue(s"Expected content ('$expectedContent') for message key '$messageKey' to be in request body: ") {
+        bodyOf(result) should include(expectedContent)
       }
     }
   }

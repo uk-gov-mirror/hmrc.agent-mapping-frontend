@@ -36,7 +36,14 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.title", "button.startNow")
+      checkHtmlResultContainsEscapedMsgs(result,
+        "connectAgentServices.start.whatYouNeedToKnow",
+        "connectAgentServices.start.whatYouNeedToKnow.p1",
+        "connectAgentServices.start.whatYouWillNeed",
+        "connectAgentServices.start.whatYouWillNeed.p2",
+        "connectAgentServices.start.title",
+        "button.startNow")
+      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.whatYouWillNeed.p1")
       bodyOf(result) should include("/signed-out-redirect?id=")
     }
 
@@ -62,7 +69,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result, "start.not-signed-in.title")
+      checkHtmlResultContainsEscapedMsgs(result, "start.not-signed-in.title")
     }
 
     "200 the /sign-in-required page as NO ARN is found" in {
@@ -70,7 +77,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = FakeRequest(GET, "/agent-mapping/sign-in-required")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result, "start.not-signed-in.title", "button.signIn")
+      checkHtmlResultContainsEscapedMsgs(result, "start.not-signed-in.title", "button.signIn")
     }
 
     "303 the /start page when user has HMRC-AS-AGENT/ARN and 'Sign in with another account' button holds idReference to agent's ARN" in {
@@ -139,7 +146,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
         val result = callEndpointWith(request)
         status(result) shouldBe 200
-        checkHtmlResultContainsMsgs(result, "connectionComplete.title",
+        checkHtmlResultContainsEscapedMsgs(result, "connectionComplete.title",
           "button.repeatProcess",
           "link.finishSignOut",
           "connectionComplete.banner.header",
@@ -160,7 +167,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, routes.MappingController.notEnrolled(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"notEnrolled.p1", "button.tryAgain")
+      checkHtmlResultContainsEscapedMsgs(result,"notEnrolled.p1", "button.tryAgain")
     }
   }
 
@@ -170,7 +177,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, routes.MappingController.alreadyMapped(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result, "error.title",
+      checkHtmlResultContainsEscapedMsgs(result, "error.title",
         "alreadyMapped.p1",
         "alreadyMapped.p2",
         "button.tryAgain")
@@ -186,18 +193,18 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "contain a Try Again button for signing in again and repeating the journey" in new IncorrectAccountFixture {
-      checkHtmlResultContainsMsgs(result, "button.tryAgain")
+      checkHtmlResultContainsEscapedMsgs(result, "button.tryAgain")
       resultBody should include(""" href="/agent-mapping/signed-out-redirect?id=""")
     }
 
     "contain a link to Agent Services Account homepage" in new IncorrectAccountFixture {
-      checkHtmlResultContainsMsgs(result,"link.goToASAccount")
+      checkHtmlResultContainsEscapedMsgs(result,"link.goToASAccount")
       resultBody should include(""" href="http://localhost:9401/agent-services-account" """)
     }
 
     "return 200 response and contain appropriate content" in new IncorrectAccountFixture {
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgs(result,"error.title",
+      checkHtmlResultContainsEscapedMsgs(result,"error.title",
         "incorrectAccount.p1",
         "incorrectAccount.p2"
       )
