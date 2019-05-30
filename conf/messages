@@ -4,37 +4,31 @@ servicename.titleSuffix=- Agent services account - GOV.UK
 #Connect agent services
 start.not-signed-in.title=Link your current Self Assessment and VAT clients to your agent services account
 start.not-signed-in.p1=You need to sign in to your agent services account to use this service.
+
 connectAgentServices.start.title=Link your current Self Assessment and VAT clients to your agent services account
-connectAgentServices.start.h2=What you need to know
-connectAgentServices.start.p1=Use this service to allow your agent services account to access your current client relationships.
-connectAgentServices.start.p2=If your clients sign up to report their income and expenses, or their VAT returns, through software, you will then be able to:
-connectAgentServices.start.l1.1=use software to access information about these clients
-connectAgentServices.start.l1.2=act on your client''s behalf for these services without having to ask for their authorisation again
-connectAgentServices.start.beforeYouStart=Before you start
-connectAgentServices.start.summary=When to use this service
-connectAgentServices.start.details.p1=You should use this service if you expect to provide any of the following services for clients:
-connectAgentServices.start.details.l1.1=report their income and expenses through software
-connectAgentServices.start.details.l1.2=report their VAT returns through software
-connectAgentServices.start.details.p2=This service will not allow you to access these services on your client''s behalf:
-connectAgentServices.start.details.l2.1=register a client''s trust
-connectAgentServices.start.details.l2.2=view a client''s PAYE income record
-connectAgentServices.start.p3=You will need the login details for each of the agent Government Gateway accounts your business uses for your Income Tax Self Assessment and VAT clients.
-connectAgentServices.start.p4=On the next screen, sign in with one of these Government Gateway accounts to start linking your existing clients.
-connectAgentServices.start.p5=You will need to repeat this process for each Government Gateway account your business uses.
+connectAgentServices.start.whatYouNeedToKnow=What you need to know
+connectAgentServices.start.whatYouNeedToKnow.p1=To send VAT Returns and Income Tax updates for clients who need to sign up for Making Tax Digital, you will need to link them to your agent services account.
+connectAgentServices.start.whatYouWillNeed=What you will need
+connectAgentServices.start.whatYouWillNeed.p1=You will need to sign in first with the Government Gateway user ID and password you use to access <a href="https://www.gov.uk/government/collections/hmrc-online-services-for-agents#hmrc-online-services-for-agents-account">HMRC online service for agents (link opens in a new window or tab)</a> - this is different to your agent services account.
+connectAgentServices.start.whatYouWillNeed.p2=If your business uses more than one Government Gateway user ID, you will need to repeat this for each user ID.
+
 #PageNotFound
 page-not-found.title=Page not found
 page-not-found.h1=Page not found
 page-not-found.p1=You need to sign in to your agent services account again.
+
 #Already linked
 alreadyMapped.p1=This Government Gateway account is already linked to your agent services account.
 alreadyMapped.p2=If you need to link a different Government Gateway account, sign in with the login details for that account.
 #Incorrect account
 incorrectAccount.p1=You tried to sign into the Government Gateway with your agent services account login details.
 incorrectAccount.p2=You need to sign in with a Government Gateway account that your business uses for your Income Tax Self Assessment and VAT clients.
+
 #Not enrolled
 notEnrolled.p1=You cannot link this Government Gateway account to your agent services account.
 notEnrolled.p2=You can only link Government Gateway accounts registered to your business.
 notEnrolled.p3=If you need to link another Government Gateway account, sign in with the login details for that account.
+
 #Connection complete
 connectionComplete.title=Account linked
 connectionComplete.banner.header=Account linked
@@ -47,16 +41,18 @@ connectionComplete.p3=You will still need to use your software or Government Gat
 connectionComplete.h3.2=If you use more than one Government Gateway account
 connectionComplete.p4=You will need to repeat this process for each Government Gateway account your business uses.
 connectionComplete.p5=Sign in using a different Government Gateway account to start linking it to your agent services account.
+
 #Buttons/links
 button.repeatProcess=Sign in to link another account
 link.finishSignOut=Finish and sign out
 link.goToASAccount=Go to your agent services account
 button.continue=Continue
 button.signOut=Sign out
-button.startNow=Sign in with another account
+button.startNow=Start now
 button.back=Back
 button.tryAgain=Try again
 button.signIn=Sign in
+
 #Errors
 error.title=There is a problem
 error.prefix=Error:
@@ -66,9 +62,11 @@ error.utr.invalid.format=Enter a valid Unique Taxpayer Reference (UTR) that only
 error.utr.invalid.length=Unique Taxpayer Reference (UTR) must be 10 numbers
 error.arn.invalid=Enter a valid agent services account number that only includes letters A to Z, numbers and hyphens, like XARN-123-4567 or XARN1234567
 error.arn.blank=Enter your agent services account number
+
 #TestOnly
 view.mappings.title=Here are your Mappings
 no.mappings.title=There are no Mappings
+
 # General Messages
 # Error messages for digital services
 global.error.400.title=Bad request - 400
