@@ -27,7 +27,7 @@ This mapping journey will capture the CESA Agent Ref and associate it with the A
 
 ### Running the app locally
 
-    sm --start AGENT_MTD -f
+    sm --start AGENT_ONBOARDING -r
     sm --stop AGENT_MAPPING_FRONTEND
     sbt run
 

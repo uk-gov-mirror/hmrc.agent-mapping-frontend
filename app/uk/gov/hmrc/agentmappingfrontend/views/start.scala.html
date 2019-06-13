@@ -24,14 +24,16 @@
 @html.main_template(appConfig, title = Messages("connectAgentServices.start.title"), bodyClasses = None) {
     <h1 class="heading-xlarge">@Messages("connectAgentServices.start.title")</h1>
 
-    <h2 class="heading-medium">@Messages("connectAgentServices.start.whatYouNeedToKnow")</h2>
+    <h2 class="heading-medium">@Messages("connectAgentServices.start.whatYouNeedToKnow.heading")</h2>
 
     <p>@Messages("connectAgentServices.start.whatYouNeedToKnow.p1")</p>
 
-    <h2 class="heading-medium">@Messages("connectAgentServices.start.whatYouWillNeed")</h2>
+    <p class="panel panel-border-wide margin-bottom-30">@Messages("connectAgentServices.start.inset")</p>
 
-    <p>@Html(Messages("connectAgentServices.start.whatYouWillNeed.p1"))</p>
-    <p>@Messages("connectAgentServices.start.whatYouWillNeed.p2")</p>
+    <h2 class="heading-medium">@Messages("connectAgentServices.start.whatYouNeedToDo.heading")</h2>
 
-    <a class="button button-start button--get-started form-field--submit" name="start" id="start" href="@routes.SignedOutController.signOutAndRedirect(id)" role="button">@Messages("button.startNow")</a>
+    <p>@Messages("connectAgentServices.start.whatYouNeedToDo.p1")</p>
+    <p>@Messages("connectAgentServices.start.whatYouNeedToDo.p2")</p>
+
+    <a class="button" name="start" id="start" href="@routes.SignedOutController.signOutAndRedirect(id)" role="button">@Messages("button.continue")</a>
 }

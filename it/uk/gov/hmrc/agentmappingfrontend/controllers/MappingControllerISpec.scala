@@ -37,13 +37,14 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(result,
-        "connectAgentServices.start.whatYouNeedToKnow",
+        "connectAgentServices.start.whatYouNeedToKnow.heading",
         "connectAgentServices.start.whatYouNeedToKnow.p1",
-        "connectAgentServices.start.whatYouWillNeed",
-        "connectAgentServices.start.whatYouWillNeed.p2",
-        "connectAgentServices.start.title",
-        "button.startNow")
-      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.whatYouWillNeed.p1")
+        "connectAgentServices.start.inset",
+        "connectAgentServices.start.whatYouNeedToDo.heading",
+        "connectAgentServices.start.whatYouNeedToDo.p1",
+        "connectAgentServices.start.whatYouNeedToDo.p2",
+        "button.continue")
+      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.whatYouNeedToKnow.p1")
       bodyOf(result) should include("/signed-out-redirect?id=")
     }
 
