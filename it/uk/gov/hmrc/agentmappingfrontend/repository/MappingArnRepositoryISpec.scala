@@ -3,7 +3,6 @@ package uk.gov.hmrc.agentmappingfrontend.repository
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.support.MongoApp
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.play.test.UnitSpec
@@ -37,8 +36,8 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
       mappingArnResult.id.size shouldBe 32
     }
 
-    "find a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn)
+    "find a MappingArnResult ARN value by Id" in {
+      val record = MappingArnResult(arn, List.empty)
       await(repo.insert(record))
 
       val result = await(repo.findArn(record.id))
@@ -46,8 +45,28 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
       result shouldBe Some(record.arn)
     }
 
+    "find a MappingArnResult record by Id" in {
+      val record = MappingArnResult(arn, List.empty)
+      await(repo.insert(record))
+
+      val result = await(repo.findRecord(record.id))
+
+      result shouldBe Some(record)
+    }
+
+    "update client count" in {
+      val record = MappingArnResult(arn, List.empty)
+
+      await(repo.insert(record))
+      await(repo.updateFor(record.id,12))
+      val result = await(repo.findRecord(record.id).get.cumulativeClientCount.sum)
+
+      result shouldBe 12
+    }
+
+
     "delete a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn)
+      val record = MappingArnResult(arn, List.empty)
       await(repo.insert(record))
 
       await(repo.delete(record.id))

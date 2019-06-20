@@ -2,8 +2,11 @@
 
 GET         /                                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
 GET         /start                                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
+GET         /start-submit                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 GET         /sign-in-required                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.needAgentServicesAccount
-GET         /start-submit                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.startSubmit(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
+GET         /client-relationships-found                   uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showClientRelationshipsFound(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
+GET         /existing-client-relationships                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
+POST        /existing-client-relationships                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 GET         /account-linked                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 GET         /error/already-linked                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 GET         /error/not-enrolled                           uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)

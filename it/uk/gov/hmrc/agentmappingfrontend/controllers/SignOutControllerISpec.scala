@@ -10,7 +10,7 @@ class SignOutControllerISpec extends BaseControllerISpec {
   private val fakeRequest = FakeRequest()
 
   "sign out and redirect" should {
-    "redirect to /agent-mapping/start-submit while holding arnRef for next mapping iteration" in {
+    "redirect to /agent-mapping/client-relationships-found while holding arnRef for next mapping iteration" in {
       val result = await(controller.signOutAndRedirect("someIdToRetrieveArnWithToMapAccount")(fakeRequest))
 
       status(result) shouldBe 303

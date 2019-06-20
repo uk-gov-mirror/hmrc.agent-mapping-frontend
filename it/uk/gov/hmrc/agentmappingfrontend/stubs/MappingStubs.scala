@@ -53,4 +53,16 @@ object MappingStubs {
     stubFor(
       delete(urlPathEqualTo(s"/agent-mapping/test-only/mappings/${arn.value}"))
         .willReturn(aResponse().withStatus(204)))
+
+  def givenClientCountRecordsFound(recordCount: Int): Unit =
+    stubFor(
+      get(urlPathEqualTo(s"/agent-mapping/client-count"))
+        .willReturn(aResponse().withStatus(200).withBody(Json.obj("clientCount" -> recordCount).toString()))
+    )
+
+  def getClientCount500(): Unit =
+    stubFor(
+      get(urlPathEqualTo(s"/agent-mapping/client-count"))
+        .willReturn(aResponse().withStatus(500))
+    )
 }

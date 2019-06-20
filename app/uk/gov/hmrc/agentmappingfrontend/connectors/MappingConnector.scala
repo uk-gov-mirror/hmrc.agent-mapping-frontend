@@ -25,7 +25,7 @@ import play.api.http.Status
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmappingfrontend.model.{SaMapping, VatMapping}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,6 +54,16 @@ class MappingConnector @Inject()(
           case e                                                                         => throw e
         }
     }
+
+  def getClientCount(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+    monitor(s"ConsumedAPI-Mapping-ClientCount-GET") {
+      httpGet
+        .GET[HttpResponse](createUrlClientCount)
+        .map(response => (response.json \ "clientCount").as[Int])
+    }
+
+  private def createUrlClientCount: String =
+    new URL(baseUrl, s"/agent-mapping/client-count").toString
 
   private def createUrl(arn: Arn): String =
     new URL(baseUrl, s"/agent-mapping/mappings/arn/${arn.value}").toString

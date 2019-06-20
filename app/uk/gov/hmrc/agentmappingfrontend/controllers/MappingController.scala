@@ -19,16 +19,20 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
+import uk.gov.hmrc.agentmappingfrontend.model.ExistingClientRelationshipsForm
+import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.views.html
+import uk.gov.hmrc.agentmappingfrontend.views.html.client_relationships_found
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
+import uk.gov.hmrc.agentmappingfrontend.util._
 
 import scala.concurrent.Future.successful
 
@@ -60,30 +64,80 @@ class MappingController @Inject()(
     }
   }
 
-  def startSubmit(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  def returnFromGGLogin(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
-      repository.findArn(id).flatMap {
-        case Some(arn) => {
+      repository.findRecord(id).flatMap {
+        case Some(record) => {
           for {
-            newRefForArn <- repository.create(arn)
-            doMappingResult <- mappingConnector.createMapping(arn).map {
-                                case CREATED =>
-                                  Redirect(routes.MappingController.complete(newRefForArn))
-                                case CONFLICT => Redirect(routes.MappingController.alreadyMapped(newRefForArn))
-                              }
-            _ <- repository.delete(id)
-          } yield doMappingResult
+            clientCount <- mappingConnector.getClientCount
+            newRef      <- repository.create(record.arn, clientCount :: record.cumulativeClientCount)
+            _           <- repository.delete(id)
+          } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
         }
-        case None =>
-          successful(Ok(html.page_not_found()))
       }
+    }
+  }
+
+  def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      repository.findRecord(id).map {
+        case Some(record) =>
+          val clientCount = record.cumulativeClientCount.headOption.getOrElse(0)
+
+          Ok(client_relationships_found(clientCount, id))
+        case None => Ok(html.page_not_found())
+      }
+    }
+  }
+
+  def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      repository.findRecord(id).flatMap {
+        case Some(record) => {
+          val form = ExistingClientRelationshipsForm.form
+          if (!record.alreadyMapped) {
+            mappingConnector.createMapping(record.arn).flatMap {
+              case CREATED => {
+                repository
+                  .updateFor(id)
+                  .map(_ => Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount)))
+              }
+              case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
+            }
+          } else {
+            Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount))
+          }
+        }
+        case None => Ok(html.page_not_found())
+      }
+    }
+  }
+
+  def submitExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      ExistingClientRelationshipsForm.form.bindFromRequest
+        .fold(
+          formWithErrors => {
+            repository.findRecord(id).map {
+              case Some(record) =>
+                Ok(html.existing_client_relationships(formWithErrors, id, record.cumulativeClientCount))
+              case None => {
+                Logger.info(s"no record found for id $id")
+                Redirect(routes.MappingController.start())
+              }
+            }
+          }, {
+            case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))
+            case No  => Redirect(routes.MappingController.complete(id))
+          }
+        )
     }
   }
 
   def complete(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
-      repository.findArn(id).map {
-        case Some(_) => Ok(html.complete(id))
+      repository.findRecord(id).map {
+        case Some(record) => Ok(html.complete(id, record.cumulativeClientCount.sum))
         case None =>
           throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn")
       }

@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import akka.stream.Materializer
 import com.google.inject.AbstractModule
+import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
 import play.api.http.{HttpFilters, NoHttpFilters}
@@ -97,4 +98,29 @@ abstract class BaseControllerISpec
       }
     }
   }
+
+  protected def checkIsHtml200(result: Result) = {
+    status(result) shouldBe 200
+    charset(result) shouldBe Some("utf-8")
+    contentType(result) shouldBe Some("text/html")
+  }
+
+  protected def containSubstrings(expectedSubstrings: String*): Matcher[Result] =
+    new Matcher[Result] {
+      override def apply(result: Result): MatchResult = {
+        checkIsHtml200(result)
+
+        val resultBody = bodyOf(result)
+        val (strsPresent, strsMissing) = expectedSubstrings.partition { expectedSubstring =>
+          expectedSubstring.trim should not be ""
+          resultBody.contains(expectedSubstring)
+        }
+
+        MatchResult(
+          strsMissing.isEmpty,
+          s"Expected substrings are missing in the response: ${strsMissing.mkString("\"", "\", \"", "\"")}",
+          s"Expected substrings are present in the response : ${strsPresent.mkString("\"", "\", \"", "\"")}"
+        )
+      }
+    }
 }

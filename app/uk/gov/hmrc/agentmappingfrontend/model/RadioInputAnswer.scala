@@ -16,22 +16,23 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-object Names {
+import uk.gov.hmrc.http.BadRequestException
 
-  val IRAgentReference = "IRAgentReference"
-  val AgentRefNo = "AgentRefNo"
+sealed trait RadioInputAnswer extends Product with Serializable
 
-  val `IR-SA-AGENT` = "IR-SA-AGENT"
-  val `HMCE-VAT-AGNT` = "HMCE-VAT-AGNT"
-  val `HMRC-CHAR-AGENT` = "HMRC-CHAR-AGENT"
-  val `HMRC-GTS-AGNT` = "HMRC-GTS-AGNT"
-  val `HMRC-MGD-AGNT` = "HMRC-MGD-AGNT"
-  val `HMRC-NOVRN-AGNT` = "HMRC-NOVRN-AGNT"
-  val `IR-CT-AGENT` = "IR-CT-AGENT"
-  val `IR-PAYE-AGENT` = "IR-PAYE-AGENT"
-  val `IR-SDLT-AGENT` = "IR-SDLT-AGENT"
+object RadioInputAnswer {
+  case object Yes extends RadioInputAnswer
+  case object No extends RadioInputAnswer
 
-  val `HMRC-AS-AGENT` = "HMRC-AS-AGENT"
-  val `HMRC-AGENT-AGENT` = "HMRC-AGENT-AGENT"
+  def apply(str: String): RadioInputAnswer = str.toLowerCase match {
+    case "yes" => Yes
+    case "no"  => No
+    case _     => throw new BadRequestException("Strange form input value")
+  }
 
+  def unapply(answer: RadioInputAnswer): Option[String] =
+    answer match {
+      case Yes => Some("yes")
+      case No  => Some("no")
+    }
 }
