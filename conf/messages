@@ -27,9 +27,9 @@ incorrectAccount.p1=You tried to sign in with your agent services account user I
 incorrectAccount.p2=You need to sign in with a Government Gateway user ID you use to manage your Self Assessment or VAT clients.
 
 #Not enrolled
-notEnrolled.p1=You cannot link this Government Gateway account to your agent services account.
-notEnrolled.p2=You can only link Government Gateway accounts registered to your business.
-notEnrolled.p3=If you need to link another Government Gateway account, sign in with the login details for that account.
+notEnrolled.p1=You cannot link this user ID to your agent services account.
+notEnrolled.p2=You can only link Government Gateway user IDs registered to your business.
+notEnrolled.p3=If you need to link another Government Gateway user ID, sign in with the user ID and password.
 
 #Connection complete
 connectionComplete.title=Account linked
