@@ -23,8 +23,6 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnRe
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.helper.urlEncode
 
-import scala.concurrent.Future
-
 class SignedOutController @Inject()(appConfig: AppConfig) extends FrontendController {
 
   def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>

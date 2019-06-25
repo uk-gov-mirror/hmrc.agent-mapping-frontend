@@ -89,47 +89,157 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
   }
 
-  "startSubmit" should {
-    val arn = Arn("TARN0000001")
-    Auth.validEnrolments.foreach { serviceName =>
-      s"303 to /account-linked when successfully mapped legacy enrolment identifier for $serviceName, then test arnRef no longer valid" in {
-        val persistedMappingArnResultId = await(repo.create(arn))
-        mappingIsCreated(arn)
-        givenAuthorisedFor(serviceName)
-        implicit val request = fakeRequest(GET, s"/agent-mapping/start-submit?id=$persistedMappingArnResultId")
-        val result = callEndpointWith(request)
+  import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 
-        status(result) shouldBe 303
-        redirectLocation(result).get should include(routes.MappingController.complete(id = "").url)
 
-        givenAuthorisedFor(serviceName)
-        val requestWithUsedIdShouldFail = fakeRequest(GET, s"/agent-mapping/start-submit?id=$persistedMappingArnResultId")
-        val resultCopiedAttempt = callEndpointWith(requestWithUsedIdShouldFail)
-        status(resultCopiedAttempt) shouldBe 200
-        bodyOf(resultCopiedAttempt) should include(htmlEscapedMessage("page-not-found.title"))
-        bodyOf(resultCopiedAttempt) should include(routes.SignedOutController.reLogForMappingStart().url)
+  "/start-submit" should {
+
+    redirectFromGGLoginTests(true)
+    redirectFromGGLoginTests(false)
+
+    def redirectFromGGLoginTests(singleClientCountResponse: Boolean) = {
+      val arn = Arn("TARN0000001")
+      Auth.validEnrolments.foreach { serviceName =>
+        s"303 to /client-relationships-found for $serviceName and for a single client relationship $singleClientCountResponse" in {
+          val id = await(repo.create(arn))
+          if (singleClientCountResponse) givenClientCountRecordsFound(1)
+          else givenClientCountRecordsFound(12)
+          givenAuthorisedFor(serviceName)
+          implicit val request = fakeRequest(GET, s"/agent-mapping/start-submit?id=$id")
+          val result = callEndpointWith(request)
+
+          status(result) shouldBe 303
+        }
+
       }
     }
+  }
 
-    s"303 to /account-linked persistedMappingArnResultId is INVALID" in {
-      givenAuthorisedFor("IR-SA-AGENT")
-      val request = fakeRequest(GET, s"/agent-mapping/start-submit?id=meaninglessBlaBlaID")
+  "/client-relationships-found" should {
+
+      testsForClientRelationshipsFound(true)
+    testsForClientRelationshipsFound(false)
+
+    def testsForClientRelationshipsFound(singleClientCountResponse: Boolean): Unit = {
+      val arn = Arn("TARN0000001")
+      Auth.validEnrolments.foreach { serviceName =>
+        s"200 to /client-relationships-found for $serviceName and for a single client relationship $singleClientCountResponse" in {
+          val clientCount = if(singleClientCountResponse) 1 else 12
+          val id = await(repo.create(arn, List(clientCount)))
+          givenAuthorisedFor(serviceName)
+          implicit val request = fakeRequest(GET, s"/agent-mapping/client-relationships-found?id=$id")
+          val result = callEndpointWith(request)
+
+          if (singleClientCountResponse) {
+            checkHtmlResultContainsEscapedMsgs(result,
+              "clientRelationshipsFound.single.title",
+              "clientRelationshipsFound.single.p1", "clientRelationshipsFound.single.td", "clientRelationshipsFound.single.p2")
+          } else {
+            checkHtmlResultContainsEscapedMsgs(result,
+              "clientRelationshipsFound.multi.title",
+              "clientRelationshipsFound.multi.p1",
+              "clientRelationshipsFound.multi.td",
+              "clientRelationshipsFound.multi.p2")
+          }
+        }
+      }
+    }
+  }
+
+
+  "/existing-client-relationships - GET" should {
+
+    testsForExistingClientRelationships(true)
+    testsForExistingClientRelationships(false)
+
+        def testsForExistingClientRelationships(singleClientCountResponse: Boolean): Unit = {
+          val arn = Arn("TARN0000001")
+          Auth.validEnrolments.foreach { serviceName =>
+            s"200 to /existing-client-relationships for $serviceName and for a single client relationship $singleClientCountResponse" in {
+
+              val clientCount = if (singleClientCountResponse) 1 else 12
+              val id = await(repo.create(arn, List(clientCount)))
+              givenAuthorisedFor(serviceName)
+              mappingIsCreated(arn)
+              implicit val request = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
+              val result = callEndpointWith(request)
+
+              checkHtmlResultContainsEscapedMsgs(result,
+                "existingClientRelationships.title",
+                "existingClientRelationships.td",
+                "existingClientRelationships.heading",
+                "existingClientRelationships.p1",
+                "existingClientRelationships.yes",
+                "existingClientRelationships.no"
+
+              )
+              if (singleClientCountResponse) {
+                bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th"))
+              } else {
+                bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.multi.th"))
+              }
+
+            }
+          }
+        }
+
+  }
+
+  "/existing-client-relationships - POST" should {
+    val arn = Arn("TARN0000001")
+
+    "redirect to /complete when the user selects NO" in {
+      val persistedMappingArnResultId = await(repo.create(arn))
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val request = fakeRequest(POST, routes.MappingController.submitExistingClientRelationships(id = persistedMappingArnResultId).url)
+        .withFormUrlEncodedBody("additional-clients" -> "no")
+
       val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.MappingController.complete(persistedMappingArnResultId).url)
+
+    }
+
+    "redirect to gg/sign-in when the user selects YES" in {
+      val persistedMappingArnResultId = await(repo.create(arn))
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val request = fakeRequest(POST, routes.MappingController.submitExistingClientRelationships(id = persistedMappingArnResultId).url)
+        .withFormUrlEncodedBody("additional-clients" -> "yes")
+
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.SignedOutController.signOutAndRedirect(persistedMappingArnResultId).url)
+
+    }
+
+    "200 OK to /existing-clients with error message when inputs invalid data" in {
+      val persistedMappingArnResultId = await(repo.create(arn, List(1)))
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val request = fakeRequest(POST, routes.MappingController.submitExistingClientRelationships(id = persistedMappingArnResultId).url)
+        .withFormUrlEncodedBody("additional-clients" -> "blah")
+
+      val result = callEndpointWith(request)
+
       status(result) shouldBe 200
-      bodyOf(result) should include(htmlEscapedMessage("page-not-found.title"))
-      bodyOf(result) should include(routes.SignedOutController.reLogForMappingStart().url)
+
+      checkHtmlResultContainsEscapedMsgs(result,
+        "error.existingClientRelationships.choice.invalid",
+        "existingClientRelationships.title",
+        "existingClientRelationships.td",
+        "existingClientRelationships.heading",
+        "existingClientRelationships.p1",
+        "existingClientRelationships.yes",
+        "existingClientRelationships.no"
+      )
+
+      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th"))
+
     }
 
-    s"303 to /already-mapped when all available identifiers have been mapped" in {
-      mappingExists(arn)
-      givenAuthorisedFor("IR-SA-AGENT")
-      val attempt2Id = await(repo.create(arn))
-      val attempt2Request = fakeRequest(GET, s"/agent-mapping/start-submit?id=$attempt2Id")
-      val attempt2Result = callEndpointWith(attempt2Request)
-
-      status(attempt2Result) shouldBe 303
-      redirectLocation(attempt2Result).get should include(routes.MappingController.alreadyMapped(id = "").url)
-    }
   }
 
   "complete" should {
@@ -140,24 +250,39 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       routes.MappingController.complete(id = "someArnRefForMapping").url,
       expectCheckAgentRefCodeAudit = false)(callEndpointWith)
 
-    for(user <- Seq(eligibleAgent, vatEnrolledAgent)) {
-      s"display the complete page with correct content for a user with enrolments: ${user.activeEnrolments.mkString(", ")}" in {
-        val persistedMappingArnResultId = await(repo.create(arn))
-        givenUserIsAuthenticated(user)
-        val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
-        val result = callEndpointWith(request)
-        status(result) shouldBe 200
-        checkHtmlResultContainsEscapedMsgs(result, "connectionComplete.title",
-          "button.repeatProcess",
-          "link.finishSignOut",
-          "connectionComplete.banner.header",
-          "connectionComplete.banner.paragraph")
-      }
+    testsForComplete(true)
+    testsForComplete(false)
 
-      s"return an exception when repository does not hold the record for the user with enrolment ${user.activeEnrolments.mkString(", ")}" in {
-        givenUserIsAuthenticated(user)
-        val request = fakeRequest(GET, routes.MappingController.complete(id = "someArnRefForMapping").url)
-        an[InternalServerException] shouldBe thrownBy(callEndpointWith(request))
+    def testsForComplete(singleClientCountResponse: Boolean) = {
+      for (user <- Seq(eligibleAgent, vatEnrolledAgent)) {
+        s"display the complete page with correct content for a user with enrolments: ${user.activeEnrolments.mkString(", ")} and single client response: $singleClientCountResponse" in {
+
+          val clientCount = if (singleClientCountResponse) 1 else 12
+          val persistedMappingArnResultId = await(repo.create(arn, List(clientCount)))
+          givenUserIsAuthenticated(user)
+          val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
+          val result = callEndpointWith(request)
+          status(result) shouldBe 200
+          checkHtmlResultContainsEscapedMsgs(result, "connectionComplete.title",
+            "connectionComplete.banner.header",
+            "connectionComplete.h3.1",
+            "connectionComplete.finish")
+
+          if (singleClientCountResponse) result should containSubstrings("You copied 1 client relationship to your agent services account")
+          else result should containSubstrings("You copied 12 client relationships to your agent services account")
+
+          result should containSubstrings(
+            "To submit VAT returns digitally for a client, you now need to",
+            "sign your client up for Making Tax Digital for VAT (opens in a new window or tab).")
+        }
+
+
+        s"return an exception when repository does not hold the record for the user with enrolment ${user.activeEnrolments.mkString(", ")} and single client response $singleClientCountResponse" in {
+          givenUserIsAuthenticated(user)
+          val request = fakeRequest(GET, routes.MappingController.complete(id = "someArnRefForMapping").url)
+          an[InternalServerException] shouldBe thrownBy(callEndpointWith(request))
+        }
+
       }
     }
   }

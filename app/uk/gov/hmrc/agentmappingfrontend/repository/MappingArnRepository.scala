@@ -20,7 +20,7 @@ import java.util.UUID
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
@@ -32,14 +32,19 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class MappingArnResult(id: MappingArnResultId, arn: Arn, createdDate: DateTime = DateTime.now(DateTimeZone.UTC))
+case class MappingArnResult(
+  id: MappingArnResultId,
+  arn: Arn,
+  createdDate: DateTime = DateTime.now(DateTimeZone.UTC),
+  cumulativeClientCount: List[Int] = List.empty,
+  alreadyMapped: Boolean = false)
 
 object MappingArnResult {
   type MappingArnResultId = String
 
-  def apply(arn: Arn): MappingArnResult = {
+  def apply(arn: Arn, clientCount: List[Int]): MappingArnResult = {
     val id: MappingArnResultId = UUID.randomUUID().toString.replace("-", "")
-    MappingArnResult(id, arn)
+    MappingArnResult(id = id, arn = arn, cumulativeClientCount = clientCount)
   }
 
   implicit val dateFormat = ReactiveMongoFormats.dateTimeFormats
@@ -68,10 +73,40 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
   def findArn(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[Arn]] =
     find("id" -> id).map(_.headOption.map(_.arn))
 
-  def create(arn: Arn)(implicit ec: ExecutionContext): Future[MappingArnResultId] = {
-    val record = MappingArnResult(arn)
+  def findRecord(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[MappingArnResult]] =
+    find("id" -> id).map(_.headOption)
+
+  def create(arn: Arn, clientCount: List[Int] = List.empty)(
+    implicit ec: ExecutionContext): Future[MappingArnResultId] = {
+    val record = MappingArnResult(arn, clientCount)
     insert(record).map(_ => record.id)
   }
+
+  def updateFor(id: MappingArnResultId, clientCount: Int)(implicit ec: ExecutionContext): Future[Unit] =
+    findRecord(id).flatMap {
+      case Some(record) => {
+        val updatedClientCount = clientCount :: record.cumulativeClientCount
+        val updatedRecord = Json.toJson(record.copy(cumulativeClientCount = updatedClientCount)).as[JsObject]
+
+        findAndUpdate(
+          Json.obj("id" -> id),
+          updatedRecord
+        ).map(_ => ())
+      }
+      case _ => throw new RuntimeException(s"could not find record with id $id")
+    }
+
+  def updateFor(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
+    findRecord(id).flatMap {
+      case Some(record) => {
+        val updatedRecord = Json.toJson(record.copy(alreadyMapped = true)).as[JsObject]
+
+        findAndUpdate(
+          Json.obj("id" -> id),
+          updatedRecord
+        ).map(_ => ())
+      }
+    }
 
   def delete(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
     remove("id" -> id).map(_ => ())

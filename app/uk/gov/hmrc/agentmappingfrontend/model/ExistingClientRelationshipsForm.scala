@@ -16,22 +16,16 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-object Names {
+import play.api.data.Form
+import play.api.data.Forms.{mapping, _}
 
-  val IRAgentReference = "IRAgentReference"
-  val AgentRefNo = "AgentRefNo"
+object ExistingClientRelationshipsForm {
 
-  val `IR-SA-AGENT` = "IR-SA-AGENT"
-  val `HMCE-VAT-AGNT` = "HMCE-VAT-AGNT"
-  val `HMRC-CHAR-AGENT` = "HMRC-CHAR-AGENT"
-  val `HMRC-GTS-AGNT` = "HMRC-GTS-AGNT"
-  val `HMRC-MGD-AGNT` = "HMRC-MGD-AGNT"
-  val `HMRC-NOVRN-AGNT` = "HMRC-NOVRN-AGNT"
-  val `IR-CT-AGENT` = "IR-CT-AGENT"
-  val `IR-PAYE-AGENT` = "IR-PAYE-AGENT"
-  val `IR-SDLT-AGENT` = "IR-SDLT-AGENT"
-
-  val `HMRC-AS-AGENT` = "HMRC-AS-AGENT"
-  val `HMRC-AGENT-AGENT` = "HMRC-AGENT-AGENT"
+  val form: Form[RadioInputAnswer] =
+    Form[RadioInputAnswer](
+      mapping("additional-clients" -> optional(text)
+        .verifying("error.existingClientRelationships.choice.invalid", a => a.contains("yes") || a.contains("no")))(a =>
+        RadioInputAnswer.apply(a.getOrElse("")))(a => Some(RadioInputAnswer.unapply(a)))
+    )
 
 }

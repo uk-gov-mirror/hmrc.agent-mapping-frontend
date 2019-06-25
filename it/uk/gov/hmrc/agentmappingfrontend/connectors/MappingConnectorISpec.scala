@@ -32,6 +32,14 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
     }
   }
 
+  "getClientCount" should {
+    "return the count" in {
+      givenCleanMetricRegistry()
+      givenClientCountRecordsFound(299)
+      await(connector.getClientCount) shouldBe 299
+    }
+  }
+
   "find" should {
     "find all sa mappings for a given arn" in {
       saMappingsFound(arn)

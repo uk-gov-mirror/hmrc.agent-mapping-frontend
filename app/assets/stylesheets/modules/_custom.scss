@@ -17,3 +17,13 @@
 .margin-bottom-40 {
     margin-bottom: 40px;
 }
+
+.no-border td{
+    border-bottom: none;
+}
+
+@media (min-width: 641px) {
+    .content__body {
+        width: 65.5%;
+    }
+}
