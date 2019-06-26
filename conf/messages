@@ -14,6 +14,7 @@ connectAgentServices.start.whatYouNeedToDo.p1=On the next screen, sign in with a
 connectAgentServices.start.whatYouNeedToDo.p2=If you have more than one Government Gateway user ID, you will need to repeat this for each user ID.
 
 #client-relationships-found
+clientRelationshipsFound.title=Client relationships found
 clientRelationshipsFound.single.title=Client relationship found
 clientRelationshipsFound.single.p1=Your user ID has the following client relationship that you can copy across.
 clientRelationshipsFound.single.td=VAT and Self Assessment client
