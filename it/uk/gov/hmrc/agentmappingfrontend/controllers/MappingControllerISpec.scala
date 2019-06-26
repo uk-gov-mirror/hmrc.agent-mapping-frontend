@@ -268,6 +268,9 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
             "connectionComplete.h3.1",
             "connectionComplete.finish")
 
+          result should containLink("connectionComplete.finish","/agent-mapping/sign-in")
+          result should containLink("connectionComplete.mtdLink","https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat")
+
           if (singleClientCountResponse) result should containSubstrings("You copied 1 client relationship to your agent services account")
           else result should containSubstrings("You copied 12 client relationships to your agent services account")
 

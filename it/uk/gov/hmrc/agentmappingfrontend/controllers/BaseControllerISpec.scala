@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import akka.stream.Materializer
 import com.google.inject.AbstractModule
+import org.jsoup.Jsoup
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Application
@@ -123,4 +124,28 @@ abstract class BaseControllerISpec
         )
       }
     }
+
+  protected def checkMessageIsDefined(messageKey: String) =
+    withClue(s"Message key ($messageKey) should be defined: ") {
+      Messages.isDefinedAt(messageKey) shouldBe true
+    }
+
+  protected def containLink(expectedMessageKey: String, expectedHref: String): Matcher[Result] = {
+    new Matcher[Result] {
+      override def apply(result: Result): MatchResult = {
+        val doc = Jsoup.parse(bodyOf(result))
+        checkMessageIsDefined(expectedMessageKey)
+        val foundElement = doc.select(s"a[href=$expectedHref]").first()
+        val wasFoundWithCorrectMessage = Option(foundElement) match {
+          case None => false
+          case Some(element) => element.text() == htmlEscapedMessage(expectedMessageKey)
+        }
+        MatchResult(
+          wasFoundWithCorrectMessage,
+          s"""Response does not contain a link to "$expectedHref" with content for message key "$expectedMessageKey" """,
+          s"""Response contains a link to "$expectedHref" with content for message key "$expectedMessageKey" """
+        )
+      }
+    }
+  }
 }

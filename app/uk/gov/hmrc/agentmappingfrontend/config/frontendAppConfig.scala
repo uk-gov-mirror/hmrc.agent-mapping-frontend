@@ -34,6 +34,7 @@ trait AppConfig {
   val agentServicesFrontendExternalUrl: String
   val companyAuthFrontendExternalUrl: String
   val ggSignIn: String
+  val signIn: String
 }
 
 trait StrictConfig {
@@ -72,4 +73,7 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
     "microservice.services.agent-services-account-frontend.external-url")
   override lazy val signInAndContinue =
     s"$companyAuthFrontendExternalUrl$ggSignIn?continue=${urlEncode(startMappingAfterLoggin)}"
+
+  override lazy val signIn =
+    s"$companyAuthFrontendExternalUrl$ggSignIn"
 }

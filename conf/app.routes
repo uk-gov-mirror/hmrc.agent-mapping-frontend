@@ -12,6 +12,7 @@ GET         /error/already-linked                         uk.gov.hmrc.agentmappi
 GET         /error/not-enrolled                           uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 GET         /error/incorrect-account                      uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.incorrectAccount(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 
+GET         /sign-in                                      uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signIn
 GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 GET         /re-log-in-redirect                           uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.reLogForMappingStart
 
