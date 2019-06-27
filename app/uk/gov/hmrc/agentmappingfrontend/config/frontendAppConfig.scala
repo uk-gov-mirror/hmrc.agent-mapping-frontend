@@ -72,4 +72,5 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
     "microservice.services.agent-services-account-frontend.external-url")
   override lazy val signInAndContinue =
     s"$companyAuthFrontendExternalUrl$ggSignIn?continue=${urlEncode(startMappingAfterLoggin)}"
+
 }

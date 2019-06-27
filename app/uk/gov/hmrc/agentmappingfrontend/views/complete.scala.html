@@ -38,6 +38,6 @@
 
     <p>@Html(Messages("connectionComplete.p1",Html("<a target='_blank' href='https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat'>"),Messages("connectionComplete.mtdLink"),Html("</a>")))</p>
 
-    <a target="_blank" href="#">@Messages("connectionComplete.finish")</a>
+    <a target="_blank" href="@routes.SignedOutController.reLogForMappingStart()">@Messages("connectionComplete.finish")</a>
 
 }

@@ -26,4 +26,5 @@ class SignOutControllerISpec extends BaseControllerISpec {
       redirectLocation(result).get should include("agent-services-account")
     }
   }
+
 }
