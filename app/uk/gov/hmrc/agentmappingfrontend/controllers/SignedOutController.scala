@@ -37,7 +37,4 @@ class SignedOutController @Inject()(appConfig: AppConfig) extends FrontendContro
     Redirect(appConfig.signInAndContinue).withNewSession
   }
 
-  def signIn: Action[AnyContent] = Action { implicit request =>
-    Redirect(s"${appConfig.signIn}").withNewSession
-  }
 }
