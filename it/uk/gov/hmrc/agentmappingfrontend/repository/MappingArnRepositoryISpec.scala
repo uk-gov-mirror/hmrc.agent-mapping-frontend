@@ -22,6 +22,7 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
   override def beforeEach() {
     super.beforeEach()
     await(repo.ensureIndexes)
+    ()
   }
   private val arn = Arn("TARN0000001")
 

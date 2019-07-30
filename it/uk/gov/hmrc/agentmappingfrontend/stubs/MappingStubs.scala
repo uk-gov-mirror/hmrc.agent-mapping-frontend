@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
@@ -14,53 +15,53 @@ object MappingStubs {
   val saJsonBody = Json.toJson(SaMappings(listOfSaMappings))
   val vatJsonBody = Json.toJson(VatMappings(listOfVatMappings))
 
-  def mappingIsCreated(arn: Arn): Unit =
+  def mappingIsCreated(arn: Arn): StubMapping =
     stubFor(
       put(urlPathEqualTo(s"/agent-mapping/mappings/arn/${arn.value}"))
         willReturn aResponse().withStatus(201))
 
-  def mappingExists(arn: Arn): Unit =
+  def mappingExists(arn: Arn): StubMapping =
     stubFor(
       put(urlPathEqualTo(s"/agent-mapping/mappings/arn/${arn.value}"))
         willReturn aResponse().withStatus(409))
 
-  def mappingKnownFactsIssue(arn: Arn): Unit =
+  def mappingKnownFactsIssue(arn: Arn): StubMapping =
     stubFor(
       put(urlPathEqualTo(s"/agent-mapping/mappings/arn/${arn.value}"))
         willReturn aResponse().withStatus(403))
 
-  def saMappingsFound(arn: Arn): Unit =
+  def saMappingsFound(arn: Arn): StubMapping =
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/mappings/sa/${arn.value}"))
         .willReturn(aResponse().withStatus(200).withBody(saJsonBody.toString())))
 
-  def vatMappingsFound(arn: Arn): Unit =
+  def vatMappingsFound(arn: Arn): StubMapping =
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/mappings/vat/${arn.value}"))
         .willReturn(aResponse().withStatus(200).withBody(vatJsonBody.toString())))
 
-  def noSaMappingsFound(arn: Arn): Unit =
+  def noSaMappingsFound(arn: Arn): StubMapping =
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/mappings/sa/${arn.value}"))
         .willReturn(aResponse().withStatus(404)))
 
-  def noVatMappingsFound(arn: Arn): Unit =
+  def noVatMappingsFound(arn: Arn): StubMapping =
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/mappings/vat/${arn.value}"))
         .willReturn(aResponse().withStatus(404)))
 
-  def mappingsDelete(arn: Arn): Unit =
+  def mappingsDelete(arn: Arn):StubMapping =
     stubFor(
       delete(urlPathEqualTo(s"/agent-mapping/test-only/mappings/${arn.value}"))
         .willReturn(aResponse().withStatus(204)))
 
-  def givenClientCountRecordsFound(recordCount: Int): Unit =
+  def givenClientCountRecordsFound(recordCount: Int): StubMapping =
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/client-count"))
         .willReturn(aResponse().withStatus(200).withBody(Json.obj("clientCount" -> recordCount).toString()))
     )
 
-  def getClientCount500(): Unit =
+  def getClientCount500(): StubMapping =
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/client-count"))
         .willReturn(aResponse().withStatus(500))

@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnRe
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.{allEnrolments, credentials}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{allEnrolments, credentials}
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
@@ -72,12 +72,12 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(allEnrolments and credentials) {
-        case agentEnrolments ~ creds =>
+        case agentEnrolments ~ Some(Credentials(providerId, _)) =>
           val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
           val hasEligibleAgentEnrolments = activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
 
           if (hasEligibleAgentEnrolments) {
-            body(creds.providerId)
+            body(providerId)
           } else {
             val redirectRoute = if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
               routes.MappingController.incorrectAccount(idRefToArn)

@@ -1,24 +1,23 @@
 package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.test.FakeRequest
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.agentmappingfrontend.support.{SampleUser, WireMockSupport}
-import uk.gov.hmrc.http.SessionKeys
 
 trait AuthStubs {
   me: WireMockSupport =>
 
-  def givenUserIsAuthenticated(user: SampleUser) =
+  def givenUserIsAuthenticated(user: SampleUser): StubMapping =
     user.throwException.fold {
       givenAuthorisedFor("{}", user.authoriseJsonResponse)
     } { e =>
       givenUnauthorisedWith(e.getClass.getSimpleName)
     }
 
-  def givenUserIsNotAuthenticated() =
+  def givenUserIsNotAuthenticated(): StubMapping =
     givenUnauthorisedWith("MissingBearerToken")
 
-  def givenAuthorisedFor(serviceName: String): Unit =
+  def givenAuthorisedFor(serviceName: String): StubMapping =
     givenAuthorisedFor(
       "{}",
       s"""{
@@ -27,14 +26,14 @@ trait AuthStubs {
          |      { "key":"foo", "value": "foo" }
          |    ]}
          |  ],
-         |  "credentials": {
+         |  "optionalCredentials": {
          |    "providerId": "12345-credId",
          |    "providerType": "GovernmentGateway"
          |  }
          |}""".stripMargin
     )
 
-  def givenUnauthorisedWith(mdtpDetail: String): Unit =
+  def givenUnauthorisedWith(mdtpDetail: String): StubMapping =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
@@ -42,13 +41,13 @@ trait AuthStubs {
             .withStatus(401)
             .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
 
-  def givenAuthorisationFailsWith5xx(): Unit =
+  def givenAuthorisationFailsWith5xx(): StubMapping =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(aResponse()
           .withStatus(500)))
 
-  def givenAuthorisedFor(payload: String, responseBody: String): Unit = {
+  def givenAuthorisedFor(payload: String, responseBody: String): StubMapping = {
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)

@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import java.net.URLEncoder
 
+import org.scalatest.Assertion
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
@@ -85,7 +86,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       "{}",
       s"""{
          |  "allEnrolments": $enrolmentsArr,
-         |  "credentials": {
+         |  "optionalCredentials": {
          |    "providerId": "12345-credId",
          |    "providerType": "GovernmentGateway"
          |  }}""".stripMargin
@@ -94,6 +95,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
     val result = TestController.testWithAuthorisedAgent
     status(result) shouldBe 303
     result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
+    ()
   }
 
   "withAuthorisedAgent" should {
@@ -111,7 +113,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
              |      { "key":"$identifier", "value": "fooReference" }
              |    ]}
              |  ],
-             |  "credentials": {
+             |  "optionalCredentials": {
              |    "providerId": "12345-credId",
              |    "providerType": "GovernmentGateway"
              |  }}""".stripMargin
@@ -150,7 +152,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
              |      "state": "Inactive"
              |    }
              |  ],
-             |  "credentials": {
+             |  "optionalCredentials": {
              |    "providerId": "12345-credId",
              |    "providerType": "GovernmentGateway"
              |  }}""".stripMargin
@@ -163,8 +165,9 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       "agent has no enrolments" in {
         behave like testAuthorisedAgentRedirectedTo(
           expectedLocation = routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url,
-          enrolments = Seq() :_*
+          enrolments = ("","")
         )
+
       }
     }
 
@@ -220,7 +223,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
            |      "state": "active"
            |    }
            |  ],
-           |  "credentials": {
+           |  "optionalCredentials": {
            |    "providerId": "12345-credId",
            |    "providerType": "GovernmentGateway"
            |  }}""".stripMargin

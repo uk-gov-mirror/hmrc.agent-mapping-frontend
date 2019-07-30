@@ -17,18 +17,20 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers.testOnly
 
 import javax.inject.Inject
-
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.controllers.MappingBaseController
 import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_sa_mappings, view_vat_mappings}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+
+import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(override val messagesApi: MessagesApi, mappingConnector: MappingConnector)(
-  implicit appConfig: AppConfig)
-    extends FrontendController with I18nSupport {
+  implicit appConfig: AppConfig,
+  val ec: ExecutionContext)
+    extends MappingBaseController with I18nSupport {
 
   def findSaMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
     mappingConnector.findSaMappingsFor(arn).map { mappings =>
