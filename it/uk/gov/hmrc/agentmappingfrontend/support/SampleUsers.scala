@@ -16,7 +16,7 @@ object SampleUsers {
        |      { "key":"IRAgentReference", "value": "HZ1234" }
        |    ]}
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -31,7 +31,7 @@ object SampleUsers {
        |      { "key":"AgentRefNo", "value": "HZ1234" }
        |    ]}
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -48,7 +48,7 @@ object SampleUsers {
        |      ],
        |     "state": "Inactive" }
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -65,7 +65,7 @@ object SampleUsers {
        |      ],
        |     "state": "Inactive" }
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -76,7 +76,7 @@ object SampleUsers {
   val agentNotEnrolled = SampleUser(
     s"""{
        | "allEnrolments": [],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -91,7 +91,7 @@ object SampleUsers {
        |      { "key":"AgentReferenceNumber", "value": "TARN0000001" }
        |    ]}
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -106,7 +106,7 @@ object SampleUsers {
        |      { "key":"AgentRefNumber", "value": "TARN0000001" }
        |    ]}
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }
@@ -121,7 +121,7 @@ object SampleUsers {
        |      { "key":"fooIdentifier", "value": "foo123" }
        |    ]}
        |  ],
-       |  "credentials": {
+       |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
        |  }

@@ -20,7 +20,7 @@ import java.util.UUID
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
@@ -106,6 +106,7 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
           updatedRecord
         ).map(_ => ())
       }
+      case None => throw new RuntimeException(s"could not update record for id $id")
     }
 
   def delete(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =

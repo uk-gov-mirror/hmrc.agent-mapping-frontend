@@ -27,13 +27,13 @@ import uk.gov.hmrc.agentmappingfrontend.model.ExistingClientRelationshipsForm
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
+import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmappingfrontend.views.html.client_relationships_found
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
-import uk.gov.hmrc.play.bootstrap.controller.{ActionWithMdc, FrontendController}
-import uk.gov.hmrc.agentmappingfrontend.util._
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future.successful
 
 @Singleton
@@ -43,10 +43,10 @@ class MappingController @Inject()(
   mappingConnector: MappingConnector,
   repository: MappingArnRepository,
   val env: Environment,
-  val config: Configuration)(implicit val appConfig: AppConfig)
-    extends FrontendController with I18nSupport with AuthActions {
+  val config: Configuration)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
+    extends MappingBaseController with I18nSupport with AuthActions {
 
-  val root: Action[AnyContent] = ActionWithMdc {
+  val root: Action[AnyContent] = Action {
     Redirect(routes.MappingController.start())
   }
 
@@ -73,6 +73,10 @@ class MappingController @Inject()(
             newRef      <- repository.create(record.arn, clientCount :: record.cumulativeClientCount)
             _           <- repository.delete(id)
           } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
+        }
+        case None => {
+          Logger.warn(s"could not find a record for id $id")
+          Redirect(routes.MappingController.start())
         }
       }
     }
@@ -103,6 +107,10 @@ class MappingController @Inject()(
                   .map(_ => Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount)))
               }
               case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
+              case e => {
+                Logger.warn(s"unexpected response from server $e")
+                InternalServerError
+              }
             }
           } else {
             Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount))

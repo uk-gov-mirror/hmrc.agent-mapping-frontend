@@ -16,7 +16,7 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.12.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.13.0",
   "uk.gov.hmrc" %% "govuk-template" % "5.35.0-play-25",
   "uk.gov.hmrc" %% "play-ui" % "7.40.0-play-25",
   "uk.gov.hmrc" %% "auth-client" % "2.21.0-play-25",
@@ -25,6 +25,11 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-25",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.15.0-play-25"
 )
+
+def tmpMacWorkaround(): Seq[ModuleID] =
+  if (sys.props.get("os.name").fold(false)(_.toLowerCase.contains("mac")))
+    Seq("org.reactivemongo" % "reactivemongo-shaded-native" % "0.16.1-osx-x86-64" % "runtime,test,it")
+  else Seq()
 
 def testDeps(scope: String) = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.8.0-play-25" % scope,
@@ -41,6 +46,16 @@ lazy val root = (project in file("."))
     name := "agent-mapping-frontend",
     organization := "uk.gov.hmrc",
     scalaVersion := "2.11.11",
+    scalacOptions ++= Seq(
+      "-Xfatal-warnings",
+      "-Xlint:-missing-interpolator,_",
+      "-Yno-adapted-args",
+      "-Ywarn-value-discard",
+      "-Ywarn-dead-code",
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-language:implicitConversions"),
     PlayKeys.playDefaultPort := 9438,
     resolvers := Seq(
       Resolver.bintrayRepo("hmrc", "releases"),
@@ -48,7 +63,7 @@ lazy val root = (project in file("."))
       Resolver.typesafeRepo("releases"),
       Resolver.jcenterRepo
     ),
-    libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+    libraryDependencies ++= tmpMacWorkaround ++ compileDeps ++ testDeps("test") ++ testDeps("it"),
     publishingSettings,
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
