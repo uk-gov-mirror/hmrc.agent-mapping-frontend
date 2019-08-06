@@ -123,7 +123,7 @@ class TaskListMappingController @Inject()(
                 agent.getMandatorySubscriptionJourneyRecord.userMappings.map(_.count)))
           }, {
             case Yes => Redirect(routes.SignedOutController.taskListSignOutAndRedirect(id))
-            case No => Redirect(routes.SignedOutController.returnAfterMapping())
+            case No  => Redirect(routes.SignedOutController.returnAfterMapping())
           }
         )
     }

@@ -81,7 +81,7 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
   override lazy val agentSubscriptionFrontendTaskListPath = loadConfig(
     "microservice.services.agent-subscription-frontend.task-list.path")
   override lazy val agentSubscriptionFrontendReturnAfterMappingPath = loadConfig(
-    "microservice.services.agent-subscription-frontend.return-after-mapping.path"
+    "microservice.services.agent-subscription-frontend.return-from-mapping.path"
   )
 
   override lazy val signInAndContinue =
