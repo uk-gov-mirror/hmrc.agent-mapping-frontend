@@ -56,6 +56,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindBaseUrl("auth")
     bindBaseUrl("agent-mapping")
+    bindBaseUrl("agent-subscription")
     ()
   }
 

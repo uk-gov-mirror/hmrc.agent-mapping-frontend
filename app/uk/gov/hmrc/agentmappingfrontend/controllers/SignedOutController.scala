@@ -19,9 +19,10 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import javax.inject.Inject
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import views.html.helper.urlEncode
+
+import scala.concurrent.Future
 
 class SignedOutController @Inject()(appConfig: AppConfig) extends MappingBaseController {
 
@@ -33,8 +34,21 @@ class SignedOutController @Inject()(appConfig: AppConfig) extends MappingBaseCon
     Redirect(signOutAndRedirectUrl)
   }
 
+  def taskListSignOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>
+    val url = s"${appConfig.taskListSignOutRedirectUrl}?id=$id"
+    Redirect(constructRedirectUrl(url))
+  }
+
+  private def constructRedirectUrl(continue: String): String =
+    s"${appConfig.companyAuthFrontendExternalUrl}${appConfig.ggSignIn}?continue=${urlEncode(continue)}"
+
   def reLogForMappingStart: Action[AnyContent] = Action { implicit request =>
     Redirect(appConfig.signInAndContinue).withNewSession
+  }
+
+  def taskList(): Action[AnyContent] = Action.async { implicit request =>
+    val url = s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}"
+    Future.successful(Redirect(url))
   }
 
 }

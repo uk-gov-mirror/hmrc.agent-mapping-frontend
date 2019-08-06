@@ -21,14 +21,16 @@ import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{allEnrolments, credentials}
 import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{agentCode, allEnrolments, credentials}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
@@ -111,4 +113,53 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case _: JsResultException      => body(None)
         case _: AuthorisationException => body(None)
       }
+
+}
+
+class Agent(
+  private val maybeAgentCode: Option[String],
+  private val maybeCredentials: Option[Credentials],
+  private val maybesubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
+  def authProviderId: AuthProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
+  def agentCode: String = maybeAgentCode.getOrElse(throw new RuntimeException("no agent code found"))
+
+  def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
+    maybesubscriptionJourneyRecord.getOrElse(throw new RuntimeException("expected subscription journey record missing"))
+}
+
+trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
+
+  def env: Environment
+
+  def appConfig: AppConfig
+
+  def agentSubscriptionConnector: AgentSubscriptionConnector
+
+  def withSubscribingAgent(body: Agent => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
+      .retrieve(credentials and agentCode) {
+        case maybeCredentials ~ agentCodeOpt => {
+          val authProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
+          agentSubscriptionConnector
+            .getSubscriptionJourneyRecord(authProviderId)
+            .flatMap {
+              case Some(record) =>
+                if (record.cleanCredsAuthProviderId.contains(authProviderId)) {
+                  println(s"user is the clean cred id $record")
+                  ??? // user is logged in as clean cred id so redirect to the page that explains mapping?
+
+                } else {
+                  body(new Agent(agentCodeOpt, maybeCredentials, Some(record)))
+                }
+              case None =>
+                println(s"no sjr found in agent-subscription")
+                body(new Agent(agentCodeOpt, maybeCredentials, None)) // no sjr found -- would be the case when they just return from GG login
+
+            }
+        }
+      }
+
 }

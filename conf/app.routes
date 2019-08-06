@@ -2,17 +2,29 @@
 
 GET         /                                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
 GET         /start                                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
-GET         /start-submit                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-GET         /sign-in-required                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.needAgentServicesAccount
-GET         /client-relationships-found                   uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showClientRelationshipsFound(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-GET         /existing-client-relationships                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-POST        /existing-client-relationships                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-GET         /account-linked                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-GET         /error/already-linked                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-GET         /error/not-enrolled                           uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
-GET         /error/incorrect-account                      uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.incorrectAccount(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
 
-GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId)
+GET         /start-submit                                 uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /sign-in-required                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.needAgentServicesAccount
+GET         /client-relationships-found                   uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showClientRelationshipsFound(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+
+GET         /existing-client-relationships                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+POST        /existing-client-relationships                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /account-linked                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.complete(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /error/already-linked                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /error/not-enrolled                           uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /error/incorrect-account                      uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.incorrectAccount(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+
+GET         /signed-out-redirect                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /re-log-in-redirect                           uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.reLogForMappingStart
 
 GET         /assets/*file                                 controllers.Assets.at(path="/public", file)
+
+
+GET         /task-list/start                              uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.start
+GET         /task-list/client-relationships-found         uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.showClientRelationshipsFound(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /task-list/existing-client-relationships      uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.showExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /task-list/confirm-existing-client-relationships    uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.confirmClientRelationshipsFound(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+POST        /task-list/existing-client-relationships      uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.submitExistingClientRelationships(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /task-list/signed-out-redirect                uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.taskListSignOutAndRedirect(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /task-list/start-submit                       uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /task-list/return                             uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.taskList

@@ -29,10 +29,13 @@ trait AppConfig {
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
   val signOutRedirectUrl: String
+  val taskListSignOutRedirectUrl: String
   val signInAndContinue: String
   val authenticationLoginCallbackUrl: String
   val agentServicesFrontendExternalUrl: String
   val companyAuthFrontendExternalUrl: String
+  val agentSubscriptionFrontendExternalUrl: String
+  val agentSubscriptionFrontendTaskListPath: String
   val ggSignIn: String
 }
 
@@ -67,9 +70,17 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
 
   override lazy val ggSignIn = loadConfig("microservice.services.company-auth-frontend.sign-in.path")
   override lazy val signOutRedirectUrl = loadConfig("microservice.services.company-auth-frontend.sign-out.redirect-url")
+  override lazy val taskListSignOutRedirectUrl = loadConfig(
+    "microservice.services.company-auth-frontend.sign-out.taskList.redirect-url")
   override lazy val authenticationLoginCallbackUrl: String = loadConfig("authentication.login-callback.url")
   override lazy val agentServicesFrontendExternalUrl = loadConfig(
     "microservice.services.agent-services-account-frontend.external-url")
+  override lazy val agentSubscriptionFrontendExternalUrl = loadConfig(
+    "microservice.services.agent-subscription-frontend.external-url")
+  override lazy val agentSubscriptionFrontendTaskListPath = loadConfig(
+    "microservice.services.agent-subscription-frontend.task-list.path"
+  )
+
   override lazy val signInAndContinue =
     s"$companyAuthFrontendExternalUrl$ggSignIn?continue=${urlEncode(startMappingAfterLoggin)}"
 

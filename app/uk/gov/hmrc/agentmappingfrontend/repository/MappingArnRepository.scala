@@ -20,12 +20,12 @@ import java.util.UUID
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
@@ -39,8 +39,13 @@ case class MappingArnResult(
   cumulativeClientCount: List[Int] = List.empty,
   alreadyMapped: Boolean = false)
 
-object MappingArnResult {
+object MappingResult {
   type MappingArnResultId = String
+
+}
+
+object MappingArnResult {
+  //type MappingArnResultId  = String
 
   def apply(arn: Arn, clientCount: List[Int]): MappingArnResult = {
     val id: MappingArnResultId = UUID.randomUUID().toString.replace("-", "")
