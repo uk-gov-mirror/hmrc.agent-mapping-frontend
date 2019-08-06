@@ -123,10 +123,7 @@ class TaskListMappingController @Inject()(
                 agent.getMandatorySubscriptionJourneyRecord.userMappings.map(_.count)))
           }, {
             case Yes => Redirect(routes.SignedOutController.taskListSignOutAndRedirect(id))
-            case No => {
-              //agentSubscriptionConnector.getSubscriptionJourneyRecord(agent.getMandatorySubscriptionJourneyRecord)
-              Ok("finished -- remember to update record with mapping complete flag")
-            }
+            case No => Redirect(routes.SignedOutController.returnAfterMapping())
           }
         )
     }
@@ -139,7 +136,8 @@ class TaskListMappingController @Inject()(
         case Some(record) => {
           agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).map {
             case Some(sjr) =>
-              if (sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
+              if (sjr.cleanCredsAuthProviderId.contains(agent.authProviderId)) Ok("clean cred id")
+              else if (sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                 Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
               } else {
                 Redirect(routes.TaskListMappingController.showClientRelationshipsFound(id))

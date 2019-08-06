@@ -51,4 +51,10 @@ class SignedOutController @Inject()(appConfig: AppConfig) extends MappingBaseCon
     Future.successful(Redirect(url))
   }
 
+  def returnAfterMapping(): Action[AnyContent] = Action.async { implicit request =>
+    val url =
+      s"${appConfig.agentServicesFrontendExternalUrl}${appConfig.agentSubscriptionFrontendReturnAfterMappingPath}"
+    Future.successful(Redirect(url))
+  }
+
 }

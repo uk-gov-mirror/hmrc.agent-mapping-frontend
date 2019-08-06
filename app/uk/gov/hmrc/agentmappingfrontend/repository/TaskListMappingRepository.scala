@@ -119,5 +119,4 @@ class TaskListMappingRepository @Inject()(appConfig: AppConfig, mongoComponent: 
 
   private def hasProblems(writeResult: WriteResult): Boolean =
     !writeResult.ok || writeResult.writeErrors.nonEmpty || writeResult.writeConcernError.isDefined
-
 }

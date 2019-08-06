@@ -28,3 +28,4 @@ POST        /task-list/existing-client-relationships      uk.gov.hmrc.agentmappi
 GET         /task-list/signed-out-redirect                uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.taskListSignOutAndRedirect(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /task-list/start-submit                       uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /task-list/return                             uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.taskList
+GET         /task-list/return-after-mapping               uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.returnAfterMapping()

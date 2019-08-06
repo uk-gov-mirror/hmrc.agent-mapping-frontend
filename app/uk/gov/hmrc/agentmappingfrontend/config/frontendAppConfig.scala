@@ -36,6 +36,7 @@ trait AppConfig {
   val companyAuthFrontendExternalUrl: String
   val agentSubscriptionFrontendExternalUrl: String
   val agentSubscriptionFrontendTaskListPath: String
+  val agentSubscriptionFrontendReturnAfterMappingPath: String
   val ggSignIn: String
 }
 
@@ -78,7 +79,9 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
   override lazy val agentSubscriptionFrontendExternalUrl = loadConfig(
     "microservice.services.agent-subscription-frontend.external-url")
   override lazy val agentSubscriptionFrontendTaskListPath = loadConfig(
-    "microservice.services.agent-subscription-frontend.task-list.path"
+    "microservice.services.agent-subscription-frontend.task-list.path")
+  override lazy val agentSubscriptionFrontendReturnAfterMappingPath = loadConfig(
+    "microservice.services.agent-subscription-frontend.return-after-mapping.path"
   )
 
   override lazy val signInAndContinue =

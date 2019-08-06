@@ -145,21 +145,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
           val authProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
           agentSubscriptionConnector
             .getSubscriptionJourneyRecord(authProviderId)
-            .flatMap {
-              case Some(record) =>
-                if (record.cleanCredsAuthProviderId.contains(authProviderId)) {
-                  println(s"user is the clean cred id $record")
-                  ??? // user is logged in as clean cred id so redirect to the page that explains mapping?
-
-                } else {
-                  body(new Agent(agentCodeOpt, maybeCredentials, Some(record)))
-                }
-              case None =>
-                println(s"no sjr found in agent-subscription")
-                body(new Agent(agentCodeOpt, maybeCredentials, None)) // no sjr found -- would be the case when they just return from GG login
-
-            }
+            .flatMap(maybeSjr => body(new Agent(agentCodeOpt, maybeCredentials, maybeSjr)))
         }
       }
-
 }
