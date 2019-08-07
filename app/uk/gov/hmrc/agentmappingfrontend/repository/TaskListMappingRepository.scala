@@ -18,20 +18,18 @@ package uk.gov.hmrc.agentmappingfrontend.repository
 
 import java.util.UUID
 
-import play.api.libs.functional.syntax._
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
-import play.api.libs.json.{JsObject, JsPath, Json, OFormat}
+import play.api.libs.json.{JsObject, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,7 +37,8 @@ case class TaskListMappingResult(
   id: MappingArnResultId,
   continueId: String,
   clientCount: Int = 0,
-  createdDate: DateTime = DateTime.now(DateTimeZone.UTC)
+  createdDate: DateTime = DateTime.now(DateTimeZone.UTC),
+  alreadyMapped: Boolean = false
 )
 
 object TaskListMappingResult {

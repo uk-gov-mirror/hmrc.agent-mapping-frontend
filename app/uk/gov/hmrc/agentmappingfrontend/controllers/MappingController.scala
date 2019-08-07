@@ -99,12 +99,14 @@ class MappingController @Inject()(
       repository.findRecord(id).flatMap {
         case Some(record) => {
           val form = ExistingClientRelationshipsForm.form
+          val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
           if (!record.alreadyMapped) {
             mappingConnector.createMapping(record.arn).flatMap {
               case CREATED => {
                 repository
                   .updateFor(id)
-                  .map(_ => Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount)))
+                  .map(_ =>
+                    Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount, false, backUrl)))
               }
               case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
               case e => {
@@ -113,7 +115,7 @@ class MappingController @Inject()(
               }
             }
           } else {
-            Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount))
+            Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount, false, backUrl))
           }
         }
         case None => Ok(html.page_not_found())
@@ -127,8 +129,10 @@ class MappingController @Inject()(
         .fold(
           formWithErrors => {
             repository.findRecord(id).map {
-              case Some(record) =>
-                Ok(html.existing_client_relationships(formWithErrors, id, record.cumulativeClientCount))
+              case Some(record) => {
+                val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
+                Ok(html.existing_client_relationships(formWithErrors, id, record.cumulativeClientCount, false, backUrl))
+              }
               case None => {
                 Logger.info(s"no record found for id $id")
                 Redirect(routes.MappingController.start())

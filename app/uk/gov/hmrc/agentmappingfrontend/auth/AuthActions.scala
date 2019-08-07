@@ -121,10 +121,11 @@ class Agent(
   private val maybeCredentials: Option[Credentials],
   private val maybesubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
   def authProviderId: AuthProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
-  def agentCode: String = maybeAgentCode.getOrElse(throw new RuntimeException("no agent code found"))
+  def agentCode: String = maybeAgentCode.getOrElse(throw new RuntimeException("no agent code was not found"))
 
   def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
-    maybesubscriptionJourneyRecord.getOrElse(throw new RuntimeException("expected subscription journey record missing"))
+    maybesubscriptionJourneyRecord
+      .getOrElse(throw new RuntimeException("mandatory subscription journey record was missing"))
 }
 
 trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
