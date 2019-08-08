@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import java.net.URLEncoder
 
+import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
@@ -54,6 +55,9 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
     def testWithCheckForArn =
       await(withCheckForArn { optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))})
+
+    def testWithSubscribingAgent =
+      await(withSubscribingAgent{ agent => Future.successful(Ok(agent.toString))})
 
   }
 
@@ -95,7 +99,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
          |  }}""".stripMargin
     )
 
-    val result = TestController.testWithAuthorisedAgent
+    val result: Result = TestController.testWithAuthorisedAgent
     status(result) shouldBe 303
     result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
     ()

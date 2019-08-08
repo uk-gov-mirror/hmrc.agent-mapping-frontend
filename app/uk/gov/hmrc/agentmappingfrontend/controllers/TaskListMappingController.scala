@@ -47,6 +47,10 @@ class TaskListMappingController @Inject()(
   val config: Configuration)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
     extends MappingBaseController with I18nSupport with TaskListAuthActions {
 
+  def root: Action[AnyContent] = Action.async { implicit request =>
+    Redirect(routes.TaskListMappingController.start)
+  }
+
   def start: Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent { agent =>
       {
@@ -88,22 +92,22 @@ class TaskListMappingController @Inject()(
             mappingConnector.getClientCount.flatMap(count => {
               repository
                 .upsert(record.copy(clientCount = count), record.continueId)
-                .map(_ => Ok(client_relationships_found(count, id, true)))
+                .map(_ => Ok(client_relationships_found(count, id, taskList = true)))
             })
           } else {
-            Ok(client_relationships_found(record.clientCount, id, true))
+            Ok(client_relationships_found(record.clientCount, id, taskList = true))
           }
         }
-        case None => Future.successful(Ok("hmmm"))
+        case None => Future.successful(Redirect(routes.TaskListMappingController.start()))
       }
     }
   }
 
-  def confirmClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  /*def confirmClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent { agent =>
       for {
         maybeRecord <- repository.findRecord(id)
-        record = maybeRecord.getOrElse(throw new RuntimeException("no task-list mapping record found!"))
+        record = maybeRecord.getOrElse(throw new RuntimeException("no record found on confirm client relationships"))
         _ <- if (!record.alreadyMapped) {
               for {
                 maybesjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
@@ -122,6 +126,34 @@ class TaskListMappingController @Inject()(
         result <- Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
 
       } yield result
+    }
+  }*/
+
+  def confirmClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withSubscribingAgent { agent =>
+      repository.findRecord(id).flatMap {
+        case Some(record) =>
+          if (!record.alreadyMapped) {
+            for {
+              maybeSjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
+              sjr = maybeSjr.getOrElse(
+                throw new RuntimeException("no subscription journey record found in confirmClientRelationshipsFound")
+              )
+              newSjr = sjr.copy(
+                userMappings = UserMapping(
+                  authProviderId = agent.authProviderId,
+                  agentCodes = Seq(AgentCode(agent.agentCode)),
+                  count = record.clientCount,
+                  ggTag = "") :: sjr.userMappings)
+              _      <- agentSubscriptionConnector.createOrUpdateJourney(newSjr)
+              _      <- repository.upsert(record.copy(alreadyMapped = true), record.continueId)
+              result <- Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
+            } yield result
+          } else {
+            Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
+          }
+        case None => Redirect(routes.TaskListMappingController.start())
+      }
     }
   }
 
