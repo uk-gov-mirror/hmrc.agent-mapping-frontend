@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentmappingfrontend.auth
 
-import play.api.Environment
+import play.api.{Environment, Logger}
 import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
@@ -125,7 +125,9 @@ class Agent(
 
   def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
     maybesubscriptionJourneyRecord
-      .getOrElse(throw new RuntimeException("mandatory subscription journey record was missing"))
+      .getOrElse(
+        throw new RuntimeException(
+          s"mandatory subscription journey record was missing for authProviderID $authProviderId"))
 }
 
 trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
@@ -141,12 +143,20 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
-      .retrieve(credentials and agentCode) {
-        case maybeCredentials ~ agentCodeOpt => {
-          val authProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
-          agentSubscriptionConnector
-            .getSubscriptionJourneyRecord(authProviderId)
-            .flatMap(maybeSjr => body(new Agent(agentCodeOpt, maybeCredentials, maybeSjr)))
+      .retrieve(allEnrolments and credentials and agentCode) {
+        case enrolments ~ maybeCredentials ~ agentCodeOpt => {
+          if (isEnrolledForHmrcAsAgent(enrolments)) {
+            Logger.info("user entered task list mapping with HMRC-AS-AGENT enrolment")
+            Future.successful(Redirect(appConfig.agentServicesFrontendExternalUrl))
+          } else {
+            val authProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
+            agentSubscriptionConnector
+              .getSubscriptionJourneyRecord(authProviderId)
+              .flatMap(maybeSjr => body(new Agent(agentCodeOpt, maybeCredentials, maybeSjr)))
+          }
         }
       }
+
+  private def isEnrolledForHmrcAsAgent(enrolments: Enrolments): Boolean =
+    enrolments.enrolments.find(_.key equals "HMRC-AS-AGENT").exists(_.isActivated)
 }

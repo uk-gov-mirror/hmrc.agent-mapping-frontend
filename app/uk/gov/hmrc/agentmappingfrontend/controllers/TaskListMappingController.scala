@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc.{Action, AnyContent, Call, Request, Result}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.TaskListAuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
@@ -81,19 +81,21 @@ class TaskListMappingController @Inject()(
   }
 
   def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    repository.findRecord(id).flatMap {
-      case Some(record) => {
-        if (!record.alreadyMapped) {
-          mappingConnector.getClientCount.flatMap(count => {
-            repository
-              .upsert(record.copy(clientCount = count), record.continueId)
-              .map(_ => Ok(client_relationships_found(count, id, true)))
-          })
-        } else {
-          Ok(client_relationships_found(record.clientCount, id, true))
+    withSubscribingAgent { _ =>
+      repository.findRecord(id).flatMap {
+        case Some(record) => {
+          if (!record.alreadyMapped) {
+            mappingConnector.getClientCount.flatMap(count => {
+              repository
+                .upsert(record.copy(clientCount = count), record.continueId)
+                .map(_ => Ok(client_relationships_found(count, id, true)))
+            })
+          } else {
+            Ok(client_relationships_found(record.clientCount, id, true))
+          }
         }
+        case None => Future.successful(Ok("hmmm"))
       }
-      case None => Future.successful(Ok("hmmm"))
     }
   }
 
@@ -154,11 +156,27 @@ class TaskListMappingController @Inject()(
                     true,
                     url)))
           }, {
-            case Yes => Redirect(routes.SignedOutController.taskListSignOutAndRedirect(id))
-            case No  => Redirect(routes.SignedOutController.returnAfterMapping())
+            case Yes => Redirect(continueOrStop(routes.SignedOutController.taskListSignOutAndRedirect(id)))
+            case No  => Redirect(continueOrStop(routes.SignedOutController.returnAfterMapping()))
           }
         )
     }
+  }
+
+  private def continueOrStop(next: Call)(implicit request: Request[AnyContent]): String = {
+
+    val submitAction = request.body.asFormUrlEncoded
+      .fold(Seq.empty: Seq[String])(someMap => someMap.getOrElse("continue", Seq.empty))
+
+    val call = submitAction.headOption match {
+      case Some("continue") => next.url
+      case Some("save")     => appConfig.agentSubscriptionFrontendProgressSavedUrl
+      case _ => {
+        Logger.warn("unexpected value in submit")
+        routes.TaskListMappingController.start().url
+      }
+    }
+    call
   }
 
   private def nextPage(
@@ -171,12 +189,12 @@ class TaskListMappingController @Inject()(
               if (sjr.cleanCredsAuthProviderId.contains(agent.authProviderId)) {
                 Logger.info("user entered task list mapping with a clean cred id")
                 Ok(start_sign_in_required(Some(id), true))
+              } else if (sjr.userMappings.map(_.authProviderId).isEmpty) {
+                Ok(start_journey(id, true)) //first time here
               } else if (sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                 Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
               } else {
                 Redirect(routes.TaskListMappingController.showClientRelationshipsFound(id))
-
-                //Ok(start_journey(id, true))
               }
             case None => ???
           }
