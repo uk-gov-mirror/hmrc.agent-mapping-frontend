@@ -47,16 +47,18 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
     List(
     UserMapping(
       authProviderId = AuthProviderId("1-credId"),
-      agentCodes = List(AgentCode("agentCode-1")),
+      agentCode = Some(AgentCode("agentCode-1")),
       count = 1,
+      legacyEnrolments = List.empty,
       ggTag = "")))
 
   val sjrWithUserAlreadyMapped = sjrWithNoUserMappings.copy(userMappings =
     List(
       UserMapping(
         authProviderId = AuthProviderId("12345-credId"),
-        agentCodes = List(AgentCode("agentCode-1")),
+        agentCode = Some(AgentCode("agentCode-1")),
         count = 1,
+        legacyEnrolments = List.empty,
         ggTag = "")))
 
   def callEndpointWith[A: Writeable](request: Request[A]): Result = await(play.api.test.Helpers.route(app, request).get)
@@ -219,7 +221,12 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
       givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithNoUserMappings
         .copy(
-          userMappings = UserMapping(AuthProviderId("12345-credId"),agentCodes = Seq(AgentCode("HZ1234")),count = 12, ggTag= "") :: sjrWithNoUserMappings.userMappings))
+          userMappings = UserMapping(
+            AuthProviderId("12345-credId"),
+            agentCode = Some(AgentCode("HZ1234")),
+            count = 12,
+            legacyEnrolments = List.empty,
+            ggTag= "") :: sjrWithNoUserMappings.userMappings))
 
       val request = FakeRequest(GET, s"/agent-mapping/task-list/confirm-client-relationships-found/?id=$id")
       val result = callEndpointWith(request)
@@ -407,7 +414,14 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
       val id = await(repo.create("continue-id"))
-      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping.copy(userMappings = UserMapping(AuthProviderId("12345-credId"),ggTag="") :: sjrWithMapping.userMappings))
+      givenSubscriptionJourneyRecordExistsForContinueId(
+        "continue-id",
+        sjrWithMapping.copy(userMappings = UserMapping(
+          AuthProviderId("12345-credId"),
+          None,
+          legacyEnrolments = List.empty,
+          ggTag="") :: sjrWithMapping.userMappings)
+      )
 
       val request = FakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
       val result = callEndpointWith(request)
