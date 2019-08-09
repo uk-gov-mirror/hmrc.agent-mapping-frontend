@@ -14,19 +14,19 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
+@import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer
 @import uk.gov.hmrc.play.views.html.helpers._
 
-@(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCounts: List[Int])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCounts: List[Int], taskList: Boolean = false, backUrl: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @html.main_template(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None) {
 
 
- <a href="@routes.MappingController.showClientRelationshipsFound(id)" class="link-back">@Messages("button.back")</a>
+ <a href="@backUrl" class="link-back">@Messages("button.back")</a>
 
  @if(addClientsForm.hasErrors) {
   @errorSummary(Messages("error.summary.heading"), addClientsForm, Seq.empty, Some("additional-clients"))
@@ -57,8 +57,7 @@
  <p>@Messages("existingClientRelationships.p1")</p>
 
  @form(
-  action = routes.MappingController.submitExistingClientRelationships(id), 'class -> "form js-form"
- ) {
+  action = if(taskList) routes.TaskListMappingController.submitExistingClientRelationships(id) else routes.MappingController.submitExistingClientRelationships(id), 'class -> "form js-form") {
   <div class="form-group margin-top-20">
   @input_radio_group(
    addClientsForm("additional-clients"),
@@ -74,7 +73,15 @@
   </div>
 
   <div class="form-field">
+   @if(taskList){
+   <button class="button margin-right-5" type="submit" id="existing-client-relationships-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
+           <button class="button--secondary" type="submit" id="existing-client-relationships-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
+
+
+   } else {
    <button class="button" type="submit" id="submit-existing-clients">@Messages("button.continue")</button>
+   }
+
   </div>
  }
 

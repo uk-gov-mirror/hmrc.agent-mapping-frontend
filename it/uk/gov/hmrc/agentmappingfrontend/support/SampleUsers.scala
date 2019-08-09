@@ -34,7 +34,7 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  }, "agentCode":"HZ1234"
        |}""".stripMargin,
     activeEnrolments = Set("HMCE-VAT-AGNT")
   )

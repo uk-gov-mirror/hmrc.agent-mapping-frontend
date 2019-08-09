@@ -22,47 +22,45 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.json.{JsObject, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class MappingArnResult(
+case class TaskListMappingResult(
   id: MappingArnResultId,
-  arn: Arn,
+  continueId: String,
+  clientCount: Int = 0,
   createdDate: DateTime = DateTime.now(DateTimeZone.UTC),
-  cumulativeClientCount: List[Int] = List.empty,
-  alreadyMapped: Boolean = false)
+  alreadyMapped: Boolean = false
+)
 
-object MappingResult {
-  type MappingArnResultId = String
+object TaskListMappingResult {
 
-}
-
-object MappingArnResult {
-  //type MappingArnResultId  = String
-
-  def apply(arn: Arn, clientCount: List[Int]): MappingArnResult = {
+  def apply(continueId: String): TaskListMappingResult = {
     val id: MappingArnResultId = UUID.randomUUID().toString.replace("-", "")
-    MappingArnResult(id = id, arn = arn, cumulativeClientCount = clientCount)
+    TaskListMappingResult(id = id, continueId = continueId)
   }
 
-  implicit val dateFormat = ReactiveMongoFormats.dateTimeFormats
-  implicit val format = Json.format[MappingArnResult]
+  implicit val format: OFormat[TaskListMappingResult] = Json.format[TaskListMappingResult]
 }
 
 @Singleton
-class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: ReactiveMongoComponent)
-    extends ReactiveRepository[MappingArnResult, BSONObjectID](
-      "mapping-arn",
+class TaskListMappingRepository @Inject()(appConfig: AppConfig, mongoComponent: ReactiveMongoComponent)
+    extends ReactiveRepository[TaskListMappingResult, BSONObjectID](
+      "mapping-task-list",
       mongoComponent.mongoConnector.db,
-      MappingArnResult.format,
+      TaskListMappingResult.format,
       ReactiveMongoFormats.objectIdFormats) {
+
+  def findRecord(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[TaskListMappingResult]] =
+    find("id" -> id).map(_.headOption)
 
   override def indexes: Seq[Index] =
     Seq(
@@ -75,23 +73,23 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
       )
     )
 
-  def findArn(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[Arn]] =
-    find("id" -> id).map(_.headOption.map(_.arn))
+  def create(continueId: String)(implicit ec: ExecutionContext): Future[MappingArnResultId] = {
 
-  def findRecord(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[MappingArnResult]] =
-    find("id" -> id).map(_.headOption)
-
-  def create(arn: Arn, clientCount: List[Int] = List.empty)(
-    implicit ec: ExecutionContext): Future[MappingArnResultId] = {
-    val record = MappingArnResult(arn, clientCount)
-    insert(record).map(_ => record.id)
+    val newRecord = TaskListMappingResult(continueId)
+    findByContinueId(continueId).flatMap {
+      case Some(record) => delete(record.id).flatMap(_ => insert(newRecord).map(_ => newRecord.id))
+      case None         => insert(newRecord).map(_ => newRecord.id)
+    }
   }
+
+  def findByContinueId(continueId: String)(implicit ec: ExecutionContext): Future[Option[TaskListMappingResult]] =
+    find("continueId" -> continueId).map(_.headOption)
 
   def updateFor(id: MappingArnResultId, clientCount: Int)(implicit ec: ExecutionContext): Future[Unit] =
     findRecord(id).flatMap {
       case Some(record) => {
-        val updatedClientCount = clientCount :: record.cumulativeClientCount
-        val updatedRecord = Json.toJson(record.copy(cumulativeClientCount = updatedClientCount)).as[JsObject]
+        val updatedClientCount = clientCount
+        val updatedRecord = Json.toJson(record.copy(clientCount = updatedClientCount)).as[JsObject]
 
         findAndUpdate(
           Json.obj("id" -> id),
@@ -101,19 +99,23 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
       case _ => throw new RuntimeException(s"could not find record with id $id")
     }
 
-  def updateFor(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
-    findRecord(id).flatMap {
-      case Some(record) => {
-        val updatedRecord = Json.toJson(record.copy(alreadyMapped = true)).as[JsObject]
+  def upsert(taskListMappingResult: TaskListMappingResult, continueId: String)(
+    implicit ec: ExecutionContext): Future[Unit] =
+    collection
+      .update(ordered = false)
+      .one(Json.obj("continueId" -> continueId), taskListMappingResult, upsert = true)
+      .checkResult
 
-        findAndUpdate(
-          Json.obj("id" -> id),
-          updatedRecord
-        ).map(_ => ())
-      }
-      case None => throw new RuntimeException(s"could not update record for id $id")
+  private implicit class WriteResultChecker(future: Future[WriteResult]) {
+    def checkResult(implicit ec: ExecutionContext): Future[Unit] = future.map { writeResult =>
+      if (hasProblems(writeResult)) throw new RuntimeException(writeResult.toString)
+      else ()
     }
+  }
 
   def delete(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
     remove("id" -> id).map(_ => ())
+
+  private def hasProblems(writeResult: WriteResult): Boolean =
+    !writeResult.ok || writeResult.writeErrors.nonEmpty || writeResult.writeConcernError.isDefined
 }

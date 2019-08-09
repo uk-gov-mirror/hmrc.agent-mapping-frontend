@@ -18,13 +18,14 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import java.net.URLEncoder
 
-import org.scalatest.Assertion
+import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.agentmappingfrontend.auth.{Auth, AuthActions}
+import uk.gov.hmrc.agentmappingfrontend.auth.{Auth, AuthActions, TaskListAuthActions}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -34,8 +35,10 @@ import scala.concurrent.Future
 
 class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
-  object TestController extends AuthActions {
+  object TestController extends AuthActions  with TaskListAuthActions {
+
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+    override def agentSubscriptionConnector: AgentSubscriptionConnector = app.injector.instanceOf[AgentSubscriptionConnector]
 
     implicit val hc = HeaderCarrier()
     implicit val request = FakeRequest("GET", "/foo").withSession(SessionKeys.authToken -> "Bearer XYZ")
@@ -52,6 +55,10 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
 
     def testWithCheckForArn =
       await(withCheckForArn { optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))})
+
+    def testWithSubscribingAgent =
+      await(withSubscribingAgent{ agent => Future.successful(Ok(agent.toString))})
+
   }
 
   private val eligibleEnrolments = Map(
@@ -92,7 +99,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
          |  }}""".stripMargin
     )
 
-    val result = TestController.testWithAuthorisedAgent
+    val result: Result = TestController.testWithAuthorisedAgent
     status(result) shouldBe 303
     result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
     ()
