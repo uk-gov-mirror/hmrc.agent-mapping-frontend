@@ -76,7 +76,6 @@ class TaskListMappingController @Inject()(
                      _     <- repository.delete(id)
                      r     <- nextPage(newId)
                    } yield r
-
                  } else {
                    Future.successful(Ok(already_mapped(id, true)))
                  }
@@ -102,32 +101,6 @@ class TaskListMappingController @Inject()(
       }
     }
   }
-
-  /*def confirmClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withSubscribingAgent { agent =>
-      for {
-        maybeRecord <- repository.findRecord(id)
-        record = maybeRecord.getOrElse(throw new RuntimeException("no record found on confirm client relationships"))
-        _ <- if (!record.alreadyMapped) {
-              for {
-                maybesjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
-                sjr = maybesjr.getOrElse(
-                  throw new RuntimeException("no subscription journey record found in confirmClientRelationshipsFound"))
-                newSjr = sjr.copy(
-                  userMappings = UserMapping(
-                    authProviderId = agent.authProviderId,
-                    agentCodes = Seq(AgentCode(agent.agentCode)),
-                    count = record.clientCount,
-                    ggTag = "") :: sjr.userMappings)
-                _ <- agentSubscriptionConnector.createOrUpdateJourney(newSjr)
-                _ <- repository.upsert(record.copy(alreadyMapped = true), record.continueId)
-              } yield ()
-            }
-        result <- Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
-
-      } yield result
-    }
-  }*/
 
   def confirmClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent { agent =>
@@ -228,11 +201,10 @@ class TaskListMappingController @Inject()(
               } else {
                 Redirect(routes.TaskListMappingController.showClientRelationshipsFound(id))
               }
-            case None => ???
+            case None => throw new RuntimeException("no subscription journey record found when routing to next page")
           }
-
         }
-        case None => throw new RuntimeException(s"no task list mapping record found with id $id")
+        case None => throw new RuntimeException(s"no task list mapping record found for id $id")
       }
     }
 

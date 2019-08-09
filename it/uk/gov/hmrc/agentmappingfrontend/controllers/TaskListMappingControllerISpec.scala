@@ -386,4 +386,34 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       redirectLocation(result) shouldBe Some(appConfig.agentSubscriptionFrontendProgressSavedUrl)
     }
   }
+
+  "return-from GG login" should {
+    "redirect to /client-relationships-found when user has not mapped before " in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordNotFoundForAuthProviderId(AuthProviderId("12345-credId"))
+      val id = await(repo.create("continue-id"))
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping.copy(authProviderId = AuthProviderId("123-credId")))
+
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
+      val result = callEndpointWith(request)
+      val newId = await(repo.findByContinueId("continue-id").get.id)
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showClientRelationshipsFound(newId).url)
+    }
+
+    "200 to /already-mapped page when the user has already mapped" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      val id = await(repo.create("continue-id"))
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping.copy(userMappings = UserMapping(AuthProviderId("12345-credId"),ggTag="") :: sjrWithMapping.userMappings))
+
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+    }
+  }
+
 }
