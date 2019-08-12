@@ -112,13 +112,14 @@ class TaskListMappingController @Inject()(
               sjr = maybeSjr.getOrElse(
                 throw new RuntimeException("no subscription journey record found in confirmClientRelationshipsFound")
               )
-              newSjr = sjr.copy(userMappings = UserMapping(
-                authProviderId = agent.authProviderId,
-                agentCode = Some(AgentCode(agent.agentCode)),
-                count = record.clientCount,
-                legacyEnrolments = List.empty, // TODO populate this!
-                ggTag = ""
-              ) :: sjr.userMappings)
+              newSjr = sjr.copy(
+                userMappings = UserMapping(
+                  authProviderId = agent.authProviderId,
+                  agentCode = agent.agentCodeOpt,
+                  count = record.clientCount,
+                  legacyEnrolments = agent.agentEnrolments,
+                  ggTag = ""
+                ) :: sjr.userMappings)
               _      <- agentSubscriptionConnector.createOrUpdateJourney(newSjr)
               _      <- repository.upsert(record.copy(alreadyMapped = true), record.continueId)
               result <- Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
@@ -143,7 +144,6 @@ class TaskListMappingController @Inject()(
               true,
               url))
       )
-
     }
   }
 

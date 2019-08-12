@@ -57,7 +57,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs {
       await(withCheckForArn { optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))})
 
     def testWithSubscribingAgent =
-      await(withSubscribingAgent{ agent => Future.successful(Ok(agent.toString))})
+      await(withSubscribingAgent{ agent => Future.successful(Ok("Done."))})
 
   }
 
