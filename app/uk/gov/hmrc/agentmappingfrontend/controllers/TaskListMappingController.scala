@@ -107,23 +107,28 @@ class TaskListMappingController @Inject()(
       repository.findRecord(id).flatMap {
         case Some(record) =>
           if (!record.alreadyMapped) {
-            for {
-              maybeSjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
-              sjr = maybeSjr.getOrElse(
+            agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).flatMap {
+              case Some(sjr) => {
+                val newSjr = sjr.copy(
+                  userMappings = UserMapping(
+                    authProviderId = agent.authProviderId,
+                    agentCode = agent.agentCodeOpt,
+                    count = record.clientCount,
+                    legacyEnrolments = agent.agentEnrolments,
+                    ggTag = ""
+                  ) :: sjr.userMappings)
+                agentSubscriptionConnector.createOrUpdateJourney(newSjr).flatMap {
+                  case Right(_) =>
+                    repository
+                      .upsert(record.copy(alreadyMapped = true), record.continueId)
+                      .map(_ => Redirect(routes.TaskListMappingController.showExistingClientRelationships(id)))
+                  case Left(e) => throw new RuntimeException(s"update subscriptionJourneyRecord call failed $e")
+                }
+              }
+              case None =>
                 throw new RuntimeException("no subscription journey record found in confirmClientRelationshipsFound")
-              )
-              newSjr = sjr.copy(
-                userMappings = UserMapping(
-                  authProviderId = agent.authProviderId,
-                  agentCode = agent.agentCodeOpt,
-                  count = record.clientCount,
-                  legacyEnrolments = agent.agentEnrolments,
-                  ggTag = ""
-                ) :: sjr.userMappings)
-              _      <- agentSubscriptionConnector.createOrUpdateJourney(newSjr)
-              _      <- repository.upsert(record.copy(alreadyMapped = true), record.continueId)
-              result <- Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
-            } yield result
+            }
+
           } else {
             Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
           }

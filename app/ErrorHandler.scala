@@ -16,6 +16,7 @@
 
 import com.google.inject.name.Named
 import javax.inject.{Inject, Singleton}
+import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
@@ -53,6 +54,7 @@ class ErrorHandler @Inject()(
             Messages("global.error.500.title"),
             Messages("global.error.500.heading"),
             Messages("global.error.500.message")))
+          .withHeaders(CACHE_CONTROL -> "no-cache")
     }
   }
 
