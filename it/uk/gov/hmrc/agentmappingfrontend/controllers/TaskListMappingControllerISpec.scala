@@ -9,12 +9,13 @@ import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs, MappingStubs}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{mtdAsAgent, vatEnrolledAgent}
+import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.domain.AgentCode
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs with AgentSubscriptionStubs {
+class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs with AgentSubscriptionStubs with SubscriptionJourneyRecordSamples {
 
   private lazy val repo = app.injector.instanceOf[TaskListMappingRepository]
 
@@ -23,43 +24,6 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
   private lazy val appConfig = app.injector.instanceOf[FrontendAppConfig]
 
   val mappingStubs = MappingStubs
-
-  val businessDetails = BusinessDetails(BusinessType.LimitedCompany,Utr("2000000000"),Postcode("AA11AA"),None,None,None,None)
-
-  def sjrBuilder(
-                  authProviderId: String,
-                  continueId: Option[String] = None,
-                  userMappings: List[UserMapping] = List.empty,
-                  mappingComplete: Boolean = false, cleanCredId: Option[AuthProviderId] = None) = SubscriptionJourneyRecord(
-    authProviderId = AuthProviderId(authProviderId),
-    continueId = continueId,
-    businessDetails = businessDetails,
-    amlsData = None,
-    userMappings = userMappings,
-    mappingComplete = mappingComplete,
-    cleanCredsAuthProviderId = cleanCredId,
-    lastModifiedDate = None)
-
-  val sjrNoContinueId = sjrBuilder("12345-credId")
-  val sjrWithNoUserMappings = sjrNoContinueId.copy(continueId = Some("continue-id"))
-  val sjrWithCleanCredId = sjrWithNoUserMappings.copy(cleanCredsAuthProviderId = Some(AuthProviderId("12345-credId")))
-  val sjrWithMapping = sjrWithNoUserMappings.copy(userMappings =
-    List(
-    UserMapping(
-      authProviderId = AuthProviderId("1-credId"),
-      agentCode = Some(AgentCode("agentCode-1")),
-      count = 1,
-      legacyEnrolments = List.empty,
-      ggTag = "")))
-
-  val sjrWithUserAlreadyMapped = sjrWithNoUserMappings.copy(userMappings =
-    List(
-      UserMapping(
-        authProviderId = AuthProviderId("12345-credId"),
-        agentCode = Some(AgentCode("agentCode-1")),
-        count = 1,
-        legacyEnrolments = List.empty,
-        ggTag = "")))
 
   def callEndpointWith[A: Writeable](request: Request[A]): Result = await(play.api.test.Helpers.route(app, request).get)
 

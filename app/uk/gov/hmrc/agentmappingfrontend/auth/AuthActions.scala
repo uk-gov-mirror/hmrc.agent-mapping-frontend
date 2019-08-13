@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.agentmappingfrontend.auth
 
-import play.api.{Environment, Logger}
 import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
+import play.api.{Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.Names._
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
+import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{agentCode, allEnrolments, credentials}
+import uk.gov.hmrc.domain.AgentCode
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
@@ -117,14 +118,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 }
 
 class Agent(
-  private val maybeAgentCode: Option[String],
-  private val maybeCredentials: Option[Credentials],
-  private val maybesubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
-  def authProviderId: AuthProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
-  def agentCode: String = maybeAgentCode.getOrElse(throw new RuntimeException("no agent code was found"))
+  private val providerId: AuthProviderId,
+  private val maybeAgentCode: Option[AgentCode],
+  private val legacyEnrolments: Seq[AgentEnrolment],
+  private val maybeSubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
+  def authProviderId: AuthProviderId = providerId
+  def agentEnrolments: Seq[AgentEnrolment] = legacyEnrolments
+  def agentCodeOpt: Option[AgentCode] = maybeAgentCode
 
   def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
-    maybesubscriptionJourneyRecord
+    maybeSubscriptionJourneyRecord
       .getOrElse(
         throw new RuntimeException(
           s"mandatory subscription journey record was missing for authProviderID $authProviderId"))
@@ -143,20 +146,38 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
-      .retrieve(allEnrolments and credentials and agentCode) {
-        case enrolments ~ maybeCredentials ~ agentCodeOpt => {
-          if (isEnrolledForHmrcAsAgent(enrolments)) {
-            Logger.info("user entered task list mapping with HMRC-AS-AGENT enrolment")
+      .retrieve(credentials and agentCode and allEnrolments) {
+        case Some(Credentials(providerId, _)) ~ agentCodeOpt ~ enrols =>
+          val activeEnrolments: Set[Enrolment] = enrols.enrolments.filter(_.isActivated)
+          val eligibleAgentEnrolmentKeys: Set[String] = activeEnrolments.map(_.key).intersect(Auth.validEnrolments)
+          val eligibleEnrolments: Set[Enrolment] =
+            activeEnrolments.filter(e => e.key.contains(eligibleAgentEnrolmentKeys))
+
+          if (activeEnrolments.map(_.key).contains(`HMRC-AS-AGENT`)) {
+            Logger.info("user has entered task-list mapping with the HMRC-AS-AGENT enrolment!")
             Future.successful(Redirect(appConfig.agentServicesFrontendExternalUrl))
-          } else {
-            val authProviderId = AuthProviderId(maybeCredentials.fold("unknown")(_.providerId))
-            agentSubscriptionConnector
-              .getSubscriptionJourneyRecord(authProviderId)
-              .flatMap(maybeSjr => body(new Agent(agentCodeOpt, maybeCredentials, maybeSjr)))
-          }
-        }
+
+          } else
+            agentSubscriptionConnector.getSubscriptionJourneyRecord(AuthProviderId(providerId)).flatMap { maybeSjr =>
+              body(new Agent(
+                providerId = AuthProviderId(providerId),
+                maybeAgentCode = agentCodeOpt.flatMap(ac => Some(AgentCode(ac))),
+                legacyEnrolments = agentEnrolmentsFromEligibleEnrolments(eligibleEnrolments),
+                maybeSjr
+              ))
+            }
+      }
+      .recover {
+        case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
       }
 
-  private def isEnrolledForHmrcAsAgent(enrolments: Enrolments): Boolean =
-    enrolments.enrolments.find(_.key equals "HMRC-AS-AGENT").exists(_.isActivated)
+  private def agentEnrolmentsFromEligibleEnrolments(eligibleEnrolments: Set[Enrolment]): Seq[AgentEnrolment] =
+    eligibleEnrolments
+      .map(enrolment =>
+        LegacyAgentEnrolmentType.find(enrolment.key) match {
+          case Some(legacyEnrolmentType) =>
+            AgentEnrolment(legacyEnrolmentType, IdentifierValue(enrolment.identifiers.map(i => i.value).mkString("/")))
+          case None => throw new RuntimeException("invalid enrolment type found")
+      })
+      .toSeq
 }

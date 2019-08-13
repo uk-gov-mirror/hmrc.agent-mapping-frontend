@@ -66,7 +66,7 @@ class AgentSubscriptionConnector @Inject()(
     }
 
   def createOrUpdateJourney(subscriptionJourneyRecord: SubscriptionJourneyRecord)(
-    implicit hc: HeaderCarrier): Future[Unit] =
+    implicit hc: HeaderCarrier): Future[Either[String, Unit]] =
     monitor("ConsumedAPI-Agent-Subscription-createOrUpdate-POST") {
       val path =
         s"/agent-subscription/subscription/journey/primaryId/${encodePathSegment(subscriptionJourneyRecord.authProviderId.id)}"
@@ -74,9 +74,12 @@ class AgentSubscriptionConnector @Inject()(
         .POST[SubscriptionJourneyRecord, HttpResponse](new URL(baseUrl, path).toString, subscriptionJourneyRecord)
         .map(response =>
           response.status match {
-            case 204    => ()
-            case status => throw new RuntimeException(s"POST to $path returned $status")
+            case 204    => Right(())
+            case status => Left(s"POST to $path returned $status")
         })
+        .recover {
+          case ex: Throwable => Left(s"unexpected response ${ex.getMessage}")
+        }
     }
 
 }
