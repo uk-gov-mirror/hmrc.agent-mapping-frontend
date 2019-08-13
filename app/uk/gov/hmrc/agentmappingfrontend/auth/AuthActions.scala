@@ -151,7 +151,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
           val activeEnrolments: Set[Enrolment] = enrols.enrolments.filter(_.isActivated)
           val eligibleAgentEnrolmentKeys: Set[String] = activeEnrolments.map(_.key).intersect(Auth.validEnrolments)
           val eligibleEnrolments: Set[Enrolment] =
-            activeEnrolments.filter(e => e.key.contains(eligibleAgentEnrolmentKeys))
+            activeEnrolments.filter(e => eligibleAgentEnrolmentKeys.contains(e.key))
 
           if (activeEnrolments.map(_.key).contains(`HMRC-AS-AGENT`)) {
             Logger.info("user has entered task-list mapping with the HMRC-AS-AGENT enrolment!")
