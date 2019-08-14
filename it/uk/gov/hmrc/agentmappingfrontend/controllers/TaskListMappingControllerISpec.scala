@@ -10,7 +10,6 @@ import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs, MappingStubs}
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{mtdAsAgent, vatEnrolledAgent}
 import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.domain.AgentCode
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -336,7 +335,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(appConfig.agentSubscriptionFrontendProgressSavedUrl)
+      redirectLocation(result) shouldBe Some(s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id")
     }
 
     "redirect to agent-subscription/saved-progress if user selects 'No' and saves" in {
@@ -354,7 +353,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(appConfig.agentSubscriptionFrontendProgressSavedUrl)
+      redirectLocation(result) shouldBe Some(s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id")
     }
   }
 

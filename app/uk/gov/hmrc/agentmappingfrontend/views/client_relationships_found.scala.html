@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 @(clientCount: Int, id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
+@returnUrl=@{s"/task-list/client-relationships-found/?id=$id"}
 
 @html.main_template(appConfig, title = Messages("clientRelationshipsFound.title"), bodyClasses = None) {
 
@@ -45,7 +46,7 @@
     <p>@if(clientCount == 1) { @Messages("clientRelationshipsFound.single.p2")} else {@Messages("clientRelationshipsFound.multi.p2")}</p>
     @if(taskList){
         <a class="button margin-right-5" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.confirmClientRelationshipsFound(id)" role="button">@Messages("button.saveContinue")</a>
-        <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl'>@Messages("button.saveComeBackLater")</a>
+        <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl'>@Messages("button.saveComeBackLater")</a>
     } else {
         <a class="button" name="clients" id="clients" href="@routes.MappingController.showExistingClientRelationships(id)" role="button">@Messages("button.continue")</a>
     }

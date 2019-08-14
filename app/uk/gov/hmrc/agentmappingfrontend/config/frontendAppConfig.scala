@@ -39,6 +39,7 @@ trait AppConfig {
   val agentSubscriptionFrontendReturnAfterMappingPath: String
   val agentSubscriptionFrontendProgressSavedPath: String
   val agentSubscriptionFrontendProgressSavedUrl: String
+  val agentMappingFrontendExternalUrl: String
   val ggSignIn: String
 }
 
@@ -91,9 +92,13 @@ class FrontendAppConfig @Inject()(val environment: Environment, val configuratio
   )
 
   override lazy val agentSubscriptionFrontendProgressSavedUrl =
-    s"$agentSubscriptionFrontendExternalUrl$agentSubscriptionFrontendProgressSavedPath?continue=$agentSubscriptionFrontendTaskListPath"
+    s"$agentSubscriptionFrontendExternalUrl$agentSubscriptionFrontendProgressSavedPath/?backLink=$agentMappingFrontendExternalUrl"
 
   override lazy val signInAndContinue =
     s"$companyAuthFrontendExternalUrl$ggSignIn?continue=${urlEncode(startMappingAfterLoggin)}"
+
+  override lazy val agentMappingFrontendExternalUrl = loadConfig(
+    s"microservice.services.agent-mapping-frontend.external-url"
+  )
 
 }
