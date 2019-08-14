@@ -61,7 +61,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       intercept[RuntimeException] {
         await(controller.start(request))
-      }.getMessage should be("continueId not found in agent subscription record")
+      }.getMessage should be("continueId not found in agent subscription record for agentCode HZ1234")
     }
 
     "200 the start page" in {
