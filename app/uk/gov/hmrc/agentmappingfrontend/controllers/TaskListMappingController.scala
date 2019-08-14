@@ -53,7 +53,7 @@ class TaskListMappingController @Inject()(
     withSubscribingAgent { agent =>
       {
         val continueId: String = agent.getMandatorySubscriptionJourneyRecord.continueId
-          .getOrElse(throw new RuntimeException("continueId not found in agent subscription record"))
+          .getOrElse(throw new RuntimeException(s"continueId not found in agent subscription record for agentCode ${agent.agentCodeOpt}"))
         repository
           .create(continueId)
           .flatMap(id => nextPage(id))
@@ -65,9 +65,9 @@ class TaskListMappingController @Inject()(
     withSubscribingAgent { agent =>
       for {
         maybeRecord <- repository.findRecord(id)
-        record = maybeRecord.getOrElse(throw new RuntimeException("no task-list mapping record"))
+        record = maybeRecord.getOrElse(throw new RuntimeException(s"no task-list mapping record found for agentCode ${agent.agentCodeOpt}"))
         maybeSjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
-        sjr = maybeSjr.getOrElse(throw new RuntimeException("no subscription journey record found after from GG login"))
+        sjr = maybeSjr.getOrElse(throw new RuntimeException(s"no subscription journey record found after from GG login for agentCode ${agent.agentCodeOpt}"))
         result <- if (!sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                    for {
                      newId <- repository.create(record.continueId)
@@ -124,11 +124,11 @@ class TaskListMappingController @Inject()(
                     repository
                       .upsert(record.copy(alreadyMapped = true), record.continueId)
                       .map(_ => Redirect(routes.TaskListMappingController.showExistingClientRelationships(id)))
-                  case Left(e) => throw new RuntimeException(s"update subscriptionJourneyRecord call failed $e")
+                  case Left(e) => throw new RuntimeException(s"update subscriptionJourneyRecord call failed $e for agentCode ${agent.agentCodeOpt}")
                 }
               }
               case None =>
-                throw new RuntimeException("no subscription journey record found in confirmClientRelationshipsFound")
+                throw new RuntimeException(s"no subscription journey record found in confirmClientRelationshipsFound for agentCode ${agent.agentCodeOpt}")
             }
 
           } else {
@@ -187,8 +187,10 @@ class TaskListMappingController @Inject()(
 
     val call = submitAction.headOption match {
       case Some("continue") => next.url
-      case Some("save") =>
+      case Some("save") => {
+        Logger.info(s"user has selected save and come back later on /existing-client-relationships")
         s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
+      }
       case _ => {
         Logger.warn("unexpected value in submit")
         routes.TaskListMappingController.start().url
@@ -214,10 +216,10 @@ class TaskListMappingController @Inject()(
               } else {
                 Redirect(routes.TaskListMappingController.showClientRelationshipsFound(id))
               }
-            case None => throw new RuntimeException("no subscription journey record found when routing to next page")
+            case None => throw new RuntimeException(s"no subscription journey record found for agentCode ${agent.agentCodeOpt} when routing to next page")
           }
         }
-        case None => throw new RuntimeException(s"no task list mapping record found for id $id")
+        case None => throw new RuntimeException(s"no task list mapping record found for id $id and agent code ${agent.agentCodeOpt}")
       }
     }
 
@@ -230,6 +232,6 @@ class TaskListMappingController @Inject()(
           s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}"
         }
       }
-      case None => throw new RuntimeException("no record")
+      case None => throw new RuntimeException(s"no task-list mapping record found for id $id for backUrl")
     }
 }
