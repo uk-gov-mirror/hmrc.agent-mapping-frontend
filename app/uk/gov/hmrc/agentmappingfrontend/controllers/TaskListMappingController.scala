@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, Request, Result}
+import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.TaskListAuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
@@ -30,9 +30,7 @@ import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, start_sign_in_required, start => start_journey}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain.AgentCode
 import uk.gov.hmrc.http.HeaderCarrier
-import views.html
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -55,7 +53,9 @@ class TaskListMappingController @Inject()(
     withSubscribingAgent { agent =>
       {
         val continueId: String = agent.getMandatorySubscriptionJourneyRecord.continueId
-          .getOrElse(throw new RuntimeException("continueId not found in agent subscription record"))
+          .getOrElse(
+            throw new RuntimeException(
+              s"continueId not found in agent subscription record for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
         repository
           .create(continueId)
           .flatMap(id => nextPage(id))
@@ -67,9 +67,12 @@ class TaskListMappingController @Inject()(
     withSubscribingAgent { agent =>
       for {
         maybeRecord <- repository.findRecord(id)
-        record = maybeRecord.getOrElse(throw new RuntimeException("no task-list mapping record"))
+        record = maybeRecord.getOrElse(
+          throw new RuntimeException(
+            s"no task-list mapping record found for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
         maybeSjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
-        sjr = maybeSjr.getOrElse(throw new RuntimeException("no subscription journey record found after from GG login"))
+        sjr = maybeSjr.getOrElse(throw new RuntimeException(
+          s"no subscription journey record found after from GG login for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
         result <- if (!sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                    for {
                      newId <- repository.create(record.continueId)
@@ -84,7 +87,7 @@ class TaskListMappingController @Inject()(
   }
 
   def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withSubscribingAgent { _ =>
+    withSubscribingAgent { agent =>
       repository.findRecord(id).flatMap {
         case Some(record) => {
           if (!record.alreadyMapped) {
@@ -97,7 +100,11 @@ class TaskListMappingController @Inject()(
             Ok(client_relationships_found(record.clientCount, id, taskList = true))
           }
         }
-        case None => Future.successful(Redirect(routes.TaskListMappingController.start()))
+        case None => {
+          Logger.warn(
+            s"no task-list mapping record found for agent code ${agent.agentCodeOpt.getOrElse(" ")} redirecting to /task-list/start")
+          Future.successful(Redirect(routes.TaskListMappingController.start()))
+        }
       }
     }
   }
@@ -122,17 +129,25 @@ class TaskListMappingController @Inject()(
                     repository
                       .upsert(record.copy(alreadyMapped = true), record.continueId)
                       .map(_ => Redirect(routes.TaskListMappingController.showExistingClientRelationships(id)))
-                  case Left(e) => throw new RuntimeException(s"update subscriptionJourneyRecord call failed $e")
+                  case Left(e) =>
+                    throw new RuntimeException(
+                      s"update subscriptionJourneyRecord call failed $e for agentCode ${agent.agentCodeOpt.getOrElse(" ")}")
                 }
               }
               case None =>
-                throw new RuntimeException("no subscription journey record found in confirmClientRelationshipsFound")
+                throw new RuntimeException(
+                  s"no subscription journey record found in confirmClientRelationshipsFound for agentCode ${agent.agentCodeOpt
+                    .getOrElse(" ")}")
             }
 
           } else {
             Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
           }
-        case None => Redirect(routes.TaskListMappingController.start())
+        case None => {
+          Logger.warn(
+            s"no task-list mapping record found for agent code ${agent.agentCodeOpt.getOrElse(" ")} redirecting to /task-list/start")
+          Redirect(routes.TaskListMappingController.start())
+        }
       }
     }
   }
@@ -167,21 +182,24 @@ class TaskListMappingController @Inject()(
                     true,
                     url)))
           }, {
-            case Yes => Redirect(continueOrStop(routes.SignedOutController.taskListSignOutAndRedirect(id)))
-            case No  => Redirect(continueOrStop(routes.SignedOutController.returnAfterMapping()))
+            case Yes => Redirect(continueOrStop(routes.SignedOutController.taskListSignOutAndRedirect(id), id))
+            case No  => Redirect(continueOrStop(routes.SignedOutController.returnAfterMapping(), id))
           }
         )
     }
   }
 
-  private def continueOrStop(next: Call)(implicit request: Request[AnyContent]): String = {
+  private def continueOrStop(next: Call, id: MappingArnResultId)(implicit request: Request[AnyContent]): String = {
 
     val submitAction = request.body.asFormUrlEncoded
       .fold(Seq.empty: Seq[String])(someMap => someMap.getOrElse("continue", Seq.empty))
 
     val call = submitAction.headOption match {
       case Some("continue") => next.url
-      case Some("save")     => appConfig.agentSubscriptionFrontendProgressSavedUrl
+      case Some("save") => {
+        Logger.info(s"user has selected save and come back later on /existing-client-relationships")
+        s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
+      }
       case _ => {
         Logger.warn("unexpected value in submit")
         routes.TaskListMappingController.start().url
@@ -207,10 +225,14 @@ class TaskListMappingController @Inject()(
               } else {
                 Redirect(routes.TaskListMappingController.showClientRelationshipsFound(id))
               }
-            case None => throw new RuntimeException("no subscription journey record found when routing to next page")
+            case None =>
+              throw new RuntimeException(
+                s"no subscription journey record found for agentCode ${agent.agentCodeOpt.getOrElse(" ")} when routing to next page")
           }
         }
-        case None => throw new RuntimeException(s"no task list mapping record found for id $id")
+        case None =>
+          throw new RuntimeException(
+            s"no task list mapping record found for id $id and agent code ${agent.agentCodeOpt.getOrElse(" ")}")
       }
     }
 
@@ -223,6 +245,6 @@ class TaskListMappingController @Inject()(
           s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}"
         }
       }
-      case None => throw new RuntimeException("no record")
+      case None => throw new RuntimeException(s"no task-list mapping record found for id $id for backUrl")
     }
 }
