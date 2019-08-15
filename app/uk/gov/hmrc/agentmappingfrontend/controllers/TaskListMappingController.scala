@@ -216,19 +216,19 @@ class TaskListMappingController @Inject()(
 
   def incorrectAccount(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAgentAuth {
-      Future.successful(Ok(incorrect_account(id, true)))
+      Future.successful(Ok(incorrect_account(id, taskList = true)))
     }
   }
 
   def notEnrolled(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAgentAuth {
-      Future.successful(Ok(not_enrolled(id)))
+      Future.successful(Ok(not_enrolled(id, taskList = true)))
     }
   }
 
   def alreadyMapped(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAgentAuth {
-      Future.successful(Ok(already_mapped(id, true)))
+      Future.successful(Ok(already_mapped(id, taskList = true)))
     }
   }
 
