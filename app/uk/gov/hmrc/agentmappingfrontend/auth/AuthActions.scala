@@ -141,7 +141,17 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def agentSubscriptionConnector: AgentSubscriptionConnector
 
-  def withSubscribingAgent(body: Agent => Future[Result])(
+  def withBasicAgentAuth[A](body: => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent) {
+      body
+    } recover {
+      case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+    }
+
+  def withSubscribingAgent(id: MappingArnResultId)(body: Agent => Future[Result])(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
@@ -152,11 +162,12 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
           val eligibleAgentEnrolmentKeys: Set[String] = activeEnrolments.map(_.key).intersect(Auth.validEnrolments)
           val eligibleEnrolments: Set[Enrolment] =
             activeEnrolments.filter(e => eligibleAgentEnrolmentKeys.contains(e.key))
-
-          if (activeEnrolments.map(_.key).contains(`HMRC-AS-AGENT`)) {
-            Logger.info("user has entered task-list mapping with the HMRC-AS-AGENT enrolment!")
-            Future.successful(Redirect(appConfig.agentServicesFrontendExternalUrl))
-
+          if (activeEnrolments.isEmpty) {
+            Future.successful(Redirect(routes.TaskListMappingController.notEnrolled(id)))
+          } else if (activeEnrolments.map(_.key).contains(`HMRC-AS-AGENT`)) {
+            Future.successful(Redirect(routes.TaskListMappingController.incorrectAccount(id)))
+          } else if (activeEnrolments.map(_.key).contains(`HMRC-AGENT-AGENT`)) {
+            Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
           } else
             agentSubscriptionConnector.getSubscriptionJourneyRecord(AuthProviderId(providerId)).flatMap { maybeSjr =>
               body(new Agent(

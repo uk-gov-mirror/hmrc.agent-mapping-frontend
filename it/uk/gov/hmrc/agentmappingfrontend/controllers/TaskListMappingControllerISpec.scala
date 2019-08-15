@@ -28,47 +28,52 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
   "context root" should {
     "redirect to the /agent-mapping/task-list/start page" in {
-      val request = FakeRequest(GET, "/agent-mapping/task-list/")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 303
       redirectLocation(result).head should include("/task-list/start")
     }
+
+    "400 BadRequest if there is no query param (continueId) in url" in {
+      val request = FakeRequest(GET, "/agent-mapping/task-list/")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 400
+    }
   }
 
   "task-list/start" should {
-    "303 to agent services if user has HMRC-AS-AGENT" in {
+    "303 to /task-list/error/incorrect-account if user has HMRC-AS-AGENT" in {
       givenUserIsAuthenticated(mtdAsAgent)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
+      val id = await(repo.findByContinueId("continue-id").get.id)
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(appConfig.agentServicesFrontendExternalUrl)
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.incorrectAccount(id).url)
     }
 
     "throw RuntimeException if subscription journey record does not exist for that user" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
+      givenNoSubscriptionJourneyRecordFoundForContinueId("continue-id")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
 
       intercept[RuntimeException] {
-        await(controller.start(request))
-      }.getMessage should be("mandatory subscription journey record was missing for authProviderID AuthProviderId(12345-credId)")
+        await(controller.start("continue-id")(request))
+      }.getMessage should be("continueId continue-id not recognised")
     }
 
-    "throw RuntimeException if subscription journey record exists but is missing a continueId" in {
+    "400 BadRequest if url is missing a continueId" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrNoContinueId)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
-
-      intercept[RuntimeException] {
-        await(controller.start(request))
-      }.getMessage should be("continueId not found in agent subscription record for agentCode HZ1234")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 400
     }
 
-    "200 the start page" in {
+    "200 the start page if the user enters mapping for the first time" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithNoUserMappings)
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(result,
@@ -87,17 +92,17 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithCleanCredId)
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(result, "start.not-signed-in.title")
     }
 
-    "303 to /task-list/client-relationships-found if there already exists some mappings" in {
+    "303 to /task-list/client-relationships-found if there already exists some mappings but the current user has not yet mapped" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 303
       val id = await(repo.findByContinueId("continue-id")).get.id
@@ -109,7 +114,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithUserAlreadyMapped)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start")
+      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 303
       val id = await(repo.findByContinueId("continue-id")).get.id
@@ -122,7 +127,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
     "200 the show client relationships; get client count and update db when the current user first visits the page" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
       val id = await(repo.create("continue-id"))
       mappingStubs.givenClientCountRecordsFound(12)
       val request = FakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
@@ -162,15 +167,13 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       bodyOf(result) should include(routes.TaskListMappingController.confirmClientRelationshipsFound(id).url)
     }
 
-    "303 /task-list/start if there was no task list mapping record found (for example if the user manually entered the url from /agent-subscription" in {
+    "throw RuntimeException if there was no task list mapping record found (for example if the user manually entered the url from /agent-subscription" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
 
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=SOMETHING")
-      val result = callEndpointWith(request)
-      status(result) shouldBe 303
-
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.start().url)
+      intercept[RuntimeException] {
+        await(controller.showClientRelationshipsFound("SOMETHING")(FakeRequest()))
+      }.getMessage should be("no task-list mapping record found for agent code HZ1234")
     }
   }
 
@@ -196,10 +199,33 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       status(result) shouldBe 303
 
       redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
-      println(await(repo.findRecord(id).get))
 
       await(repo.findRecord(id).get).alreadyMapped shouldBe true
     }
+
+    "throw RuntimeException if the update to db has failed" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
+      val id = await(repo.create("continue-id"))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      givenUpdateSubscriptionJourneyRecordFails(sjrWithNoUserMappings
+        .copy(
+          userMappings = UserMapping(
+            AuthProviderId("12345-credId"),
+            agentCode = Some(AgentCode("HZ1234")),
+            count = 12,
+            legacyEnrolments = List.empty,
+            ggTag= "") :: sjrWithNoUserMappings.userMappings))
+
+      intercept[RuntimeException] {
+        await(controller.confirmClientRelationshipsFound(id)(FakeRequest()))
+      }.getMessage should startWith("update subscriptionJourneyRecord call failed unexpected response")
+
+    }
+
+
 
     "303 to the existing client relationships with no update to db when the current user has already mapped" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
@@ -214,26 +240,24 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
     }
 
-    "303 to task-list/start when no task list mapping record found (for example when entering the url manually from agent-subscription/task-list)" in {
+    "throw RuntimeException when no task list mapping record found (for example when entering the url manually from agent-subscription/task-list)" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/confirm-client-relationships-found/?id=SOMETHING")
-      val result = callEndpointWith(request)
-      status(result) shouldBe 303
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
 
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.start().url)
+      intercept[RuntimeException] {
+        await(controller.confirmClientRelationshipsFound("SOMETHING")(FakeRequest()))
+      }.getMessage should be("no task-list mapping record found for agent code HZ1234")
     }
 
     "throw a RuntimeException if no subscription journey record is found by continue id" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      val id = repo.create("continue-id")
       givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-        //givenNoSubscriptionJourneyRecordFoundForContinueId("continue-id")
+      val id = repo.create("continue-id")
+      givenNoSubscriptionJourneyRecordFoundForContinueId("continue-id")
 
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/confirm-client-relationships-found/?id=$id")
-      /*intercept[RuntimeException] {
-        await(controller.start(request))
-      }.getMessage should be("continueId not found in agent subscription record")*/
+      intercept[RuntimeException] {
+        await(controller.confirmClientRelationshipsFound(id)(FakeRequest()))
+      }.getMessage should be("no subscription journey record found in confirmClientRelationshipsFound for agentCode HZ1234")
 
     }
   }
@@ -390,6 +414,46 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val result = callEndpointWith(request)
 
       status(result) shouldBe 200
+    }
+  }
+
+  "200 /task-list/error/incorrect-account" should {
+    "display the correct content" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/error/incorrect-account/?id=SOMETHING")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+
+      checkHtmlResultContainsEscapedMsgs(result,
+        "incorrectAccount.p1", "incorrectAccount.p2")
+
+    }
+  }
+
+  "200 /task-list/already-linked" should {
+    "display the correct content" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/error/already-linked/?id=SOMETHING")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+
+      checkHtmlResultContainsEscapedMsgs(result,
+        "alreadyMapped.p1", "alreadyMapped.p2")
+    }
+  }
+
+  "200 /task-list/not-enrolled" should {
+    "display the correct content" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/error/not-enrolled/?id=SOMETHING")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+
+      checkHtmlResultContainsEscapedMsgs(result,
+        "notEnrolled.p1", "notEnrolled.p2", "notEnrolled.p3")
     }
   }
 

@@ -55,11 +55,14 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
     def testWithBasicAuth =
       await(withBasicAuth { Future.successful(Ok("Done."))})
 
+    def testWithBasicAgentAuth =
+      await(withBasicAgentAuth{Future.successful(Ok("Done."))})
+
     def testWithCheckForArn =
       await(withCheckForArn { optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))})
 
     def testWithSubscribingAgent =
-      await(withSubscribingAgent{ agent => Future.successful(Ok("Done."))})
+      await(withSubscribingAgent("mappingArnResultId"){ agent => Future.successful(Ok("Done."))})
 
   }
 
@@ -263,11 +266,27 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       }
     }
 
-    "redirect to /agent-services" when {
-      "agent has just a HMRC-AS-AGENT enrolment" in {
+    "redirect to task-list/error/incorrect-account" when {
+      "agent has a HMRC-AS-AGENT enrolment" in {
         behave like testSubscribingAgentRedirectedTo(
-          expectedLocation = TestController.appConfig.agentServicesFrontendExternalUrl,
+          expectedLocation = routes.TaskListMappingController.incorrectAccount("mappingArnResultId").url,
           enrolments = "HMRC-AS-AGENT" -> "AgentRefNumber"
+        )
+      }
+    }
+
+    "redirect to task-list/note-enrolled" when {
+      "agent has no principal enrolments" in {
+        behave like testSubscribingAgentRedirectedTo(
+          expectedLocation = routes.TaskListMappingController.notEnrolled("mappingArnResultId").url)
+      }
+    }
+
+    "redirect to task-list/error/already-linked" when {
+      "agent has HMRC-AGENT-AGENT enrolment" in {
+        behave like testSubscribingAgentRedirectedTo(
+          expectedLocation = routes.TaskListMappingController.alreadyMapped("mappingArnResultId").url,
+          enrolments = "HMRC-AGENT-AGENT" -> "AgentRefNumber"
         )
       }
     }
@@ -286,6 +305,22 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
     "redirect to sign-in if a user is not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithBasicAuth
+      status(result) shouldBe 303
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+    }
+  }
+
+  "withBasicAgentAuth" should {
+    "check if the user is logged in" in {
+      givenAuthorisedFor("{}", s"""{}""".stripMargin)
+      val result = TestController.testWithBasicAgentAuth
+      status(result) shouldBe 200
+      bodyOf(result) shouldBe "Done."
+    }
+
+    "redirect to sign-in if a user is not logged in" in {
+      givenUnauthorisedWith("MissingBearerToken")
+      val result = TestController.testWithBasicAgentAuth
       status(result) shouldBe 303
       result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
     }

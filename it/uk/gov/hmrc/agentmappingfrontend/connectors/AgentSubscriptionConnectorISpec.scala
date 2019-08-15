@@ -60,7 +60,7 @@ class AgentSubscriptionConnectorISpec extends BaseControllerISpec with MetricTes
       timerShouldExistsAndBeenUpdated("ConsumedAPI-Agent-Subscription-createOrUpdate-POST")
     }
 
-    "return Left[String] if the update is unsuccessful" in {
+    "return Left[String] if the update was unsuccessful" in {
       givenCleanMetricRegistry()
       givenUpdateSubscriptionJourneyRecordFails(sjrWithMapping)
 
