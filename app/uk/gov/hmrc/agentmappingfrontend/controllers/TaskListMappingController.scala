@@ -27,6 +27,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
 import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm, UserMapping}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
+import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, start_sign_in_required, start => start_journey}
@@ -40,6 +41,7 @@ class TaskListMappingController @Inject()(
   override val messagesApi: MessagesApi,
   val authConnector: AuthConnector,
   val agentSubscriptionConnector: AgentSubscriptionConnector,
+  val agentSubscriptionService: AgentSubscriptionService,
   val mappingConnector: MappingConnector,
   val repository: TaskListMappingRepository,
   val env: Environment,
@@ -47,7 +49,7 @@ class TaskListMappingController @Inject()(
     extends MappingBaseController with I18nSupport with TaskListAuthActions {
 
   def root: Action[AnyContent] = Action.async { implicit request =>
-    Redirect(routes.TaskListMappingController.start)
+    Redirect(routes.TaskListMappingController.start())
   }
 
   def start: Action[AnyContent] = Action.async { implicit request =>
@@ -81,7 +83,7 @@ class TaskListMappingController @Inject()(
                      r     <- nextPage(newId)
                    } yield r
                  } else {
-                   Future.successful(Ok(already_mapped(id, true)))
+                   Future.successful(Ok(already_mapped(id, taskList = true)))
                  }
       } yield result
     }
@@ -123,15 +125,13 @@ class TaskListMappingController @Inject()(
                     legacyEnrolments = agent.agentEnrolments,
                     ggTag = ""
                   ) :: sjr.userMappings)
-                agentSubscriptionConnector.createOrUpdateJourney(newSjr).flatMap {
-                  case Right(_) =>
-                    repository
-                      .upsert(record.copy(alreadyMapped = true), record.continueId)
-                      .map(_ => Redirect(routes.TaskListMappingController.showGGTag(id)))
-                  case Left(e) =>
-                    throw new RuntimeException(
-                      s"update subscriptionJourneyRecord call failed $e for agentCode ${agent.agentCodeOpt.getOrElse(" ")}")
-                }
+
+                agentSubscriptionService.createOrUpdateRecordOrFail(agent, newSjr, {
+                  repository
+                    .upsert(record.copy(alreadyMapped = true), record.continueId)
+                    .map(_ => Redirect(routes.TaskListMappingController.showGGTag(id)))
+                })
+
               case None =>
                 throw new RuntimeException(
                   s"no subscription journey record found in confirmClientRelationshipsFound for agentCode ${agent.agentCodeOpt
@@ -156,15 +156,21 @@ class TaskListMappingController @Inject()(
   }
 
   def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withSubscribingAgent { _ =>
+    withSubscribingAgent { agent =>
       GGTagForm.form.bindFromRequest
         .fold(
           formWithErrors => {
             Ok(html.gg_tag(formWithErrors, id))
           },
           ggTag => {
-            //save ggTag to the temporary store -> ticket APB-4080
-            Redirect(continueOrStop(routes.TaskListMappingController.showExistingClientRelationships(id), id))
+            val updatedUserMappings: List[UserMapping] = agent.getMandatorySubscriptionJourneyRecord.userMappings
+              .map(m => if (m.authProviderId == agent.authProviderId) m.copy(ggTag = ggTag.value) else m)
+            val newSjr = agent.getMandatorySubscriptionJourneyRecord.copy(userMappings = updatedUserMappings)
+
+            agentSubscriptionService.createOrUpdateRecordOrFail(
+              agent,
+              newSjr,
+              Redirect(continueOrStop(routes.TaskListMappingController.showExistingClientRelationships(id), id)))
           }
         )
     }
@@ -179,7 +185,7 @@ class TaskListMappingController @Inject()(
               ExistingClientRelationshipsForm.form,
               id,
               agent.getMandatorySubscriptionJourneyRecord.userMappings.map(_.count),
-              true,
+              taskList = true,
               url))
       )
     }
@@ -197,7 +203,7 @@ class TaskListMappingController @Inject()(
                     formWithErrors,
                     id,
                     agent.getMandatorySubscriptionJourneyRecord.userMappings.map(_.count),
-                    true,
+                    taskList = true,
                     url)))
           }, {
             case Yes => Redirect(continueOrStop(routes.SignedOutController.taskListSignOutAndRedirect(id), id))
@@ -214,14 +220,13 @@ class TaskListMappingController @Inject()(
 
     val call = submitAction.headOption match {
       case Some("continue") => next.url
-      case Some("save") => {
+      case Some("save") =>
         Logger.info(s"user has selected save and come back later on /existing-client-relationships")
         s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
-      }
-      case _ => {
+
+      case _ =>
         Logger.warn("unexpected value in submit")
         routes.TaskListMappingController.start().url
-      }
     }
     call
   }
