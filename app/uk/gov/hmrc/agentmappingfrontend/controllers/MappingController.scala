@@ -23,7 +23,7 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.model.ExistingClientRelationshipsForm
+import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
@@ -67,17 +67,16 @@ class MappingController @Inject()(
   def returnFromGGLogin(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
-        case Some(record) => {
+        case Some(record) =>
           for {
             clientCount <- mappingConnector.getClientCount
             newRef      <- repository.create(record.arn, clientCount :: record.cumulativeClientCount)
             _           <- repository.delete(id)
           } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
-        }
-        case None => {
+
+        case None =>
           Logger.warn(s"could not find a record for id $id")
           Redirect(routes.MappingController.start())
-        }
       }
     }
   }
@@ -94,30 +93,48 @@ class MappingController @Inject()(
     }
   }
 
+  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      Ok(html.gg_tag(GGTagForm.form, id))
+    }
+  }
+
+  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      GGTagForm.form.bindFromRequest
+        .fold(
+          formWithErrors => {
+            Ok(html.gg_tag(formWithErrors, id))
+          },
+          ggTag => {
+            //save ggTag to the mapping store -> ticket APB-4131
+            Redirect(routes.MappingController.showExistingClientRelationships(id))
+          }
+        )
+    }
+  }
+
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
-        case Some(record) => {
+        case Some(record) =>
           val form = ExistingClientRelationshipsForm.form
           val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
           if (!record.alreadyMapped) {
             mappingConnector.createMapping(record.arn).flatMap {
-              case CREATED => {
+              case CREATED =>
                 repository
                   .updateFor(id)
                   .map(_ =>
                     Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount, false, backUrl)))
-              }
               case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
-              case e => {
+              case e =>
                 Logger.warn(s"unexpected response from server $e")
                 InternalServerError
-              }
             }
           } else {
             Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount, false, backUrl))
           }
-        }
         case None => Ok(html.page_not_found())
       }
     }
@@ -129,14 +146,13 @@ class MappingController @Inject()(
         .fold(
           formWithErrors => {
             repository.findRecord(id).map {
-              case Some(record) => {
+              case Some(record) =>
                 val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
                 Ok(html.existing_client_relationships(formWithErrors, id, record.cumulativeClientCount, false, backUrl))
-              }
-              case None => {
+
+              case None =>
                 Logger.info(s"no record found for id $id")
                 Redirect(routes.MappingController.start())
-              }
             }
           }, {
             case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))

@@ -48,7 +48,7 @@
         <a class="button margin-right-5" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.confirmClientRelationshipsFound(id)" role="button">@Messages("button.saveContinue")</a>
         <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl'>@Messages("button.saveComeBackLater")</a>
     } else {
-        <a class="button" name="clients" id="clients" href="@routes.MappingController.showExistingClientRelationships(id)" role="button">@Messages("button.continue")</a>
+        <a class="button" name="clients" id="clients" href="@routes.MappingController.showGGTag(id)" role="button">@Messages("button.continue")</a>
     }
 
 }

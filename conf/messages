@@ -24,6 +24,13 @@ clientRelationshipsFound.multi.p1=Your user ID has the following client relation
 clientRelationshipsFound.multi.td=VAT and Self Assessment clients
 clientRelationshipsFound.multi.p2=If you continue, they will be copied across to your new agent services account. You will then be able to sign up to Making Tax Digital.
 
+#gg-tag
+gg-tag.title=Identify this user ID
+gg-tag.p1=Enter the last 4 numbers of the user ID you signed in with, so you can identify it later.
+gg-tag.form.identifier=Government Gateway user ID
+gg-tag.form.hint=For example, XXXX-XXXX-1234
+gg-tag.xs=XXXX-XXXX-
+
 #existing-client-relationships
 existingClientRelationships.title=Existing client relationships
 existingClientRelationships.single.th=VAT and Self Assessment client
@@ -87,6 +94,7 @@ error.utr.invalid.length=Unique Taxpayer Reference (UTR) must be 10 numbers
 error.arn.invalid=Enter a valid agent services account number that only includes letters A to Z, numbers and hyphens, like XARN-123-4567 or XARN1234567
 error.arn.blank=Enter your agent services account number
 error.existingClientRelationships.choice.invalid=Select yes if you wish to copy across additional clients
+error.gg-tag.invalid=Enter the last 4 numbers of the Government Gateway user ID you signed in with
 
 #TestOnly
 view.mappings.title=Here are your Mappings
