@@ -1,6 +1,6 @@
 #Common
-app.name=Agent services account
-servicename.titleSuffix=- Agent services account - GOV.UK
+app.name=Create an agent services account
+servicename.titleSuffix=- Create an agent services account - GOV.UK
 #Connect agent services
 start.not-signed-in.title=Copy across your existing Self Assessment and VAT clients to your agent services account
 start.not-signed-in.p1=You need to sign in to your agent services account to use this service.

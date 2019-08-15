@@ -276,9 +276,15 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
   }
 
   "POST /task-list/tag-gg" should {
-    "redirect to existing-client-relationships when a valid gg-tag is submitted" in {
+    "redirect to existing-client-relationships and update sjr to store gg-tag when a valid gg-tag is submitted" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
+      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
+        authProviderId = AuthProviderId("12345-credId"),
+        agentCode = Some(AgentCode("agentCode-1")),
+        count = 1,
+        legacyEnrolments = List.empty,
+        ggTag = "1234"))))
       val id = await(repo.create("continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
@@ -302,6 +308,26 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
+    }
+
+    "throw a RuntimeException when there is an invalid submit action" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
+      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
+        authProviderId = AuthProviderId("12345-credId"),
+        agentCode = Some(AgentCode("agentCode-1")),
+        count = 1,
+        legacyEnrolments = List.empty,
+        ggTag = "1234"))))
+      val id = await(repo.create("continue-id"))
+
+      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
+        "ggTag" -> "1234", "continue" -> "foo"
+      )
+
+      intercept[RuntimeException] {
+        await(controller.submitGGTag(id)(request))
+      }.getMessage should be("unexpected value found in submit Some(foo)")
     }
   }
 
