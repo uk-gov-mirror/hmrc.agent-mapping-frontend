@@ -235,9 +235,9 @@ class TaskListMappingController @Inject()(
             case Some(sjr) =>
               if (sjr.cleanCredsAuthProviderId.contains(agent.authProviderId)) {
                 Logger.info("user entered task list mapping with a clean cred id")
-                Ok(start_sign_in_required(Some(id), true))
+                Ok(start_sign_in_required(Some(id), taskList = true))
               } else if (sjr.userMappings.map(_.authProviderId).isEmpty) {
-                Ok(start_journey(id, true)) //first time here
+                Ok(start_journey(id, taskList = true)) //first time here
               } else if (sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                 Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
               } else {
