@@ -40,4 +40,22 @@ class SignOutControllerISpec extends BaseControllerISpec {
     }
   }
 
+  "taskList" should {
+    "redirect to the task list" in {
+      val result = await(controller.taskList()(fakeRequest))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("http://localhost:9437/agent-subscription/task-list")
+    }
+  }
+
+  "returnAfterMapping" should {
+    "redirect to the return after mapping url" in {
+      val result = await(controller.returnAfterMapping()(fakeRequest))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("http://localhost:9437/agent-subscription/return-after-mapping")
+    }
+  }
+
 }
