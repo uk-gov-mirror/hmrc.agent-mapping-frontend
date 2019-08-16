@@ -23,10 +23,10 @@ import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.agentmappingfrontend.auth.{Auth, AuthActions, TaskListAuthActions}
+import uk.gov.hmrc.agentmappingfrontend.auth.{AuthActions, TaskListAuthActions}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
-import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType}
 import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs}
 import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -144,7 +144,12 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
 
   "withAuthorisedAgent" should {
     "this test should cover all eligible enrolments" in {
-      Auth.validEnrolments.forall(eligibleEnrolments.contains) shouldBe true
+      eligibleEnrolments.foreach { enrolment =>
+        LegacyAgentEnrolmentType.exists(enrolment._1) shouldBe true
+      }
+      LegacyAgentEnrolmentType.foreach { t =>
+        eligibleEnrolments.get(t.serviceKey).isDefined shouldBe true
+      }
     }
 
     eligibleEnrolments.foreach { case (enrolment, identifier) =>
@@ -240,9 +245,6 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
   }
 
   "withSubscribingAgent" should {
-    "this test should cover all eligible enrolments" in {
-      Auth.validEnrolments.forall(eligibleEnrolments.contains) shouldBe true
-    }
 
     eligibleEnrolments.foreach { case (enrolment, identifier) =>
       s"check if agent is enrolled for the eligible enrolment $enrolment and extract $identifier" in {
