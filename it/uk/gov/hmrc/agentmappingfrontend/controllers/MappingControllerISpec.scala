@@ -99,11 +99,11 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     def redirectFromGGLoginTests(singleClientCountResponse: Boolean): Unit = {
       val arn = Arn("TARN0000001")
       LegacyAgentEnrolmentType.foreach { enrolmentType =>
-        s"303 to /client-relationships-found for ${enrolmentType.key} and for a single client relationship $singleClientCountResponse" in {
+        s"303 to /client-relationships-found for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
           val id = await(repo.create(arn))
           if (singleClientCountResponse) givenClientCountRecordsFound(1)
           else givenClientCountRecordsFound(12)
-          givenAuthorisedFor(enrolmentType.key)
+          givenAuthorisedFor(enrolmentType.serviceKey)
           implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/start-submit?id=$id")
           val result = callEndpointWith(request)
 
@@ -130,10 +130,10 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     def testsForClientRelationshipsFound(singleClientCountResponse: Boolean): Unit = {
       val arn = Arn("TARN0000001")
       LegacyAgentEnrolmentType.foreach { enrolmentType =>
-        s"200 to /client-relationships-found for ${enrolmentType.key} and for a single client relationship $singleClientCountResponse" in {
+        s"200 to /client-relationships-found for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
           val clientCount = if (singleClientCountResponse) 1 else 12
           val id = await(repo.create(arn, List(clientCount)))
-          givenAuthorisedFor(enrolmentType.key)
+          givenAuthorisedFor(enrolmentType.serviceKey)
           implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/client-relationships-found?id=$id")
           val result = callEndpointWith(request)
 
@@ -222,11 +222,11 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     def testsForExistingClientRelationships(singleClientCountResponse: Boolean): Unit = {
       val arn = Arn("TARN0000001")
       LegacyAgentEnrolmentType.foreach { enrolmentType =>
-        s"200 to /existing-client-relationships for ${enrolmentType.key} and for a single client relationship $singleClientCountResponse" in {
+        s"200 to /existing-client-relationships for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
           val id = await(repo.create(arn, List(clientCount)))
-          givenAuthorisedFor(enrolmentType.key)
+          givenAuthorisedFor(enrolmentType.serviceKey)
           mappingIsCreated(arn)
           implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
           val result = callEndpointWith(request)

@@ -25,7 +25,11 @@ import uk.gov.hmrc.auth.core.Enrolment
   * others are captured for future use
   */
 sealed abstract class LegacyAgentEnrolmentType {
-  def key: String = this match {
+
+  /**
+    * @return The service key for a legacy enrolment (1-1 for these old agent enrolments)
+    */
+  def serviceKey: String = this match {
     case IRAgentReference     => "IR-SA-AGENT"
     case AgentRefNo           => "HMCE-VAT-AGNT"
     case AgentCharId          => "HMRC-CHAR-AGENT"
@@ -36,6 +40,7 @@ sealed abstract class LegacyAgentEnrolmentType {
     case IRAgentReferencePaye => "IR-PAYE-AGENT"
     case SdltStorn            => "IR-SDLT-AGENT"
   }
+
 }
 
 object LegacyAgentEnrolmentType {
@@ -51,11 +56,16 @@ object LegacyAgentEnrolmentType {
       case _ => JsError(s"Enrolment type is not a string: $json")
     }
 
-    def writes(o: LegacyAgentEnrolmentType): JsValue = JsString(o.key)
+    def writes(o: LegacyAgentEnrolmentType): JsValue = JsString(o.serviceKey)
   }
 
-  def find(key: String): Option[LegacyAgentEnrolmentType] =
-    key match {
+  /**
+    *
+    * @param serviceKey the enrolment service key to find an enrolment type
+    * @return Some enrolment type if found, None otherwise
+    */
+  def find(serviceKey: String): Option[LegacyAgentEnrolmentType] =
+    serviceKey match {
       case "IR-SA-AGENT"     => Some(IRAgentReference)
       case "HMCE-VAT-AGNT"   => Some(AgentRefNo)
       case "HMRC-CHAR-AGENT" => Some(AgentCharId)
@@ -68,8 +78,8 @@ object LegacyAgentEnrolmentType {
       case _                 => None
     }
 
-  def exists(key: String): Boolean = find(key).isDefined
-  def exists(enrolment: Enrolment): Boolean = find(enrolment.key).isDefined
+  def exists(serviceKey: String): Boolean = find(serviceKey).isDefined
+  def exists(enrolment: Enrolment): Boolean = find(serviceKey = enrolment.key).isDefined
 
   def foreach[U](f: LegacyAgentEnrolmentType => U): Unit = values.foreach(f(_))
 

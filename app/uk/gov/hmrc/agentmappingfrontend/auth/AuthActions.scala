@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentmappingfrontend.auth
 
+import play.api.Environment
 import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
-import play.api.{Environment, Logger}
+import uk.gov.hmrc.agentmappingfrontend.auth.EnrolmentHelper._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-import uk.gov.hmrc.agentmappingfrontend.model.Names._
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -67,10 +67,9 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
           if (eligibleEnrolments.nonEmpty) {
             body(providerId)
           } else {
-            val activeEnrolmentKeys = activeEnrolments.map(_.key)
-            val redirectRoute = if (activeEnrolmentKeys.contains(`HMRC-AS-AGENT`)) {
+            val redirectRoute = if (userHasAsAgentEnrolment(activeEnrolments)) {
               routes.MappingController.incorrectAccount(idRefToArn)
-            } else if (activeEnrolmentKeys.contains(`HMRC-AGENT-AGENT`)) {
+            } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
               routes.MappingController.alreadyMapped(idRefToArn)
             } else {
               routes.MappingController.notEnrolled(idRefToArn)
@@ -92,8 +91,8 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case agentEnrolments =>
           body(
             agentEnrolments
-              .getEnrolment("HMRC-AS-AGENT")
-              .flatMap(_.getIdentifier("AgentReferenceNumber")
+              .getEnrolment(AsAgentServiceKey)
+              .flatMap(_.getIdentifier(ArnEnrolmentKey)
                 .map(identifier => Arn(identifier.value))))
       }
       .recoverWith {
@@ -148,9 +147,9 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
 
           if (activeEnrolments.isEmpty) {
             Future.successful(Redirect(routes.TaskListMappingController.notEnrolled(id)))
-          } else if (activeEnrolments.map(_.key).contains(`HMRC-AS-AGENT`)) {
+          } else if (userHasAsAgentEnrolment(activeEnrolments)) {
             Future.successful(Redirect(routes.TaskListMappingController.incorrectAccount(id)))
-          } else if (activeEnrolments.map(_.key).contains(`HMRC-AGENT-AGENT`)) {
+          } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
             Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
           } else
             agentSubscriptionConnector.getSubscriptionJourneyRecord(AuthProviderId(providerId)).flatMap { maybeSjr =>

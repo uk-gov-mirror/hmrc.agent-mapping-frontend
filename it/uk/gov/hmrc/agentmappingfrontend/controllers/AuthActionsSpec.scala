@@ -148,7 +148,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
         LegacyAgentEnrolmentType.exists(enrolment._1) shouldBe true
       }
       LegacyAgentEnrolmentType.foreach { t =>
-        eligibleEnrolments.get(t.key).isDefined shouldBe true
+        eligibleEnrolments.get(t.serviceKey).isDefined shouldBe true
       }
     }
 
