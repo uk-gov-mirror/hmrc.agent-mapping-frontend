@@ -23,7 +23,7 @@
 
 @returnUrl=@{s"/task-list/client-relationships-found/?id=$id"}
 
-@html.main_template(appConfig, title = Messages("clientRelationshipsFound.title"), bodyClasses = None) {
+@html.main_template(appConfig, title = Messages("clientRelationshipsFound.title"), bodyClasses = None, taskList = taskList) {
 
 
     <h1 class="heading-xlarge">@if(clientCount == 1){ @Messages("clientRelationshipsFound.single.title")} else { @Messages("clientRelationshipsFound.multi.title")}
