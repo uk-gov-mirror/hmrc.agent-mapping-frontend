@@ -23,7 +23,7 @@
 
 @(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCounts: List[Int], taskList: Boolean = false, backUrl: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None) {
+@html.main_template(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
 
 
  <a href="@backUrl" class="link-back">@Messages("button.back")</a>
