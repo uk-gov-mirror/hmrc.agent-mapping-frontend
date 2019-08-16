@@ -47,11 +47,11 @@
     <meta name="format-detection" content="telephone=no" />
 }
 
-    @nTitle = @{if(taskList){Some(Messages("app.name"))} else Some(Messages("app.name-alreadySubscribed"))}
+    @navTitle = @{if(taskList){Some(Messages("app.name"))} else Some(Messages("app.name-alreadySubscribed"))}
 
 @insideHeader = {
     @uiLayouts.header_nav(
-      navTitle = nTitle,
+      navTitle = navTitle,
       navTitleLink = None,
       showBetaLink = false,
       navLinks = None)
@@ -86,7 +86,7 @@
 
 @getHelpForm = @{uiHelpers.reportAProblemLink(appConfig.reportAProblemPartialUrl, appConfig.reportAProblemNonJSUrl)}
 
-@titleSuffix = @{ Messages("servicename.titleSuffix") }
+@titleSuffix = @{if(taskList) Messages("app.name") else Messages("app.name-alreadySubscribed")}
 
 @content = {
     @uiLayouts.main_content(
@@ -99,4 +99,4 @@
       sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title + " " + titleSuffix), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
+@hmrcGovUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
