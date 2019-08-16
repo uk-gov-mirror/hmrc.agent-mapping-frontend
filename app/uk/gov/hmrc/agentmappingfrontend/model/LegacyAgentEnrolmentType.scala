@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.model
 
 import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+import uk.gov.hmrc.auth.core.Enrolment
 
 /**
   * A comprehensive list of all the old (pre-MTD) agent enrolment types
@@ -66,6 +67,23 @@ object LegacyAgentEnrolmentType {
       case "IR-SDLT-AGENT"   => Some(SdltStorn)
       case _                 => None
     }
+
+  def exists(key: String): Boolean = find(key).isDefined
+  def exists(enrolment: Enrolment): Boolean = find(enrolment.key).isDefined
+
+  def foreach[U](f: LegacyAgentEnrolmentType => U): Unit = values.foreach(f(_))
+
+  val values: Seq[LegacyAgentEnrolmentType] = Seq(
+    IRAgentReference,
+    AgentRefNo,
+    AgentCharId,
+    HmrcGtsAgentRef,
+    HmrcMgdAgentRef,
+    VATAgentRefNo,
+    IRAgentReferenceCt,
+    IRAgentReferencePaye,
+    SdltStorn
+  )
 }
 
 case object IRAgentReference extends LegacyAgentEnrolmentType

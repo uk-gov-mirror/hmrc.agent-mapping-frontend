@@ -21,16 +21,6 @@ object Names {
   val IRAgentReference = "IRAgentReference"
   val AgentRefNo = "AgentRefNo"
 
-  val `IR-SA-AGENT` = "IR-SA-AGENT"
-  val `HMCE-VAT-AGNT` = "HMCE-VAT-AGNT"
-  val `HMRC-CHAR-AGENT` = "HMRC-CHAR-AGENT"
-  val `HMRC-GTS-AGNT` = "HMRC-GTS-AGNT"
-  val `HMRC-MGD-AGNT` = "HMRC-MGD-AGNT"
-  val `HMRC-NOVRN-AGNT` = "HMRC-NOVRN-AGNT"
-  val `IR-CT-AGENT` = "IR-CT-AGENT"
-  val `IR-PAYE-AGENT` = "IR-PAYE-AGENT"
-  val `IR-SDLT-AGENT` = "IR-SDLT-AGENT"
-
   val `HMRC-AS-AGENT` = "HMRC-AS-AGENT"
   val `HMRC-AGENT-AGENT` = "HMRC-AGENT-AGENT"
 

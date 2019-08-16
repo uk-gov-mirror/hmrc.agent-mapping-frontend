@@ -37,22 +37,6 @@ import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object Auth {
-
-  val validEnrolments: Set[String] = Set(
-    `IR-SA-AGENT`, //IRAgentReference
-    `HMCE-VAT-AGNT`, //AgentRefNo
-    `HMRC-CHAR-AGENT`, //AGENTCHARID
-    `HMRC-GTS-AGNT`, //HMRCGTSAGENTREF
-    `HMRC-MGD-AGNT`, //HMRCMGDAGENTREF
-    `HMRC-NOVRN-AGNT`, //VATAgentRefNo
-    `IR-CT-AGENT`, //IRAgentReference
-    `IR-PAYE-AGENT`, //IRAgentReference
-    `IR-SDLT-AGENT` //STORN
-  )
-
-}
-
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def env: Environment
@@ -76,15 +60,17 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(allEnrolments and credentials) {
         case agentEnrolments ~ Some(Credentials(providerId, _)) =>
-          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
-          val hasEligibleAgentEnrolments = activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
+          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated)
 
-          if (hasEligibleAgentEnrolments) {
+          val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
+
+          if (eligibleEnrolments.nonEmpty) {
             body(providerId)
           } else {
-            val redirectRoute = if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
+            val activeEnrolmentKeys = activeEnrolments.map(_.key)
+            val redirectRoute = if (activeEnrolmentKeys.contains(`HMRC-AS-AGENT`)) {
               routes.MappingController.incorrectAccount(idRefToArn)
-            } else if (activeEnrolments.contains(`HMRC-AGENT-AGENT`)) {
+            } else if (activeEnrolmentKeys.contains(`HMRC-AGENT-AGENT`)) {
               routes.MappingController.alreadyMapped(idRefToArn)
             } else {
               routes.MappingController.notEnrolled(idRefToArn)
@@ -159,9 +145,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
       .retrieve(credentials and agentCode and allEnrolments) {
         case Some(Credentials(providerId, _)) ~ agentCodeOpt ~ enrols =>
           val activeEnrolments: Set[Enrolment] = enrols.enrolments.filter(_.isActivated)
-          val eligibleAgentEnrolmentKeys: Set[String] = activeEnrolments.map(_.key).intersect(Auth.validEnrolments)
-          val eligibleEnrolments: Set[Enrolment] =
-            activeEnrolments.filter(e => eligibleAgentEnrolmentKeys.contains(e.key))
+
           if (activeEnrolments.isEmpty) {
             Future.successful(Redirect(routes.TaskListMappingController.notEnrolled(id)))
           } else if (activeEnrolments.map(_.key).contains(`HMRC-AS-AGENT`)) {
@@ -170,6 +154,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
             Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
           } else
             agentSubscriptionConnector.getSubscriptionJourneyRecord(AuthProviderId(providerId)).flatMap { maybeSjr =>
+              val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
               body(new Agent(
                 providerId = AuthProviderId(providerId),
                 maybeAgentCode = agentCodeOpt.flatMap(ac => Some(AgentCode(ac))),
