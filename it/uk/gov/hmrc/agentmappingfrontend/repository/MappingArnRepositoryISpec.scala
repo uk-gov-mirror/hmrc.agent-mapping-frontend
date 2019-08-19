@@ -38,7 +38,7 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
     }
 
     "find a MappingArnResult ARN value by Id" in {
-      val record = MappingArnResult(arn, List.empty)
+      val record = MappingArnResult(arn, 0)
       await(repo.insert(record))
 
       val result = await(repo.findArn(record.id))
@@ -47,7 +47,7 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
     }
 
     "find a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn, List.empty)
+      val record = MappingArnResult(arn, 0)
       await(repo.insert(record))
 
       val result = await(repo.findRecord(record.id))
@@ -56,18 +56,18 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
     }
 
     "update client count" in {
-      val record = MappingArnResult(arn, List.empty)
+      val record = MappingArnResult(arn, 0)
 
       await(repo.insert(record))
       await(repo.updateFor(record.id,12))
-      val result = await(repo.findRecord(record.id).get.cumulativeClientCount.sum)
+      val result = await(repo.findRecord(record.id).get.clientCount)
 
       result shouldBe 12
     }
 
 
     "delete a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn, List.empty)
+      val record = MappingArnResult(arn, 0)
       await(repo.insert(record))
 
       await(repo.delete(record.id))

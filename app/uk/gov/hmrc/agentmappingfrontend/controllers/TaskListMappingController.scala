@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResul
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
 import uk.gov.hmrc.agentmappingfrontend.util._
-import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, start_sign_in_required, start => start_journey, incorrect_account, not_enrolled, gg_tag}
+import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, gg_tag, incorrect_account, not_enrolled, start_sign_in_required, start => start_journey}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 

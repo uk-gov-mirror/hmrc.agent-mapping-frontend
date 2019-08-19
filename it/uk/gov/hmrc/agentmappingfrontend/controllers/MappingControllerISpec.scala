@@ -1,10 +1,12 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
+import java.time.LocalDateTime
+
 import play.api.http.Writeable
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmappingfrontend.model.LegacyAgentEnrolmentType
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
@@ -132,7 +134,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       LegacyAgentEnrolmentType.foreach { enrolmentType =>
         s"200 to /client-relationships-found for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
           val clientCount = if (singleClientCountResponse) 1 else 12
-          val id = await(repo.create(arn, List(clientCount)))
+          val id = await(repo.create(arn, clientCount))
           givenAuthorisedFor(enrolmentType.serviceKey)
           implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/client-relationships-found?id=$id")
           val result = callEndpointWith(request)
@@ -172,7 +174,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     val arn = Arn("TARN0000001")
     "display the GGTag screen" in {
       val clientCount = 12
-      val id = await(repo.create(arn, List(clientCount)))
+      val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/tag-gg?id=$id")
       val result = callEndpointWith(request)
@@ -191,7 +193,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     val arn = Arn("TARN0000001")
     "redirect to existing-client-relationships when a valid gg-tag is submitted" in {
       val clientCount = 12
-      val id = await(repo.create(arn, List(clientCount)))
+      val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
         .withFormUrlEncodedBody("ggTag" -> "1234")
@@ -203,7 +205,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "redisplay the page with errors when an invalid gg-tag is submitted" in {
       val clientCount = 12
-      val id = await(repo.create(arn, List(clientCount)))
+      val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
         .withFormUrlEncodedBody("ggTag" -> "abcd")
@@ -225,9 +227,12 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         s"200 to /existing-client-relationships for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
-          val id = await(repo.create(arn, List(clientCount)))
+          val id = await(repo.create(arn, clientCount))
+          await(repo.updateGGTag(id, "6666"))
           givenAuthorisedFor(enrolmentType.serviceKey)
           mappingIsCreated(arn)
+          mappingDetailsAreCreated(arn, MappingDetailsRequest(AuthProviderId("12345-credId"), "6666", clientCount))
+          mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", clientCount, LocalDateTime.now()))))
           implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
           val result = callEndpointWith(request)
 
@@ -253,9 +258,10 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     "display the existing client relationships page if the user is already mapped" in {
       val arn = Arn("TARN0000001")
       val clientCount = 12
-      val id = await(repo.create(arn, List(clientCount)))
+      val id = await(repo.create(arn, clientCount))
       await(repo.updateFor(id))
       givenAuthorisedFor("IR-SA-AGENT")
+      mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", clientCount, LocalDateTime.now()))))
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
       val result = callEndpointWith(request)
 
@@ -274,7 +280,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     "redirect to already mapped when mapping creation returns a conflict" in {
       val arn = Arn("TARN0000001")
       val clientCount = 12
-      val id = await(repo.create(arn, List(clientCount)))
+      val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       mappingExists(arn)
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
@@ -287,7 +293,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     "throw an internal server error when the response from mapping creation is unknown" in {
       val arn = Arn("TARN0000001")
       val clientCount = 12
-      val id = await(repo.create(arn, List(clientCount)))
+      val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       mappingKnownFactsIssue(arn)
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
@@ -346,8 +352,9 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "200 OK to /existing-clients with error message when inputs invalid data" in {
-      val persistedMappingArnResultId = await(repo.create(arn, List(1)))
+      val persistedMappingArnResultId = await(repo.create(arn, 1))
       givenUserIsAuthenticated(vatEnrolledAgent)
+      mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", 1, LocalDateTime.now()))))
       val request = fakeRequest(
         POST,
         routes.MappingController.submitExistingClientRelationships(id = persistedMappingArnResultId).url)
@@ -403,8 +410,9 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
           ", ")} and single client response: $singleClientCountResponse" in {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
-          val persistedMappingArnResultId = await(repo.create(arn, List(clientCount)))
+          val persistedMappingArnResultId = await(repo.create(arn, clientCount))
           givenUserIsAuthenticated(user)
+          mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", clientCount, LocalDateTime.now()))))
           val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
           val result = callEndpointWith(request)
           status(result) shouldBe 200

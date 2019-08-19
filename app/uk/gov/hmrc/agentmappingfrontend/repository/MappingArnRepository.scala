@@ -22,6 +22,7 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.json.{JsObject, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
@@ -29,6 +30,7 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResul
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import reactivemongo.play.json.ImplicitBSONHandlers._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,7 +38,8 @@ case class MappingArnResult(
   id: MappingArnResultId,
   arn: Arn,
   createdDate: DateTime = DateTime.now(DateTimeZone.UTC),
-  cumulativeClientCount: List[Int] = List.empty,
+  clientCount: Int = 0,
+  ggTag: String = "",
   alreadyMapped: Boolean = false)
 
 object MappingResult {
@@ -47,9 +50,9 @@ object MappingResult {
 object MappingArnResult {
   //type MappingArnResultId  = String
 
-  def apply(arn: Arn, clientCount: List[Int]): MappingArnResult = {
+  def apply(arn: Arn, count: Int): MappingArnResult = {
     val id: MappingArnResultId = UUID.randomUUID().toString.replace("-", "")
-    MappingArnResult(id = id, arn = arn, cumulativeClientCount = clientCount)
+    MappingArnResult(id = id, arn = arn, clientCount = count)
   }
 
   implicit val dateFormat = ReactiveMongoFormats.dateTimeFormats
@@ -81,23 +84,22 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
   def findRecord(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[MappingArnResult]] =
     find("id" -> id).map(_.headOption)
 
-  def create(arn: Arn, clientCount: List[Int] = List.empty)(
-    implicit ec: ExecutionContext): Future[MappingArnResultId] = {
-    val record = MappingArnResult(arn, clientCount)
+  def create(arn: Arn, clientCount: Int = 0)(implicit ec: ExecutionContext): Future[MappingArnResultId] = {
+    val record = MappingArnResult(arn = arn, count = clientCount)
     insert(record).map(_ => record.id)
   }
 
   def updateFor(id: MappingArnResultId, clientCount: Int)(implicit ec: ExecutionContext): Future[Unit] =
     findRecord(id).flatMap {
-      case Some(record) => {
-        val updatedClientCount = clientCount :: record.cumulativeClientCount
-        val updatedRecord = Json.toJson(record.copy(cumulativeClientCount = updatedClientCount)).as[JsObject]
+      case Some(record) =>
+        val updatedClientCount = clientCount
+        val updatedRecord = Json.toJson(record.copy(clientCount = updatedClientCount)).as[JsObject]
 
         findAndUpdate(
           Json.obj("id" -> id),
           updatedRecord
         ).map(_ => ())
-      }
+
       case _ => throw new RuntimeException(s"could not find record with id $id")
     }
 
@@ -114,6 +116,21 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
       case None => throw new RuntimeException(s"could not update record for id $id")
     }
 
+  def updateGGTag(id: MappingArnResultId, ggTag: String)(implicit ec: ExecutionContext): Future[Unit] = {
+    val updateOp = Json.obj("$set" -> (Json.obj("ggTag" -> ggTag)))
+    collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
+  }
+
   def delete(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
     remove("id" -> id).map(_ => ())
+
+  implicit class WriteResultChecker(future: Future[WriteResult]) {
+    def checkResult(implicit ec: ExecutionContext): Future[Unit] = future.map { writeResult =>
+      if (hasProblems(writeResult)) throw new RuntimeException(writeResult.toString)
+      else ()
+    }
+  }
+
+  private def hasProblems(writeResult: WriteResult): Boolean =
+    !writeResult.ok || writeResult.writeErrors.nonEmpty || writeResult.writeConcernError.isDefined
 }

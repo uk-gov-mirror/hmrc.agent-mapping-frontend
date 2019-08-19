@@ -23,17 +23,18 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm}
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, GGTagForm, MappingDetailsRepositoryRecord, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
+import uk.gov.hmrc.agentmappingfrontend.repository.{MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmappingfrontend.views.html.client_relationships_found
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future.successful
 
 @Singleton
@@ -53,7 +54,7 @@ class MappingController @Inject()(
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
       case Some(arn) => repository.create(arn).map(id => Ok(html.start(id)))
-      case None      => successful(Redirect(routes.MappingController.needAgentServicesAccount))
+      case None      => successful(Redirect(routes.MappingController.needAgentServicesAccount()))
     }
   }
 
@@ -70,7 +71,7 @@ class MappingController @Inject()(
         case Some(record) =>
           for {
             clientCount <- mappingConnector.getClientCount
-            newRef      <- repository.create(record.arn, clientCount :: record.cumulativeClientCount)
+            newRef      <- repository.create(record.arn, clientCount)
             _           <- repository.delete(id)
           } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
 
@@ -85,8 +86,7 @@ class MappingController @Inject()(
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).map {
         case Some(record) =>
-          val clientCount = record.cumulativeClientCount.headOption.getOrElse(0)
-
+          val clientCount = record.clientCount
           Ok(client_relationships_found(clientCount, id))
         case None => Ok(html.page_not_found())
       }
@@ -107,34 +107,64 @@ class MappingController @Inject()(
             Ok(html.gg_tag(formWithErrors, id))
           },
           ggTag => {
-            //save ggTag to the mapping store -> ticket APB-4131
-            Redirect(routes.MappingController.showExistingClientRelationships(id))
+            repository
+              .updateGGTag(id, ggTag.value)
+              .flatMap(_ => Redirect(routes.MappingController.showExistingClientRelationships(id)))
           }
         )
     }
   }
 
+  def updateMappingRecordsAndRedirect(
+    arn: Arn,
+    authProviderId: AuthProviderId,
+    record: MappingArnResult,
+    id: MappingArnResultId,
+    backUrl: String)(implicit request: Request[AnyContent]): Future[Result] =
+    for {
+      _ <- mappingConnector
+            .createOrUpdateMappingDetails(arn, MappingDetailsRequest(authProviderId, record.ggTag, record.clientCount))
+      _                    <- repository.updateFor(id)
+      mappingDetailsRecord <- mappingConnector.findMappingDetailsRecord(arn)
+    } yield
+      Ok(
+        html.existing_client_relationships(
+          ExistingClientRelationshipsForm.form,
+          id,
+          mappingDetailsRecord.mappingDetails.map(_.count).toList,
+          taskList = false,
+          backUrl))
+
+  def findMappingRecordAndRedirect(record: MappingArnResult, id: MappingArnResultId, backUrl: String)(
+    implicit request: Request[AnyContent]): Future[Result] =
+    mappingConnector
+      .findMappingDetailsRecord(record.arn)
+      .flatMap(
+        mappingDetailsRecord =>
+          Ok(
+            html.existing_client_relationships(
+              ExistingClientRelationshipsForm.form,
+              id,
+              mappingDetailsRecord.mappingDetails.map(_.count).toList,
+              taskList = false,
+              backUrl)))
+
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
+    withAuthorisedAgent(id) { providerId =>
       repository.findRecord(id).flatMap {
         case Some(record) =>
-          val form = ExistingClientRelationshipsForm.form
           val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
           if (!record.alreadyMapped) {
             mappingConnector.createMapping(record.arn).flatMap {
               case CREATED =>
-                repository
-                  .updateFor(id)
-                  .map(_ =>
-                    Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount, false, backUrl)))
+                updateMappingRecordsAndRedirect(record.arn, AuthProviderId(providerId), record, id, backUrl)
               case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
               case e =>
                 Logger.warn(s"unexpected response from server $e")
                 InternalServerError
             }
-          } else {
-            Ok(html.existing_client_relationships(form, id, record.cumulativeClientCount, false, backUrl))
-          }
+          } else findMappingRecordAndRedirect(record, id, backUrl)
+
         case None => Ok(html.page_not_found())
       }
     }
@@ -145,10 +175,19 @@ class MappingController @Inject()(
       ExistingClientRelationshipsForm.form.bindFromRequest
         .fold(
           formWithErrors => {
-            repository.findRecord(id).map {
+            repository.findRecord(id).flatMap {
               case Some(record) =>
-                val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
-                Ok(html.existing_client_relationships(formWithErrors, id, record.cumulativeClientCount, false, backUrl))
+                mappingConnector.findMappingDetailsRecord(record.arn).flatMap {
+                  mappingDetailsRecord: MappingDetailsRepositoryRecord =>
+                    val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
+                    Ok(
+                      html.existing_client_relationships(
+                        formWithErrors,
+                        id,
+                        mappingDetailsRecord.mappingDetails.map(_.count).toList,
+                        taskList = false,
+                        backUrl))
+                }
 
               case None =>
                 Logger.info(s"no record found for id $id")
@@ -164,8 +203,12 @@ class MappingController @Inject()(
 
   def complete(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
-      repository.findRecord(id).map {
-        case Some(record) => Ok(html.complete(id, record.cumulativeClientCount.sum))
+      repository.findRecord(id).flatMap {
+        case Some(record) =>
+          mappingConnector.findMappingDetailsRecord(record.arn).flatMap {
+            mappingDetailsRecord: MappingDetailsRepositoryRecord =>
+              Ok(html.complete(id, mappingDetailsRecord.mappingDetails.map(_.count).sum))
+          }
         case None =>
           throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn")
       }

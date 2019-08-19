@@ -2,6 +2,7 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
@@ -50,7 +51,7 @@ object MappingStubs {
       get(urlPathEqualTo(s"/agent-mapping/mappings/vat/${arn.value}"))
         .willReturn(aResponse().withStatus(404)))
 
-  def mappingsDelete(arn: Arn):StubMapping =
+  def mappingsDelete(arn: Arn): StubMapping =
     stubFor(
       delete(urlPathEqualTo(s"/agent-mapping/test-only/mappings/${arn.value}"))
         .willReturn(aResponse().withStatus(204)))
@@ -65,5 +66,18 @@ object MappingStubs {
     stubFor(
       get(urlPathEqualTo(s"/agent-mapping/client-count"))
         .willReturn(aResponse().withStatus(500))
+    )
+
+  def mappingDetailsAreCreated(arn: Arn, mappingDetailsRequest: MappingDetailsRequest): StubMapping =
+    stubFor(
+      post(urlPathEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
+        .withRequestBody(equalToJson(Json.toJson(mappingDetailsRequest).toString()))
+        .willReturn(aResponse().withStatus(Status.CREATED))
+    )
+
+  def mappingDetailsExistFor(arn: Arn, mappingDetailsRepositoryRecord: MappingDetailsRepositoryRecord): StubMapping =
+    stubFor(
+      get(urlEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
+        .willReturn(aResponse().withStatus(Status.OK).withBody(Json.toJson(mappingDetailsRepositoryRecord).toString()))
     )
 }
