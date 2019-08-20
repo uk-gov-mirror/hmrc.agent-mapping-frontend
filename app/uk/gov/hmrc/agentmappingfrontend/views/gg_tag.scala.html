@@ -29,32 +29,35 @@
     <a href="@routes.MappingController.showClientRelationshipsFound(id)" class="link-back">@Messages("button.back")</a>
 
     @if(ggTagForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"),ggTagForm, Seq.empty, Some("gg-tag"))
+        @errorSummary(Messages("error.summary.heading"), ggTagForm, Seq.empty, Some("gg-tag"))
     }
+    <fieldset>
+        <legend>
+            <h1 class="heading-xlarge">@Messages("gg-tag.title")</h1>
+        </legend>
+        <p>@Messages("gg-tag.p1")</p>
 
-    @form(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'class -> "form js-form", 'id -> "gg-tag-form") {
+        @form(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'class -> "form js-form", 'id -> "gg-tag-form") {
 
-        <fieldset>
+
             <div class="form-group">
-                @x_custom_input(
+            @x_custom_input(
                 ggTagForm("ggTag"),
-                '_label -> Html("""<h1 class="heading-xlarge">""" + Messages("gg-tag.title") + """</h1>""" +
-                """<p>"""+ Messages("gg-tag.p1") + """</p>""" +
-                """<p class="margin-bottom-10">"""+ Messages("gg-tag.form.identifier") + """</p>"""),
+                '_label -> Messages("gg-tag.form.identifier"),
                 '_inputClass -> "govuk-input--width-4",
                 '_inputHint -> Messages("gg-tag.form.hint")
-                )
+            )
             </div>
         </fieldset>
 
-                <div class="form-field">
-                    @if(taskList){
-                    <button class="button margin-right-5" type="submit" id="gg-tag-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
-                    <button class="button--secondary" type="submit" id="gg-tag-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
-                    } else {
-                    <button class="button" type="submit" id="submit-gg-tag">@Messages("button.continue")</button>
-                    }
-                </div>
+    <div class="form-field">
+    @if(taskList) {
+        <button class="button margin-right-5" type="submit" id="gg-tag-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
+        <button class="button--secondary" type="submit" id="gg-tag-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
+    } else {
+        <button class="button" type="submit" id="submit-gg-tag">@Messages("button.continue")</button>
     }
+    </div>
+}
 
 }
