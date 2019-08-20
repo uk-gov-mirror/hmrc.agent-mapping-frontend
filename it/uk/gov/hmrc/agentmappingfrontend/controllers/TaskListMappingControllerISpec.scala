@@ -550,18 +550,4 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
         "alreadyMapped.p1", "alreadyMapped.p2")
     }
   }
-
-  "200 /task-list/not-enrolled" should {
-    "display the correct content" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/error/not-enrolled/?id=SOMETHING")
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 200
-
-      checkHtmlResultContainsEscapedMsgs(result,
-        "notEnrolled.p1", "notEnrolled.p2", "notEnrolled.p3")
-    }
-  }
-
 }

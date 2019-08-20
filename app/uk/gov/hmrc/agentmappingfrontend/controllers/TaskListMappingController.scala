@@ -224,12 +224,6 @@ class TaskListMappingController @Inject()(
     }
   }
 
-  def notEnrolled(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withBasicAgentAuth {
-      Future.successful(Ok(not_enrolled(id, taskList = true)))
-    }
-  }
-
   def alreadyMapped(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAgentAuth {
       Future.successful(Ok(already_mapped(id, taskList = true)))
@@ -261,12 +255,10 @@ class TaskListMappingController @Inject()(
         case Some(record) => {
           agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).map {
             case Some(sjr) =>
-              if (sjr.cleanCredsAuthProviderId.contains(agent.authProviderId)) {
-                Logger.info("user entered task list mapping with a clean cred id")
-                Ok(start_sign_in_required(Some(id), taskList = true))
-              } else if (sjr.userMappings.map(_.authProviderId).isEmpty) {
+              if (sjr.userMappings.map(_.authProviderId).isEmpty) {
                 Ok(start_journey(id, taskList = true)) //first time here
-              } else if (sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
+              } else if (sjr.cleanCredsAuthProviderId.contains(agent.authProviderId) ||
+                         sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                 Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
               } else {
                 Redirect(routes.TaskListMappingController.showClientRelationshipsFound(id))

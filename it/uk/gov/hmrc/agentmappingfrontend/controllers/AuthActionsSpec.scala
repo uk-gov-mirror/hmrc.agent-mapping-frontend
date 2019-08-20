@@ -277,13 +277,6 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       }
     }
 
-    "redirect to task-list/note-enrolled" when {
-      "agent has no principal enrolments" in {
-        behave like testSubscribingAgentRedirectedTo(
-          expectedLocation = routes.TaskListMappingController.notEnrolled("mappingArnResultId").url)
-      }
-    }
-
     "redirect to task-list/error/already-linked" when {
       "agent has HMRC-AGENT-AGENT enrolment" in {
         behave like testSubscribingAgentRedirectedTo(

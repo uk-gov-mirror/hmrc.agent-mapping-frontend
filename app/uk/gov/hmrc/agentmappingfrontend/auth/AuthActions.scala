@@ -145,9 +145,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
         case Some(Credentials(providerId, _)) ~ agentCodeOpt ~ enrols =>
           val activeEnrolments: Set[Enrolment] = enrols.enrolments.filter(_.isActivated)
 
-          if (activeEnrolments.isEmpty) {
-            Future.successful(Redirect(routes.TaskListMappingController.notEnrolled(id)))
-          } else if (userHasAsAgentEnrolment(activeEnrolments)) {
+          if (userHasAsAgentEnrolment(activeEnrolments)) {
             Future.successful(Redirect(routes.TaskListMappingController.incorrectAccount(id)))
           } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
             Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
