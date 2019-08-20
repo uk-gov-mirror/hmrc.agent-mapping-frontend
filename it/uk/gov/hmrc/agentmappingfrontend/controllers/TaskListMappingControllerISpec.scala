@@ -346,14 +346,13 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       checkHtmlResultContainsEscapedMsgs(result,
         "existingClientRelationships.title",
-          "existingClientRelationships.single.th",
-
-      "existingClientRelationships.td",
       "existingClientRelationships.heading",
       "existingClientRelationships.p1",
       "existingClientRelationships.yes",
       "existingClientRelationships.no")
 
+      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", "6666"))
+      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", 1))
       bodyOf(result) should include(routes.TaskListMappingController.showClientRelationshipsFound(id).url)
 
       result should containSubmitButton("button.saveContinue","existing-client-relationships-continue")

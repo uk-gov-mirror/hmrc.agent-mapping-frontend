@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
+import java.time.LocalDateTime
+
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 import uk.gov.hmrc.domain.AgentCode
 
 /**
@@ -33,7 +36,10 @@ final case class UserMapping(
   agentCode: Option[AgentCode],
   legacyEnrolments: Seq[AgentEnrolment],
   count: Int = 0,
-  ggTag: String)
+  ggTag: String) {
+
+  def toClientCountAndGGTag: ClientCountAndGGTag = ClientCountAndGGTag(this.count, this.ggTag)
+}
 
 object UserMapping {
   implicit val format: OFormat[UserMapping] = Json.format

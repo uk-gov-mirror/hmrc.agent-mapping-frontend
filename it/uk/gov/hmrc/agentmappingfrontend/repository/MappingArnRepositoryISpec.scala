@@ -37,17 +37,8 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
       mappingArnResult.id.size shouldBe 32
     }
 
-    "find a MappingArnResult ARN value by Id" in {
-      val record = MappingArnResult(arn, 0)
-      await(repo.insert(record))
-
-      val result = await(repo.findArn(record.id))
-
-      result shouldBe Some(record.arn)
-    }
-
     "find a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn, 0)
+      val record = MappingArnResult(arn, 0, Seq.empty)
       await(repo.insert(record))
 
       val result = await(repo.findRecord(record.id))
@@ -55,30 +46,44 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
       result shouldBe Some(record)
     }
 
-    "update client count" in {
-      val record = MappingArnResult(arn, 0)
+    "update client count and ggTag" in {
+      val record = MappingArnResult(arn, 0, Seq.empty)
 
       await(repo.insert(record))
-      await(repo.updateFor(record.id,12))
-      val result = await(repo.findRecord(record.id).get.clientCount)
+      await(repo.updateClientCountAndGGTag(record.id, ClientCountAndGGTag(12, "")))
+      val result = await(repo.findRecord(record.id).get.clientCountAndGGTags.head.clientCount)
 
       result shouldBe 12
     }
 
+    "update current ggTag" in {
+      val record = MappingArnResult(arn, 0, Seq.empty)
+
+      await(repo.insert(record))
+      await(repo.updateCurrentGGTag(record.id, "6666"))
+      val result = await(repo.findRecord(record.id).get.currentGGTag)
+
+      result shouldBe "6666"
+    }
+
+    "update mapping complete status to true" in {
+      val record = MappingArnResult(arn, 0, Seq.empty)
+
+      await(repo.insert(record))
+      await(repo.updateMappingCompleteStatus(record.id))
+      val result = await(repo.findRecord(record.id).get.alreadyMapped)
+
+      result shouldBe true
+    }
+
 
     "delete a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn, 0)
+      val record = MappingArnResult(arn, 0, Seq.empty)
       await(repo.insert(record))
 
       await(repo.delete(record.id))
 
       await(repo.find("id" -> record.id)) shouldBe empty
-    }
-
-    "not return any MappingArnResult record for an invalid Id" in {
-      val result = await(repo.findArn("INVALID"))
-
-      result shouldBe empty
     }
   }
 }

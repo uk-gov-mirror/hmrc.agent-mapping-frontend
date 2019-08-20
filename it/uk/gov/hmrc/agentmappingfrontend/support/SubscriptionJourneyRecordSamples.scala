@@ -32,7 +32,7 @@ trait SubscriptionJourneyRecordSamples {
         agentCode = Some(AgentCode("agentCode-1")),
         count = 1,
         legacyEnrolments = List.empty,
-        ggTag = "")))
+        ggTag = "6666")))
 
   val sjrWithUserAlreadyMapped = sjrWithNoUserMappings.copy(userMappings =
     List(
@@ -41,5 +41,5 @@ trait SubscriptionJourneyRecordSamples {
         agentCode = Some(AgentCode("agentCode-1")),
         count = 1,
         legacyEnrolments = List.empty,
-        ggTag = "")))
+        ggTag = "6666")))
 }

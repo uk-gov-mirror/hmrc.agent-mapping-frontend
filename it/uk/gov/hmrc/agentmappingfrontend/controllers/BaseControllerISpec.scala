@@ -68,6 +68,8 @@ abstract class BaseControllerISpec
   private val messagesApi = app.injector.instanceOf[MessagesApi]
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
   protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
+  protected def htmlEscapedMessage(key: String, args: Any*): String =
+    HtmlFormat.escape(Messages(key, args: _*)).toString
 
   protected def checkHtmlResultContainsEscapedMsgs(result: Result, expectedMessageKeys: String*): Unit = {
     contentType(result) shouldBe Some("text/html")

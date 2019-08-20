@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
+import java.time.LocalDateTime
+
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
@@ -24,7 +26,7 @@ import uk.gov.hmrc.agentmappingfrontend.auth.TaskListAuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm, UserMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm, MappingDetails, UserMapping}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
@@ -185,9 +187,10 @@ class TaskListMappingController @Inject()(
             existing_client_relationships(
               ExistingClientRelationshipsForm.form,
               id,
-              agent.getMandatorySubscriptionJourneyRecord.userMappings.map(_.count),
+              agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
               taskList = true,
-              url))
+              url
+            ))
       )
     }
   }
@@ -203,9 +206,10 @@ class TaskListMappingController @Inject()(
                   existing_client_relationships(
                     formWithErrors,
                     id,
-                    agent.getMandatorySubscriptionJourneyRecord.userMappings.map(_.count),
+                    agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
                     taskList = true,
-                    url)))
+                    url
+                  )))
           }, {
             case Yes => Redirect(continueOrStop(routes.SignedOutController.taskListSignOutAndRedirect(id), id))
             case No  => Redirect(continueOrStop(routes.SignedOutController.returnAfterMapping(), id))

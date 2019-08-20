@@ -7,7 +7,7 @@ import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Request, Res
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
+import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -223,34 +223,34 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     def testsForExistingClientRelationships(singleClientCountResponse: Boolean): Unit = {
       val arn = Arn("TARN0000001")
+      val ggTag = "6666"
       LegacyAgentEnrolmentType.foreach { enrolmentType =>
         s"200 to /existing-client-relationships for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
           val id = await(repo.create(arn, clientCount))
-          await(repo.updateGGTag(id, "6666"))
+          await(repo.updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ggTag)))
+          await(repo.updateCurrentGGTag(id, ggTag))
           givenAuthorisedFor(enrolmentType.serviceKey)
           mappingIsCreated(arn)
-          mappingDetailsAreCreated(arn, MappingDetailsRequest(AuthProviderId("12345-credId"), "6666", clientCount))
-          mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", clientCount, LocalDateTime.now()))))
+          mappingDetailsAreCreated(arn, MappingDetailsRequest(AuthProviderId("12345-credId"), ggTag, clientCount))
           implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
           val result = callEndpointWith(request)
 
           checkHtmlResultContainsEscapedMsgs(
             result,
             "existingClientRelationships.title",
-            "existingClientRelationships.td",
             "existingClientRelationships.heading",
             "existingClientRelationships.p1",
             "existingClientRelationships.yes",
             "existingClientRelationships.no"
           )
+          bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
           if (singleClientCountResponse) {
-            bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th"))
+            bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", clientCount))
           } else {
-            bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.multi.th"))
+            bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.multi.th", clientCount))
           }
-
         }
       }
     }
@@ -258,10 +258,11 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     "display the existing client relationships page if the user is already mapped" in {
       val arn = Arn("TARN0000001")
       val clientCount = 12
+      val ggTag = "6666"
       val id = await(repo.create(arn, clientCount))
-      await(repo.updateFor(id))
+      await(repo.updateMappingCompleteStatus(id))
+      await(repo.updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ggTag)))
       givenAuthorisedFor("IR-SA-AGENT")
-      mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", clientCount, LocalDateTime.now()))))
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
       val result = callEndpointWith(request)
 
@@ -269,12 +270,12 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       checkHtmlResultContainsEscapedMsgs(
         result,
         "existingClientRelationships.title",
-        "existingClientRelationships.td",
         "existingClientRelationships.heading",
         "existingClientRelationships.p1",
         "existingClientRelationships.yes",
         "existingClientRelationships.no"
       )
+      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
     }
 
     "redirect to already mapped when mapping creation returns a conflict" in {
@@ -352,9 +353,12 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
 
     "200 OK to /existing-clients with error message when inputs invalid data" in {
-      val persistedMappingArnResultId = await(repo.create(arn, 1))
+      val count = 1
+      val ggTag = "6666"
+      val persistedMappingArnResultId = await(repo.create(arn, count))
+      await(repo.updateClientCountAndGGTag(persistedMappingArnResultId, ClientCountAndGGTag(count, ggTag)))
       givenUserIsAuthenticated(vatEnrolledAgent)
-      mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", 1, LocalDateTime.now()))))
+      mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), ggTag, count, LocalDateTime.now()))))
       val request = fakeRequest(
         POST,
         routes.MappingController.submitExistingClientRelationships(id = persistedMappingArnResultId).url)
@@ -368,14 +372,13 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         result,
         "error.existingClientRelationships.choice.invalid",
         "existingClientRelationships.title",
-        "existingClientRelationships.td",
         "existingClientRelationships.heading",
         "existingClientRelationships.p1",
         "existingClientRelationships.yes",
         "existingClientRelationships.no"
       )
-
-      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th"))
+      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
+      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", count))
     }
 
     "redirect to start when there is a form error and no record found" in {
@@ -411,8 +414,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
           val persistedMappingArnResultId = await(repo.create(arn, clientCount))
+          await(repo.updateClientCountAndGGTag(persistedMappingArnResultId, ClientCountAndGGTag(clientCount, "6666")))
           givenUserIsAuthenticated(user)
-          mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), "6666", clientCount, LocalDateTime.now()))))
           val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
           val result = callEndpointWith(request)
           status(result) shouldBe 200
@@ -429,7 +432,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
             "https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat")
 
           if (singleClientCountResponse)
-            result should containSubstrings("You copied 1 client relationship to your agent services account")
+            bodyOf(result) should include(htmlEscapedMessage("You copied 1 client relationship to your agent services account"))
           else result should containSubstrings("You copied 12 client relationships to your agent services account")
 
           result should containSubstrings(

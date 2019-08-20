@@ -20,26 +20,33 @@ import java.util.UUID
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, DateTimeZone}
-import play.api.libs.json.{JsObject, Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import reactivemongo.play.json.ImplicitBSONHandlers._
 
 import scala.concurrent.{ExecutionContext, Future}
+
+case class ClientCountAndGGTag(clientCount: Int, ggTag: String)
+
+case object ClientCountAndGGTag {
+  implicit val formats: OFormat[ClientCountAndGGTag] = Json.format
+}
 
 case class MappingArnResult(
   id: MappingArnResultId,
   arn: Arn,
   createdDate: DateTime = DateTime.now(DateTimeZone.UTC),
-  clientCount: Int = 0,
-  ggTag: String = "",
+  currentCount: Int,
+  currentGGTag: String = "",
+  clientCountAndGGTags: Seq[ClientCountAndGGTag] = Seq.empty,
   alreadyMapped: Boolean = false)
 
 object MappingResult {
@@ -48,15 +55,14 @@ object MappingResult {
 }
 
 object MappingArnResult {
-  //type MappingArnResultId  = String
 
-  def apply(arn: Arn, count: Int): MappingArnResult = {
+  def apply(arn: Arn, currentCount: Int, clientCountAndGGTags: Seq[ClientCountAndGGTag]): MappingArnResult = {
     val id: MappingArnResultId = UUID.randomUUID().toString.replace("-", "")
-    MappingArnResult(id = id, arn = arn, clientCount = count)
+    MappingArnResult(id = id, arn = arn, currentCount = currentCount, clientCountAndGGTags = clientCountAndGGTags)
   }
 
-  implicit val dateFormat = ReactiveMongoFormats.dateTimeFormats
-  implicit val format = Json.format[MappingArnResult]
+  implicit val dateFormat: Format[DateTime] = ReactiveMongoFormats.dateTimeFormats
+  implicit val format: OFormat[MappingArnResult] = Json.format
 }
 
 @Singleton
@@ -78,46 +84,28 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
       )
     )
 
-  def findArn(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[Arn]] =
-    find("id" -> id).map(_.headOption.map(_.arn))
+  def create(arn: Arn, currentCount: Int = 0, clientCountAndGGTags: Seq[ClientCountAndGGTag] = Seq.empty)(
+    implicit ec: ExecutionContext): Future[MappingArnResultId] = {
+    val record = MappingArnResult(arn = arn, currentCount = currentCount, clientCountAndGGTags = clientCountAndGGTags)
+    insert(record).map(_ => record.id)
+  }
 
   def findRecord(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[MappingArnResult]] =
     find("id" -> id).map(_.headOption)
 
-  def create(arn: Arn, clientCount: Int = 0)(implicit ec: ExecutionContext): Future[MappingArnResultId] = {
-    val record = MappingArnResult(arn = arn, count = clientCount)
-    insert(record).map(_ => record.id)
+  def updateClientCountAndGGTag(id: MappingArnResultId, clientCountAndGGTag: ClientCountAndGGTag)(
+    implicit ec: ExecutionContext): Future[Unit] = {
+    val updateOp = Json.obj("$addToSet" -> Json.obj("clientCountAndGGTags" -> clientCountAndGGTag))
+    collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
   }
 
-  def updateFor(id: MappingArnResultId, clientCount: Int)(implicit ec: ExecutionContext): Future[Unit] =
-    findRecord(id).flatMap {
-      case Some(record) =>
-        val updatedClientCount = clientCount
-        val updatedRecord = Json.toJson(record.copy(clientCount = updatedClientCount)).as[JsObject]
+  def updateCurrentGGTag(id: MappingArnResultId, ggTag: String)(implicit ec: ExecutionContext): Future[Unit] = {
+    val updateOp = Json.obj("$set" -> Json.obj("currentGGTag" -> ggTag))
+    collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
+  }
 
-        findAndUpdate(
-          Json.obj("id" -> id),
-          updatedRecord
-        ).map(_ => ())
-
-      case _ => throw new RuntimeException(s"could not find record with id $id")
-    }
-
-  def updateFor(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
-    findRecord(id).flatMap {
-      case Some(record) => {
-        val updatedRecord = Json.toJson(record.copy(alreadyMapped = true)).as[JsObject]
-
-        findAndUpdate(
-          Json.obj("id" -> id),
-          updatedRecord
-        ).map(_ => ())
-      }
-      case None => throw new RuntimeException(s"could not update record for id $id")
-    }
-
-  def updateGGTag(id: MappingArnResultId, ggTag: String)(implicit ec: ExecutionContext): Future[Unit] = {
-    val updateOp = Json.obj("$set" -> (Json.obj("ggTag" -> ggTag)))
+  def updateMappingCompleteStatus(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] = {
+    val updateOp = Json.obj("$set" -> Json.obj("alreadyMapped" -> true))
     collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
   }
 
