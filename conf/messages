@@ -88,7 +88,7 @@ button.signIn=Sign in
 #Errors
 error.title=There is a problem
 error.prefix=Error:
-error.summary.heading=Something''s wrong
+error.summary.heading=There is a problem
 error.utr.blank=Enter your business''s Unique Taxpayer Reference (UTR)
 error.utr.invalid.format=Enter a valid Unique Taxpayer Reference (UTR) that only includes numbers and spaces, like 12345 67890
 error.utr.invalid.length=Unique Taxpayer Reference (UTR) must be 10 numbers
