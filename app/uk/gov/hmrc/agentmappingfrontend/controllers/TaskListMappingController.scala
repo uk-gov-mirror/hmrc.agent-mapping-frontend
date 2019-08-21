@@ -127,11 +127,14 @@ class TaskListMappingController @Inject()(
                     ggTag = ""
                   ) :: sjr.userMappings)
 
-                agentSubscriptionService.createOrUpdateRecordOrFail(agent, newSjr, {
-                  repository
-                    .upsert(record.copy(alreadyMapped = true), record.continueId)
-                    .map(_ => Redirect(routes.TaskListMappingController.showGGTag(id)))
-                })
+                agentSubscriptionService.createOrUpdateRecordOrFail(
+                  agent,
+                  newSjr, {
+                    repository
+                      .upsert(record.copy(alreadyMapped = true), record.continueId)
+                      .map(_ => Redirect(routes.TaskListMappingController.showExistingClientRelationships(id)))
+                  }
+                )
               }
 
               case None =>
@@ -152,32 +155,32 @@ class TaskListMappingController @Inject()(
 
   }
 
-  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withSubscribingAgent(id) { _ =>
-      Ok(gg_tag(GGTagForm.form, id, taskList = true))
-    }
-  }
-
-  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withSubscribingAgent(id) { agent =>
-      GGTagForm.form.bindFromRequest
-        .fold(
-          formWithErrors => {
-            Ok(gg_tag(formWithErrors, id))
-          },
-          ggTag => {
-            val updatedUserMappings: List[UserMapping] = agent.getMandatorySubscriptionJourneyRecord.userMappings
-              .map(m => if (m.authProviderId == agent.authProviderId) m.copy(ggTag = ggTag.value) else m)
-            val newSjr = agent.getMandatorySubscriptionJourneyRecord.copy(userMappings = updatedUserMappings)
-
-            agentSubscriptionService.createOrUpdateRecordOrFail(
-              agent,
-              newSjr,
-              Redirect(continueOrStop(routes.TaskListMappingController.showExistingClientRelationships(id), id)))
-          }
-        )
-    }
-  }
+//  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+//    withSubscribingAgent(id) { _ =>
+//      Ok(gg_tag(GGTagForm.form, id, taskList = true))
+//    }
+//  }
+//
+//  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+//    withSubscribingAgent(id) { agent =>
+//      GGTagForm.form.bindFromRequest
+//        .fold(
+//          formWithErrors => {
+//            Ok(gg_tag(formWithErrors, id))
+//          },
+//          ggTag => {
+//            val updatedUserMappings: List[UserMapping] = agent.getMandatorySubscriptionJourneyRecord.userMappings
+//              .map(m => if (m.authProviderId == agent.authProviderId) m.copy(ggTag = ggTag.value) else m)
+//            val newSjr = agent.getMandatorySubscriptionJourneyRecord.copy(userMappings = updatedUserMappings)
+//
+//            agentSubscriptionService.createOrUpdateRecordOrFail(
+//              agent,
+//              newSjr,
+//              Redirect(continueOrStop(routes.TaskListMappingController.showExistingClientRelationships(id), id)))
+//          }
+//        )
+//    }
+//  }
 
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent(id) { agent =>
