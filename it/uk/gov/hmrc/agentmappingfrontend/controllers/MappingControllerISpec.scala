@@ -245,7 +245,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
             "existingClientRelationships.yes",
             "existingClientRelationships.no"
           )
-          bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
+          //bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
           if (singleClientCountResponse) {
             bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", clientCount))
           } else {
@@ -275,7 +275,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         "existingClientRelationships.yes",
         "existingClientRelationships.no"
       )
-      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
+      //bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
     }
 
     "redirect to already mapped when mapping creation returns a conflict" in {
@@ -377,7 +377,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         "existingClientRelationships.yes",
         "existingClientRelationships.no"
       )
-      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
+     // bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
       bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", count))
     }
 
