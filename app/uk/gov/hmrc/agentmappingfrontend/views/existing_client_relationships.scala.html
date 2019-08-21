@@ -40,14 +40,17 @@
   <tbody>
    @for(clientCountAndGGTag <- clientCountAndGGTags) {
    <tr>
+    <td>
+     <span class="bold">@clientCountAndGGTag.clientCount</span>
+    </td>
      <td class="bold">
      @if(clientCountAndGGTag.clientCount == 1) {
-      @Messages("existingClientRelationships.single.th", clientCountAndGGTag.clientCount)
+      @Messages("existingClientRelationships.single.th")
      } else {
-      @Messages("existingClientRelationships.multi.th", clientCountAndGGTag.clientCount)
+      @Messages("existingClientRelationships.multi.th")
      }
      </td>
-    @*<td>@Messages("existingClientRelationships.td", clientCountAndGGTag.ggTag)</td>*@
+    <td>@Messages("existingClientRelationships.td")</td>
     }
    </tr>
   </tbody>
