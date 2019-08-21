@@ -68,24 +68,26 @@ class TaskListMappingController @Inject()(
 
   def returnFromGGLogin(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent(id) { agent =>
-      for {
-        maybeRecord <- repository.findRecord(id)
-        record = maybeRecord.getOrElse(
-          throw new RuntimeException(
-            s"no task-list mapping record found for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
-        maybeSjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
-        sjr = maybeSjr.getOrElse(throw new RuntimeException(
-          s"no subscription journey record found after from GG login for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
-        result <- if (!sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
-                   for {
-                     newId <- repository.create(record.continueId)
-                     _     <- repository.delete(id)
-                     r     <- nextPage(newId)
-                   } yield r
-                 } else {
-                   Future.successful(Ok(already_mapped(id, taskList = true)))
-                 }
-      } yield result
+      if (agent.agentEnrolments.nonEmpty) {
+        for {
+          maybeRecord <- repository.findRecord(id)
+          record = maybeRecord.getOrElse(
+            throw new RuntimeException(
+              s"no task-list mapping record found for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
+          maybeSjr <- agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId)
+          sjr = maybeSjr.getOrElse(throw new RuntimeException(
+            s"no subscription journey record found after from GG login for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"))
+          result <- if (!sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
+                     for {
+                       newId <- repository.create(record.continueId)
+                       _     <- repository.delete(id)
+                       r     <- nextPage(newId)
+                     } yield r
+                   } else {
+                     Future.successful(Ok(already_mapped(id, taskList = true)))
+                   }
+        } yield result
+      } else Redirect(routes.MappingController.notEnrolled(id))
     }
   }
 
