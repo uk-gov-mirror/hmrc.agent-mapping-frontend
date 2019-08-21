@@ -87,10 +87,13 @@ class MappingController @Inject()(
 
   def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
-      repository.findRecord(id).map {
+      repository.findRecord(id).flatMap {
         case Some(record) =>
           val clientCount = record.currentCount
-          Ok(client_relationships_found(clientCount, id))
+          //remove this when GG tag pages get put back in
+          repository
+            .updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ""))
+            .map(_ => Ok(client_relationships_found(clientCount, id)))
         case None => Ok(html.page_not_found())
       }
     }
