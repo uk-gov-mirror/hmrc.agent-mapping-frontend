@@ -96,32 +96,32 @@ class MappingController @Inject()(
     }
   }
 
-  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
-      Ok(html.gg_tag(GGTagForm.form, id))
-    }
-  }
-
-  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
-      repository.findRecord(id).flatMap {
-        case Some(record) =>
-          GGTagForm.form.bindFromRequest
-            .fold(
-              formWithErrors => {
-                Ok(html.gg_tag(formWithErrors, id))
-              },
-              ggTag => {
-                for {
-                  _ <- repository.updateCurrentGGTag(id, ggTag.value)
-                  _ <- repository.updateClientCountAndGGTag(id, ClientCountAndGGTag(record.currentCount, ggTag.value))
-                } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
-              }
-            )
-        case None => Ok(html.page_not_found())
-      }
-    }
-  }
+//  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+//    withAuthorisedAgent(id) { _ =>
+//      Ok(html.gg_tag(GGTagForm.form, id))
+//    }
+//  }
+//
+//  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+//    withAuthorisedAgent(id) { _ =>
+//      repository.findRecord(id).flatMap {
+//        case Some(record) =>
+//          GGTagForm.form.bindFromRequest
+//            .fold(
+//              formWithErrors => {
+//                Ok(html.gg_tag(formWithErrors, id))
+//              },
+//              ggTag => {
+//                for {
+//                  _ <- repository.updateCurrentGGTag(id, ggTag.value)
+//                  _ <- repository.updateClientCountAndGGTag(id, ClientCountAndGGTag(record.currentCount, ggTag.value))
+//                } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
+//              }
+//            )
+//        case None => Ok(html.page_not_found())
+//      }
+//    }
+//  }
 
   def updateMappingRecordsAndRedirect(
     arn: Arn,

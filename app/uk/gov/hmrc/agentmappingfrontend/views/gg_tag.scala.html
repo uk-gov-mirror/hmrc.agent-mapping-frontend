@@ -37,7 +37,7 @@
         </legend>
         <p>@Messages("gg-tag.p1")</p>
 
-        @form(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'class -> "form js-form", 'id -> "gg-tag-form") {
+        @form(action = routes.MappingController.start(), 'class -> "form js-form", 'id -> "gg-tag-form") {
 
 
             <div class="form-group">
