@@ -31,10 +31,12 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResul
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
 import uk.gov.hmrc.agentmappingfrontend.util._
+import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, gg_tag, incorrect_account, not_enrolled, start_sign_in_required, start => start_journey}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -87,7 +89,7 @@ class TaskListMappingController @Inject()(
                      Future.successful(Ok(already_mapped(id, taskList = true)))
                    }
         } yield result
-      } else Redirect(routes.MappingController.notEnrolled(id))
+      } else Redirect(routes.TaskListMappingController.notEnrolled(id))
     }
   }
 
@@ -232,6 +234,12 @@ class TaskListMappingController @Inject()(
   def alreadyMapped(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAgentAuth {
       Future.successful(Ok(already_mapped(id, taskList = true)))
+    }
+  }
+
+  def notEnrolled(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withBasicAgentAuth {
+      successful(Ok(html.not_enrolled(id, taskList = true)))
     }
   }
 
