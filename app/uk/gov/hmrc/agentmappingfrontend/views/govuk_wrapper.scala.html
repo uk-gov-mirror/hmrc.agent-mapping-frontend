@@ -69,7 +69,16 @@
 }
 
 @footerTop = {}
-@footerLinks = {}
+@footerLinks = {
+    <li>
+        <a href='@Messages("footer.links.accessibility.url")'
+           data-sso="false"
+           data-journey-click="footer:Click:Accessibility">
+            @Messages("footer.links.accessibility.text")
+        </a>
+    </li>
+}
+
 
 @serviceInfo = {
     @uiLayouts.serviceInfo(
@@ -99,4 +108,4 @@
       sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
+@hmrcGovUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop,  Some(uiLayouts.footer_links(additionalLinks = Some(footerLinks))), true)(content)
