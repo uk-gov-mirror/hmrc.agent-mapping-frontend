@@ -20,35 +20,22 @@ import play.api.Environment
 import play.api.libs.json.JsResultException
 import play.api.mvc.Results.Redirect
 import play.api.mvc._
+import uk.gov.hmrc.agentmappingfrontend.auth.EnrolmentHelper._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-import uk.gov.hmrc.agentmappingfrontend.model.Names._
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult.MappingArnResultId
+import uk.gov.hmrc.agentmappingfrontend.model._
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{allEnrolments, credentials}
 import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{agentCode, allEnrolments, credentials}
+import uk.gov.hmrc.domain.AgentCode
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
 import scala.concurrent.{ExecutionContext, Future}
-
-object Auth {
-
-  val validEnrolments: Set[String] = Set(
-    `IR-SA-AGENT`, //IRAgentReference
-    `HMCE-VAT-AGNT`, //AgentRefNo
-    `HMRC-CHAR-AGENT`, //AGENTCHARID
-    `HMRC-GTS-AGNT`, //HMRCGTSAGENTREF
-    `HMRC-MGD-AGNT`, //HMRCMGDAGENTREF
-    `HMRC-NOVRN-AGNT`, //VATAgentRefNo
-    `IR-CT-AGENT`, //IRAgentReference
-    `IR-PAYE-AGENT`, //IRAgentReference
-    `IR-SDLT-AGENT` //STORN
-  )
-
-}
 
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
@@ -73,15 +60,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(allEnrolments and credentials) {
         case agentEnrolments ~ Some(Credentials(providerId, _)) =>
-          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated).map(_.key)
-          val hasEligibleAgentEnrolments = activeEnrolments.intersect(Auth.validEnrolments).nonEmpty
+          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated)
 
-          if (hasEligibleAgentEnrolments) {
+          val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
+
+          if (eligibleEnrolments.nonEmpty) {
             body(providerId)
           } else {
-            val redirectRoute = if (activeEnrolments.contains(`HMRC-AS-AGENT`)) {
+            val redirectRoute = if (userHasAsAgentEnrolment(activeEnrolments)) {
               routes.MappingController.incorrectAccount(idRefToArn)
-            } else if (activeEnrolments.contains(`HMRC-AGENT-AGENT`)) {
+            } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
               routes.MappingController.alreadyMapped(idRefToArn)
             } else {
               routes.MappingController.notEnrolled(idRefToArn)
@@ -103,12 +91,86 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
         case agentEnrolments =>
           body(
             agentEnrolments
-              .getEnrolment("HMRC-AS-AGENT")
-              .flatMap(_.getIdentifier("AgentReferenceNumber")
+              .getEnrolment(AsAgentServiceKey)
+              .flatMap(_.getIdentifier(ArnEnrolmentKey)
                 .map(identifier => Arn(identifier.value))))
       }
       .recoverWith {
         case _: JsResultException      => body(None)
         case _: AuthorisationException => body(None)
       }
+
+}
+
+class Agent(
+  private val providerId: AuthProviderId,
+  private val maybeAgentCode: Option[AgentCode],
+  private val legacyEnrolments: Seq[AgentEnrolment],
+  private val maybeSubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
+  def authProviderId: AuthProviderId = providerId
+  def agentEnrolments: Seq[AgentEnrolment] = legacyEnrolments
+  def agentCodeOpt: Option[AgentCode] = maybeAgentCode
+
+  def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
+    maybeSubscriptionJourneyRecord
+      .getOrElse(
+        throw new RuntimeException(
+          s"mandatory subscription journey record was missing for authProviderID $authProviderId"))
+}
+
+trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
+
+  def env: Environment
+
+  def appConfig: AppConfig
+
+  def agentSubscriptionConnector: AgentSubscriptionConnector
+
+  def withBasicAgentAuth[A](body: => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent) {
+      body
+    } recover {
+      case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+    }
+
+  def withSubscribingAgent(id: MappingArnResultId)(body: Agent => Future[Result])(
+    implicit request: Request[AnyContent],
+    hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
+      .retrieve(credentials and agentCode and allEnrolments) {
+        case Some(Credentials(providerId, _)) ~ agentCodeOpt ~ enrols =>
+          val activeEnrolments: Set[Enrolment] = enrols.enrolments.filter(_.isActivated)
+
+          if (userHasAsAgentEnrolment(activeEnrolments)) {
+            Future.successful(Redirect(routes.TaskListMappingController.incorrectAccount(id)))
+          } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
+            Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
+          } else
+            agentSubscriptionConnector.getSubscriptionJourneyRecord(AuthProviderId(providerId)).flatMap { maybeSjr =>
+              val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
+              body(new Agent(
+                providerId = AuthProviderId(providerId),
+                maybeAgentCode = agentCodeOpt.flatMap(ac => Some(AgentCode(ac))),
+                legacyEnrolments = agentEnrolmentsFromEligibleEnrolments(eligibleEnrolments),
+                maybeSjr
+              ))
+            }
+      }
+      .recover {
+        case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+      }
+
+  private def agentEnrolmentsFromEligibleEnrolments(eligibleEnrolments: Set[Enrolment]): Seq[AgentEnrolment] =
+    eligibleEnrolments
+      .map(enrolment =>
+        LegacyAgentEnrolmentType.find(enrolment.key) match {
+          case Some(legacyEnrolmentType) =>
+            AgentEnrolment(legacyEnrolmentType, IdentifierValue(enrolment.identifiers.map(i => i.value).mkString("/")))
+          case None => throw new RuntimeException("invalid enrolment type found")
+      })
+      .toSeq
 }

@@ -1,6 +1,7 @@
 #Common
-app.name=Agent services account
-servicename.titleSuffix=- Agent services account - GOV.UK
+app.name=Create an agent services account
+app.name-alreadySubscribed=Agent services account
+servicename.titleSuffix=- GOV.UK
 #Connect agent services
 start.not-signed-in.title=Copy across your existing Self Assessment and VAT clients to your agent services account
 start.not-signed-in.p1=You need to sign in to your agent services account to use this service.
@@ -24,8 +25,15 @@ clientRelationshipsFound.multi.p1=Your user ID has the following client relation
 clientRelationshipsFound.multi.td=VAT and Self Assessment clients
 clientRelationshipsFound.multi.p2=If you continue, they will be copied across to your new agent services account. You will then be able to sign up to Making Tax Digital.
 
+#gg-tag
+gg-tag.title=Identify this user ID
+gg-tag.p1=Enter the last 4 numbers of the user ID you signed in with, so you can identify it later.
+gg-tag.form.identifier=Government Gateway user ID
+gg-tag.form.hint=For example, XXXX-XXXX-1234
+gg-tag.xs=XXXX-XXXX-
+
 #existing-client-relationships
-existingClientRelationships.title=Existing client relationships
+existingClientRelationships.title=Copied client relationships
 existingClientRelationships.single.th=VAT and Self Assessment client
 existingClientRelationships.multi.th=VAT and Self Assessment clients
 existingClientRelationships.td=Copied to agent services account
@@ -69,6 +77,8 @@ link.goToASAccount=Go to your agent services account
 button.continue=Continue
 button.signOut=Sign out
 button.startNow=Start now
+button.saveContinue=Save and continue
+button.saveComeBackLater=Save and come back later
 button.yes=Yes
 button.no=No
 button.back=Back
@@ -78,13 +88,14 @@ button.signIn=Sign in
 #Errors
 error.title=There is a problem
 error.prefix=Error:
-error.summary.heading=Something''s wrong
+error.summary.heading=There is a problem
 error.utr.blank=Enter your business''s Unique Taxpayer Reference (UTR)
 error.utr.invalid.format=Enter a valid Unique Taxpayer Reference (UTR) that only includes numbers and spaces, like 12345 67890
 error.utr.invalid.length=Unique Taxpayer Reference (UTR) must be 10 numbers
 error.arn.invalid=Enter a valid agent services account number that only includes letters A to Z, numbers and hyphens, like XARN-123-4567 or XARN1234567
 error.arn.blank=Enter your agent services account number
 error.existingClientRelationships.choice.invalid=Select yes if you wish to copy across additional clients
+error.gg-tag.invalid=Enter the last 4 numbers of the Government Gateway user ID you signed in with
 
 #TestOnly
 view.mappings.title=Here are your Mappings
@@ -107,3 +118,8 @@ global.error.404.message=Please check that you have entered the correct web addr
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
 global.error.500.heading=Sorry, we''re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
+
+
+
+footer.links.accessibility.text=Accessibility
+footer.links.accessibility.url=/agent-mapping/accessibility

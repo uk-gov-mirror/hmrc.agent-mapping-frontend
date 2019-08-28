@@ -17,12 +17,12 @@ trait AuthStubs {
   def givenUserIsNotAuthenticated(): StubMapping =
     givenUnauthorisedWith("MissingBearerToken")
 
-  def givenAuthorisedFor(serviceName: String): StubMapping =
+  def givenAuthorisedFor(enrolmentKey: String): StubMapping =
     givenAuthorisedFor(
       "{}",
       s"""{
          |  "allEnrolments": [
-         |   { "key":"$serviceName", "identifiers": [
+         |   { "key":"$enrolmentKey", "identifiers": [
          |      { "key":"foo", "value": "foo" }
          |    ]}
          |  ],

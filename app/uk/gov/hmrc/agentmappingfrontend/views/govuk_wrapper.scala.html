@@ -24,7 +24,7 @@
   contentHeader: Option[Html] = None,
   mainContent: Html = HtmlFormat.empty,
   serviceInfoContent: Html = HtmlFormat.empty,
-  scriptElem: Option[Html] = None)(implicit request: Request[_], messages: Messages)
+  scriptElem: Option[Html] = None, taskList: Boolean = false)(implicit request: Request[_], messages: Messages)
 
 @import layouts.{govuk_template => hmrcGovUkTemplate}
 @import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
@@ -47,9 +47,11 @@
     <meta name="format-detection" content="telephone=no" />
 }
 
+    @navTitle = @{if(taskList){Some(Messages("app.name"))} else Some(Messages("app.name-alreadySubscribed"))}
+
 @insideHeader = {
     @uiLayouts.header_nav(
-      navTitle = Some(Messages("app.name")),
+      navTitle = navTitle,
       navTitleLink = None,
       showBetaLink = false,
       navLinks = None)
@@ -67,7 +69,16 @@
 }
 
 @footerTop = {}
-@footerLinks = {}
+@footerLinks = {
+    <li>
+        <a href='@Messages("footer.links.accessibility.url")'
+           data-sso="false"
+           data-journey-click="footer:Click:Accessibility">
+            @Messages("footer.links.accessibility.text")
+        </a>
+    </li>
+}
+
 
 @serviceInfo = {
     @uiLayouts.serviceInfo(
@@ -84,7 +95,7 @@
 
 @getHelpForm = @{uiHelpers.reportAProblemLink(appConfig.reportAProblemPartialUrl, appConfig.reportAProblemNonJSUrl)}
 
-@titleSuffix = @{ Messages("servicename.titleSuffix") }
+@titleSuffix = @{if(taskList) Messages("app.name") else Messages("app.name-alreadySubscribed")}
 
 @content = {
     @uiLayouts.main_content(
@@ -97,4 +108,4 @@
       sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title + " " + titleSuffix), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
+@hmrcGovUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop,  Some(uiLayouts.footer_links(additionalLinks = Some(footerLinks))), true)(content)

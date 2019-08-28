@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.model
+package uk.gov.hmrc.play.encoding
 
-object Names {
+import java.nio.charset.StandardCharsets
 
-  val IRAgentReference = "IRAgentReference"
-  val AgentRefNo = "AgentRefNo"
+import play.utils.UriEncoding
 
-  val `IR-SA-AGENT` = "IR-SA-AGENT"
-  val `HMCE-VAT-AGNT` = "HMCE-VAT-AGNT"
-  val `HMRC-CHAR-AGENT` = "HMRC-CHAR-AGENT"
-  val `HMRC-GTS-AGNT` = "HMRC-GTS-AGNT"
-  val `HMRC-MGD-AGNT` = "HMRC-MGD-AGNT"
-  val `HMRC-NOVRN-AGNT` = "HMRC-NOVRN-AGNT"
-  val `IR-CT-AGENT` = "IR-CT-AGENT"
-  val `IR-PAYE-AGENT` = "IR-PAYE-AGENT"
-  val `IR-SDLT-AGENT` = "IR-SDLT-AGENT"
+object UriPathEncoding {
 
-  val `HMRC-AS-AGENT` = "HMRC-AS-AGENT"
-  val `HMRC-AGENT-AGENT` = "HMRC-AGENT-AGENT"
+  def encodePathSegments(pathSegments: String*): String =
+    pathSegments.map(encodePathSegment).mkString("/", "/", "")
+
+  def encodePathSegment(pathSegment: String): String =
+    UriEncoding.encodePathSegment(pathSegment, StandardCharsets.UTF_8.name)
 
 }

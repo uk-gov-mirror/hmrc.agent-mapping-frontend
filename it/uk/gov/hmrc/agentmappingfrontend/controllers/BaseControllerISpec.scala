@@ -45,6 +45,7 @@ abstract class BaseControllerISpec
       .configure(
         "microservice.services.auth.port"          -> wireMockPort,
         "microservice.services.agent-mapping.port" -> wireMockPort,
+        "microservice.services.agent-subscription.port" -> wireMockPort,
         "application.router"                       -> "testOnlyDoNotUseInAppConf.Routes",
         "authentication.login-callback.url"        -> "somehost"
       )
@@ -67,6 +68,8 @@ abstract class BaseControllerISpec
   private val messagesApi = app.injector.instanceOf[MessagesApi]
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
   protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
+  protected def htmlEscapedMessage(key: String, args: Any*): String =
+    HtmlFormat.escape(Messages(key, args: _*)).toString
 
   protected def checkHtmlResultContainsEscapedMsgs(result: Result, expectedMessageKeys: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
@@ -129,6 +132,38 @@ abstract class BaseControllerISpec
     withClue(s"Message key ($messageKey) should be defined: ") {
       Messages.isDefinedAt(messageKey) shouldBe true
     }
+
+  protected def containSubmitButton(
+                                     expectedMessageKey: String,
+                                     expectedElementId: String,
+                                     expectedTagName: String = "button",
+                                     expectedType: String = "submit"): Matcher[Result] = {
+    new Matcher[Result] {
+      override def apply(result: Result): MatchResult = {
+        val doc = Jsoup.parse(bodyOf(result))
+
+        checkMessageIsDefined(expectedMessageKey)
+
+        val foundElement = doc.getElementById(expectedElementId)
+
+        val isAsExpected = Option(foundElement) match {
+          case None => false
+          case Some(elAmls) => {
+            val isExpectedTag = elAmls.tagName() == expectedTagName
+            val isExpectedType = elAmls.attr("type") == expectedType
+            val hasExpectedMsg = elAmls.text() == htmlEscapedMessage(expectedMessageKey)
+            isExpectedTag && isExpectedType && hasExpectedMsg
+          }
+        }
+
+        MatchResult(
+          isAsExpected,
+          s"""Response does not contain a submit button with id "$expectedElementId" and type "$expectedType" with content for message key "$expectedMessageKey" """,
+          s"""Response contains a submit button with id "$expectedElementId" and type "$expectedType" with content for message key "$expectedMessageKey" """
+        )
+      }
+    }
+  }
 
   protected def containLink(expectedMessageKey: String, expectedHref: String): Matcher[Result] = {
     new Matcher[Result] {
