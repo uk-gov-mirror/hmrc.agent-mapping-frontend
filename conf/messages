@@ -118,8 +118,3 @@ global.error.404.message=Please check that you have entered the correct web addr
 global.error.500.title=Sorry, we are experiencing technical difficulties - 500
 global.error.500.heading=Sorry, we''re experiencing technical difficulties
 global.error.500.message=Please try again in a few minutes.
-
-
-
-footer.links.accessibility.text=Accessibility
-footer.links.accessibility.url=/agent-mapping/accessibility
