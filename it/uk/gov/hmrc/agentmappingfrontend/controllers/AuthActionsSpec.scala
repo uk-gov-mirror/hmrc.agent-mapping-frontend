@@ -23,7 +23,7 @@ import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.agentmappingfrontend.auth.{AuthActions, TaskListAuthActions}
+import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType}
@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubscriptionStubs with SubscriptionJourneyRecordSamples {
 
-  object TestController extends AuthActions  with TaskListAuthActions {
+  object TestController extends AuthActions {
 
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
     override def agentSubscriptionConnector: AgentSubscriptionConnector = app.injector.instanceOf[AgentSubscriptionConnector]
@@ -344,11 +344,10 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
     }
 
     "return None when user has no HMRC-AS-AGENT enrolment" in {
-      givenAuthorisedFor("{}",s"""{}""".stripMargin)
+      givenAuthorisedFor(s"""{"allEnrolments": []}""",s"""{}""".stripMargin)
 
       val result = TestController.testWithCheckForArn
-      status(result) shouldBe 200
-      bodyOf(result) should include("None")
+      status(result) shouldBe 403
     }
 
     "return None no Bearer Token" in {

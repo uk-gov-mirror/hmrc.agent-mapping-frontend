@@ -16,23 +16,21 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import java.time.LocalDateTime
-
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.agentmappingfrontend.auth.TaskListAuthActions
+import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm, MappingDetails, UserMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, UserMapping}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, gg_tag, incorrect_account, not_enrolled, start_sign_in_required, start => start_journey}
+import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, incorrect_account, start => start_journey}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -49,7 +47,7 @@ class TaskListMappingController @Inject()(
   val repository: TaskListMappingRepository,
   val env: Environment,
   val config: Configuration)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
-    extends MappingBaseController with I18nSupport with TaskListAuthActions {
+    extends MappingBaseController with I18nSupport with AuthActions {
 
   def root(continueId: String): Action[AnyContent] = Action.async { implicit request =>
     Redirect(routes.TaskListMappingController.start(continueId))
