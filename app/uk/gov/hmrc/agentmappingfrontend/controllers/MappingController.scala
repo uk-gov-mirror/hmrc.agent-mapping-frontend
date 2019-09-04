@@ -22,9 +22,9 @@ import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
+import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, GGTagForm, MappingDetailsRequest}
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.util._
@@ -32,7 +32,6 @@ import uk.gov.hmrc.agentmappingfrontend.views.html
 import uk.gov.hmrc.agentmappingfrontend.views.html.client_relationships_found
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,6 +41,7 @@ class MappingController @Inject()(
   override val messagesApi: MessagesApi,
   val authConnector: AuthConnector,
   mappingConnector: MappingConnector,
+  val agentSubscriptionConnector: AgentSubscriptionConnector,
   repository: MappingArnRepository,
   val env: Environment,
   val config: Configuration)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
@@ -208,7 +208,8 @@ class MappingController @Inject()(
         case Some(record) => Ok(html.complete(id, record.clientCountAndGGTags.map(_.clientCount).sum))
 
         case None =>
-          throw new InternalServerException("user must not completed the mapping journey or have lost the stored arn")
+          Logger.warn("user must not completed the mapping journey or have lost the stored arn")
+          InternalServerError
       }
     }
   }

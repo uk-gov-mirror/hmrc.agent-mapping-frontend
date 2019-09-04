@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.agentmappingfrontend.auth
 
-import play.api.Environment
-import play.api.libs.json.JsResultException
-import play.api.mvc.Results.Redirect
-import play.api.mvc._
+import play.api.mvc.Results._
+import play.api.mvc.{Request, Result, _}
+import play.api.{Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.EnrolmentHelper._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
@@ -29,8 +28,8 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResul
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{agentCode, allEnrolments, credentials}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.domain.AgentCode
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
@@ -43,14 +42,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   def appConfig: AppConfig
 
-  def withBasicAuth[A](body: => Future[Result])(
+  def agentSubscriptionConnector: AgentSubscriptionConnector
+
+  def withBasicAuth(body: => Future[Result])(
     implicit request: Request[AnyContent],
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway)) {
       body
     } recover {
-      case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+      handleException
     }
 
   def withAuthorisedAgent(idRefToArn: MappingArnResultId)(body: String => Future[Result])(
@@ -77,9 +78,11 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
             Future.successful(Redirect(redirectRoute))
           }
+
+        case _ ~ None => Future.successful(Forbidden)
       }
       .recover {
-        case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+        handleException
       }
 
   def withCheckForArn(body: Option[Arn] => Future[Result])(
@@ -87,44 +90,14 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     hc: HeaderCarrier,
     ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent)
-      .retrieve(allEnrolments) {
-        case agentEnrolments =>
-          body(
-            agentEnrolments
-              .getEnrolment(AsAgentServiceKey)
-              .flatMap(_.getIdentifier(ArnEnrolmentKey)
-                .map(identifier => Arn(identifier.value))))
+      .retrieve(allEnrolments) { agentEnrolments =>
+        body(getArn(agentEnrolments))
       }
       .recoverWith {
-        case _: JsResultException      => body(None)
-        case _: AuthorisationException => body(None)
+        case _: NoActiveSession => body(None)
+
+        case e => Future.successful(handleException.apply(e))
       }
-
-}
-
-class Agent(
-  private val providerId: AuthProviderId,
-  private val maybeAgentCode: Option[AgentCode],
-  private val legacyEnrolments: Seq[AgentEnrolment],
-  private val maybeSubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
-  def authProviderId: AuthProviderId = providerId
-  def agentEnrolments: Seq[AgentEnrolment] = legacyEnrolments
-  def agentCodeOpt: Option[AgentCode] = maybeAgentCode
-
-  def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
-    maybeSubscriptionJourneyRecord
-      .getOrElse(
-        throw new RuntimeException(
-          s"mandatory subscription journey record was missing for authProviderID $authProviderId"))
-}
-
-trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
-
-  def env: Environment
-
-  def appConfig: AppConfig
-
-  def agentSubscriptionConnector: AgentSubscriptionConnector
 
   def withBasicAgentAuth[A](body: => Future[Result])(
     implicit request: Request[AnyContent],
@@ -133,7 +106,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
     authorised(AuthProviders(GovernmentGateway) and AffinityGroup.Agent) {
       body
     } recover {
-      case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+      handleException
     }
 
   def withSubscribingAgent(id: MappingArnResultId)(body: Agent => Future[Result])(
@@ -161,7 +134,7 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
             }
       }
       .recover {
-        case _: AuthorisationException => toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+        handleException
       }
 
   private def agentEnrolmentsFromEligibleEnrolments(eligibleEnrolments: Set[Enrolment]): Seq[AgentEnrolment] =
@@ -173,4 +146,45 @@ trait TaskListAuthActions extends AuthorisedFunctions with AuthRedirects {
           case None => throw new RuntimeException("invalid enrolment type found")
       })
       .toSeq
+
+  private def getArn(enrolments: Enrolments) =
+    for {
+      enrolment  <- enrolments.getEnrolment(AsAgentServiceKey)
+      identifier <- enrolment.getIdentifier(ArnEnrolmentKey)
+    } yield Arn(identifier.value)
+
+  private def handleException(implicit ec: ExecutionContext, request: Request[_]): PartialFunction[Throwable, Result] = {
+
+    case _: UnsupportedAffinityGroup =>
+      Logger.warn(s"Logged in user does not have the required affinity group")
+      Forbidden
+
+    case _: NoActiveSession =>
+      toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+
+    case _: InsufficientEnrolments =>
+      Logger.warn(s"Logged in user does not have required enrolments")
+      Forbidden
+
+    case _: UnsupportedAuthProvider =>
+      Logger.warn("User is not logged in via  GovernmentGateway, signing out and redirecting")
+      toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+  }
+
+}
+
+class Agent(
+  private val providerId: AuthProviderId,
+  private val maybeAgentCode: Option[AgentCode],
+  private val legacyEnrolments: Seq[AgentEnrolment],
+  private val maybeSubscriptionJourneyRecord: Option[SubscriptionJourneyRecord]) {
+  def authProviderId: AuthProviderId = providerId
+  def agentEnrolments: Seq[AgentEnrolment] = legacyEnrolments
+  def agentCodeOpt: Option[AgentCode] = maybeAgentCode
+
+  def getMandatorySubscriptionJourneyRecord: SubscriptionJourneyRecord =
+    maybeSubscriptionJourneyRecord
+      .getOrElse(
+        throw new RuntimeException(
+          s"mandatory subscription journey record was missing for authProviderID $authProviderId"))
 }

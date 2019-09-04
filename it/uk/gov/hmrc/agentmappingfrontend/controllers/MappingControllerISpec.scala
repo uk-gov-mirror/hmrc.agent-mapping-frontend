@@ -444,7 +444,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
           .mkString(", ")} and single client response $singleClientCountResponse" in {
           givenUserIsAuthenticated(user)
           val request = fakeRequest(GET, routes.MappingController.complete(id = "someArnRefForMapping").url)
-          an[InternalServerException] shouldBe thrownBy(callEndpointWith(request))
+          val result = callEndpointWith(request)
+          status(result) shouldBe 500
         }
 
       }

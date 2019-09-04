@@ -95,7 +95,7 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
 
   def updateClientCountAndGGTag(id: MappingArnResultId, clientCountAndGGTag: ClientCountAndGGTag)(
     implicit ec: ExecutionContext): Future[Unit] = {
-    val updateOp = Json.obj("$addToSet" -> Json.obj("clientCountAndGGTags" -> clientCountAndGGTag))
+    val updateOp = Json.obj("$push" -> Json.obj("clientCountAndGGTags" -> clientCountAndGGTag))
     collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
   }
 
