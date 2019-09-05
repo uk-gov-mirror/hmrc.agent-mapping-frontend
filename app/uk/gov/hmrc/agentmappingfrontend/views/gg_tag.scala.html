@@ -16,20 +16,28 @@
 
 @import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html
-@import uk.gov.hmrc.agentmappingfrontend.views.html.x_custom_input
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.model.GGTag
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-@import uk.gov.hmrc.play.views.html.helpers._
 
-@(ggTagForm: Form[GGTag], id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@this(
+mainTemplate: main_template,
+        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+        uiXCustomInput: x_custom_input,
+        formHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 
-@html.main_template(appConfig, title = Messages("gg-tag.title"), bodyClasses = None, taskList = taskList) {
+        )
+
+
+@(ggTagForm: Form[GGTag], id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_],messages: Messages,
+        appConfig: AppConfig)
+
+@mainTemplate(appConfig, title = Messages("gg-tag.title"), bodyClasses = None, taskList = taskList) {
 
     <a href="@routes.MappingController.showClientRelationshipsFound(id)" class="link-back">@Messages("button.back")</a>
 
     @if(ggTagForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), ggTagForm, Seq.empty, Some("gg-tag"))
+        @uiErrorSummary(Messages("error.summary.heading"), ggTagForm, Seq.empty, Some("gg-tag"))
     }
     <fieldset>
         <legend>
@@ -37,11 +45,11 @@
         </legend>
         <p>@Messages("gg-tag.p1")</p>
 
-        @form(action = routes.MappingController.start(), 'class -> "form js-form", 'id -> "gg-tag-form") {
+        @formHelper(action = routes.MappingController.start(), 'class -> "form js-form", 'id -> "gg-tag-form") {
 
 
             <div class="form-group">
-            @x_custom_input(
+            @uiXCustomInput(
                 ggTagForm("ggTag"),
                 '_label -> Messages("gg-tag.form.identifier"),
                 '_inputClass -> "govuk-input--width-4",

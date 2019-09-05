@@ -18,41 +18,47 @@ package uk.gov.hmrc.agentmappingfrontend.controllers.testOnly
 
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.controllers.MappingBaseController
 import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_sa_mappings, view_vat_mappings}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext
 
-class TestOnlyController @Inject()(override val messagesApi: MessagesApi, mappingConnector: MappingConnector)(
+class TestOnlyController @Inject()(
+  override val messagesApi: MessagesApi,
+  mappingConnector: MappingConnector,
+  viewSaMappingsTemplate: view_sa_mappings,
+  noMappingsTemplate: no_mappings,
+  viewVatMappingsTemplate: view_vat_mappings)(
   implicit appConfig: AppConfig,
-  val ec: ExecutionContext)
-    extends MappingBaseController with I18nSupport {
+  val ec: ExecutionContext,
+  cc: MessagesControllerComponents)
+    extends FrontendController(cc) with I18nSupport {
 
   def findSaMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
     mappingConnector.findSaMappingsFor(arn).map { mappings =>
       if (mappings.nonEmpty)
-        Ok(view_sa_mappings(arn, mappings))
+        Ok(viewSaMappingsTemplate(arn, mappings))
       else
-        NotFound(no_mappings(arn))
+        NotFound(noMappingsTemplate(arn))
     }
   }
 
   def findVatMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
     mappingConnector.findVatMappingsFor(arn).map { mappings =>
       if (mappings.nonEmpty)
-        Ok(view_vat_mappings(arn, mappings))
+        Ok(viewVatMappingsTemplate(arn, mappings))
       else
-        NotFound(no_mappings(arn))
+        NotFound(noMappingsTemplate(arn))
     }
   }
 
   def deleteAllMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
     mappingConnector.deleteAllMappingsBy(arn).map { _ =>
-      Ok(no_mappings(arn))
+      Ok(noMappingsTemplate(arn))
     }
   }
 }

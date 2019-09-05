@@ -2,12 +2,11 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.saJsonBody
-import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
 import play.api.http.Status
 import play.api.libs.json.Json
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
 import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
+import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
 
 trait AgentSubscriptionStubs {
 

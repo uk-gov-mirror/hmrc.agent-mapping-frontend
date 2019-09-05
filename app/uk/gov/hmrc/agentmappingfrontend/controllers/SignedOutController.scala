@@ -17,14 +17,16 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.Inject
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.helper.urlEncode
 
 import scala.concurrent.Future
 
-class SignedOutController @Inject()(appConfig: AppConfig) extends MappingBaseController {
+class SignedOutController @Inject()(appConfig: AppConfig, cc: MessagesControllerComponents)
+    extends FrontendController(cc) {
 
   def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>
     val url = s"${appConfig.signOutRedirectUrl}?id=$id"

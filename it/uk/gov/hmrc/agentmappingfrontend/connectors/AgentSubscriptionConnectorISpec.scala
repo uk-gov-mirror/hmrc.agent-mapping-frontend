@@ -1,18 +1,25 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
-import play.api.http.Status
+import com.kenshoo.play.metrics.Metrics
+import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
 import uk.gov.hmrc.agentmappingfrontend.stubs.AgentSubscriptionStubs
 import uk.gov.hmrc.agentmappingfrontend.support.{MetricTestSupport, SubscriptionJourneyRecordSamples}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentSubscriptionConnectorISpec extends BaseControllerISpec with MetricTestSupport with AgentSubscriptionStubs with SubscriptionJourneyRecordSamples {
 
-  private def connector = app.injector.instanceOf[AgentSubscriptionConnector]
+  private lazy implicit val metrics = app.injector.instanceOf[Metrics]
+  private lazy val http = app.injector.instanceOf[HttpClient]
+  private lazy val appConfig = app.injector.instanceOf[AppConfig]
+
+  private lazy val connector: AgentSubscriptionConnector = new AgentSubscriptionConnector(http,metrics, appConfig)
   private implicit val hc = HeaderCarrier()
+
 
   private val authProviderId = AuthProviderId("12345-credId")
 

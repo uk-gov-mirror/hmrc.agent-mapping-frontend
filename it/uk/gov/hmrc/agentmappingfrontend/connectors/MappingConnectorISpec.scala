@@ -1,11 +1,12 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
   private val arn = Arn("ARN0001")

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.google.inject.name.Named
 import javax.inject.{Inject, Singleton}
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.i18n.{Messages, MessagesApi}
@@ -36,8 +35,10 @@ class ErrorHandler @Inject()(
   val env: Environment,
   val messagesApi: MessagesApi,
   val auditConnector: AuditConnector,
-  @Named("appName") val appName: String)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
+  errorTemplate: error_template)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
     extends FrontendErrorHandler with AuthRedirects with ErrorAuditing {
+
+  val appName: String = appConfig.appName
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
@@ -60,7 +61,7 @@ class ErrorHandler @Inject()(
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(
     implicit request: Request[_]) =
-    error_template(pageTitle, heading, message)
+    errorTemplate(pageTitle, heading, message)
 }
 
 object EventTypes {

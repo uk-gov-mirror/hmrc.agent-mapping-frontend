@@ -18,17 +18,23 @@
 @import uk.gov.hmrc.agentmappingfrontend.views.html
 @import uk.gov.hmrc.agentmappingfrontend.model.VatMapping
 @import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-@import uk.gov.hmrc.play.views.html.helpers.form
 
-@(arn: Arn, mappings: Seq[VatMapping])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@this(
+mainTemplate: main_template,
+        formHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 
-@html.main_template(appConfig, title = Messages("view.mappings.title"), bodyClasses = None) {
+)
+
+@(arn: Arn, mappings: Seq[VatMapping])(implicit request: Request[_],messages: Messages,
+        appConfig: AppConfig)
+
+@mainTemplate(appConfig, title = Messages("view.mappings.title"), bodyClasses = None) {
 
   <header>
     <h1>@Messages("view.mappings.title")</h1>
   </header>
 
-  @form(action = uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.routes.TestOnlyController.deleteAllMappings(arn)) {
+  @formHelper(action = uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.routes.TestOnlyController.deleteAllMappings(arn)) {
     <table border="0">
       <tr>
         <td>Arn</td>
