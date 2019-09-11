@@ -66,6 +66,23 @@ trait AuthStubs {
           .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
   }
 
+  def givenuserHasUnsupportedAffinityGroup(): StubMapping = {
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")))
+  }
+
+  def givenUserHasUnsupportedAuthProvider(): StubMapping =
+    stubFor(
+      post(urlEqualTo("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAuthProvider\"")))
+
   def verifyAuthoriseAttempt(): Unit =
     verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
 

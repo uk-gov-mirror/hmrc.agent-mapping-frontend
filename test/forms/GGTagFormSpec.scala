@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.model
+package forms
 
-case class DesAddress(
-  addressLine1: String,
-  addressLine2: Option[String],
-  addressLine3: Option[String],
-  addressLine4: Option[String],
-  postcode: String,
-  countryCode: String)
+import uk.gov.hmrc.agentmappingfrontend.model.GGTagForm
+import uk.gov.hmrc.play.test.UnitSpec
+
+class GGTagFormSpec extends UnitSpec {
+
+  "ggtagForm" should {
+
+    "have no errors when ggTag is valid" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "1234"))
+      form.hasErrors shouldBe false
+    }
+
+    "have errors when ggTag is invalid" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "abcd"))
+      form.hasErrors shouldBe true
+      form.errors.head.message shouldBe "error.gg-tag.invalid"
+    }
+  }
+
+}

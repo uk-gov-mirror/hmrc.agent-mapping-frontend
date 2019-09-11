@@ -285,9 +285,24 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
         )
       }
     }
+
+    "return Forbidden" when {
+      "the affinity group is unsupported" in {
+        givenuserHasUnsupportedAffinityGroup()
+        val result = TestController.testWithSubscribingAgent
+        status(result) shouldBe 403
+      }
+    }
+
+    "redirect to gg log in" when {
+      "the auth provider is unsupported" in {
+        givenUserHasUnsupportedAuthProvider()
+        val result = TestController.testWithSubscribingAgent
+        status(result) shouldBe 303
+        result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+      }
+    }
   }
-
-
 
     "withBasicAuth" should {
     "check if the user is logged in" in {

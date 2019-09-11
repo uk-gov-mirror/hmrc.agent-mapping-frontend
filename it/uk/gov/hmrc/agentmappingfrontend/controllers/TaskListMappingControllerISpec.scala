@@ -8,7 +8,7 @@ import uk.gov.hmrc.agentmappingfrontend.config.FrontendAppConfig
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs, MappingStubs}
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{mtdAsAgent, vatEnrolledAgent}
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{mtdAsAgent, vatEnrolledAgent, agentNotEnrolled}
 import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.domain.AgentCode
 
@@ -522,6 +522,20 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       }.getMessage should startWith("no subscription journey record found")
 
     }
+
+    "redirect to not enrolled if the logged in user has no enrolments" in {
+      givenUserIsAuthenticated(agentNotEnrolled)
+      givenSubscriptionJourneyRecordNotFoundForAuthProviderId(AuthProviderId("12345-credId"))
+      val id = await(repo.create("continue-id"))
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping.copy(authProviderId = AuthProviderId("123-credId")))
+
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
+      val result = callEndpointWith(request)
+      val newId = await(repo.findByContinueId("continue-id").get.id)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.notEnrolled(newId).url)
+    }
   }
 
   "200 /task-list/error/incorrect-account" should {
@@ -548,6 +562,19 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       checkHtmlResultContainsEscapedMsgs(result,
         "alreadyMapped.p1", "alreadyMapped.p2")
+    }
+  }
+
+  "200 /task-list/not-enrolled" should {
+    "display the not enrolled page" in {
+      givenUserIsAuthenticated(agentNotEnrolled)
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/error/not-enrolled/?id=SOMETHING")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+
+      checkHtmlResultContainsEscapedMsgs(result,
+        "notEnrolled.p1", "notEnrolled.p2")
     }
   }
 }
