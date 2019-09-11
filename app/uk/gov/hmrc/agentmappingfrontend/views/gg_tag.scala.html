@@ -28,13 +28,12 @@ mainTemplate: main_template,
 
         )
 
-
 @(ggTagForm: Form[GGTag], id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_],messages: Messages,
         appConfig: AppConfig)
 
 @mainTemplate(appConfig, title = Messages("gg-tag.title"), bodyClasses = None, taskList = taskList) {
 
-    <a href="@routes.MappingController.showClientRelationshipsFound(id)" class="link-back">@Messages("button.back")</a>
+    <a href="@{if(taskList) routes.TaskListMappingController.showClientRelationshipsFound(id) else routes.MappingController.showClientRelationshipsFound(id)}" class="link-back">@Messages("button.back")</a>
 
     @if(ggTagForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), ggTagForm, Seq.empty, Some("gg-tag"))
@@ -45,8 +44,7 @@ mainTemplate: main_template,
         </legend>
         <p>@Messages("gg-tag.p1")</p>
 
-        @formHelper(action = routes.MappingController.start(), 'class -> "form js-form", 'id -> "gg-tag-form") {
-
+        @formHelper(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'class -> "form js-form", 'id -> "gg-tag-form") {
 
             <div class="form-group">
             @uiXCustomInput(

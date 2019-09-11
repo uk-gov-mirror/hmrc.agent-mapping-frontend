@@ -24,12 +24,12 @@ import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, UserMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.{ExistingClientRelationshipsForm, GGTagForm, UserMapping}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
 import uk.gov.hmrc.agentmappingfrontend.util._
-import uk.gov.hmrc.agentmappingfrontend.views.html.{already_mapped, client_relationships_found, existing_client_relationships, incorrect_account, not_enrolled, start => start_journey}
+import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -47,11 +47,12 @@ class TaskListMappingController @Inject()(
   val env: Environment,
   val config: Configuration,
   cc: MessagesControllerComponents,
-  startTemplate: start_journey,
+  startTemplate: start,
   alreadyMappedTemplate: already_mapped,
   clientRelationshipsFoundTemplate: client_relationships_found,
   existingClientRelationshipsTemplate: existing_client_relationships,
   incorrectAccountTemplate: incorrect_account,
+  ggTagTemplate: gg_tag,
   notEnrolledTemplate: not_enrolled)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
     extends FrontendController(cc) with I18nSupport with AuthActions {
 
@@ -100,7 +101,7 @@ class TaskListMappingController @Inject()(
   def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent(id) { agent =>
       repository.findRecord(id).flatMap {
-        case Some(record) => {
+        case Some(record) =>
           if (!record.alreadyMapped) {
             mappingConnector.getClientCount.flatMap(count => {
               repository
@@ -110,11 +111,10 @@ class TaskListMappingController @Inject()(
           } else {
             Ok(clientRelationshipsFoundTemplate(record.clientCount, id, taskList = true))
           }
-        }
-        case None => {
+
+        case None =>
           throw new RuntimeException(
             s"no task-list mapping record found for agent code ${agent.agentCodeOpt.getOrElse(" ")}")
-        }
       }
     }
   }
@@ -125,7 +125,7 @@ class TaskListMappingController @Inject()(
         case Some(record) =>
           if (!record.alreadyMapped) {
             agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).flatMap {
-              case Some(sjr) => {
+              case Some(sjr) =>
                 val newSjr = sjr.copy(
                   userMappings = UserMapping(
                     authProviderId = agent.authProviderId,
@@ -140,10 +140,9 @@ class TaskListMappingController @Inject()(
                   newSjr, {
                     repository
                       .upsert(record.copy(alreadyMapped = true), record.continueId)
-                      .map(_ => Redirect(routes.TaskListMappingController.showExistingClientRelationships(id)))
+                      .map(_ => Redirect(routes.TaskListMappingController.showGGTag(id)))
                   }
                 )
-              }
 
               case None =>
                 throw new RuntimeException(
@@ -152,43 +151,41 @@ class TaskListMappingController @Inject()(
             }
 
           } else {
-            Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
+            Redirect(routes.TaskListMappingController.showGGTag(id))
           }
-        case None => {
+        case None =>
           throw new RuntimeException(
-            s"no task-list mapping record found for agent code ${agent.agentCodeOpt.getOrElse(" ")}")
-        }
+            s"no task-list mapping record found for agent code ${agent.agentCodeOpt.getOrElse("")}")
       }
     }
-
   }
 
-//  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-//    withSubscribingAgent(id) { _ =>
-//      Ok(gg_tag(GGTagForm.form, id, taskList = true))
-//    }
-//  }
-//
-//  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-//    withSubscribingAgent(id) { agent =>
-//      GGTagForm.form.bindFromRequest
-//        .fold(
-//          formWithErrors => {
-//            Ok(gg_tag(formWithErrors, id))
-//          },
-//          ggTag => {
-//            val updatedUserMappings: List[UserMapping] = agent.getMandatorySubscriptionJourneyRecord.userMappings
-//              .map(m => if (m.authProviderId == agent.authProviderId) m.copy(ggTag = ggTag.value) else m)
-//            val newSjr = agent.getMandatorySubscriptionJourneyRecord.copy(userMappings = updatedUserMappings)
-//
-//            agentSubscriptionService.createOrUpdateRecordOrFail(
-//              agent,
-//              newSjr,
-//              Redirect(continueOrStop(routes.TaskListMappingController.showExistingClientRelationships(id), id)))
-//          }
-//        )
-//    }
-//  }
+  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withSubscribingAgent(id) { _ =>
+      Ok(ggTagTemplate(GGTagForm.form, id, taskList = true))
+    }
+  }
+
+  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withSubscribingAgent(id) { agent =>
+      GGTagForm.form.bindFromRequest
+        .fold(
+          formWithErrors => {
+            Ok(ggTagTemplate(formWithErrors, id, taskList = true))
+          },
+          ggTag => {
+            val updatedUserMappings: List[UserMapping] = agent.getMandatorySubscriptionJourneyRecord.userMappings
+              .map(m => if (m.authProviderId == agent.authProviderId) m.copy(ggTag = ggTag.value) else m)
+            val newSjr = agent.getMandatorySubscriptionJourneyRecord.copy(userMappings = updatedUserMappings)
+
+            agentSubscriptionService.createOrUpdateRecordOrFail(
+              agent,
+              newSjr,
+              Redirect(continueOrStop(routes.TaskListMappingController.showExistingClientRelationships(id), id)))
+          }
+        )
+    }
+  }
 
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent(id) { agent =>
@@ -254,13 +251,11 @@ class TaskListMappingController @Inject()(
 
     val call = submitAction.headOption match {
       case Some("continue") => next.url
-      case Some("save") => {
+      case Some("save") =>
         Logger.info(s"user has selected save and come back later on /existing-client-relationships")
         s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
-      }
-      case e => {
-        throw new RuntimeException(s"unexpected value found in submit $e")
-      }
+
+      case e => throw new RuntimeException(s"unexpected value found in submit $e")
     }
     call
   }
@@ -269,7 +264,7 @@ class TaskListMappingController @Inject()(
     id: MappingArnResultId)(implicit hc: HeaderCarrier, request: Request[AnyContent]): Future[Result] =
     withSubscribingAgent(id) { agent =>
       repository.findRecord(id).flatMap {
-        case Some(record) => {
+        case Some(record) =>
           agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).map {
             case Some(sjr) =>
               if (sjr.userMappings.map(_.authProviderId).isEmpty) {
@@ -284,7 +279,7 @@ class TaskListMappingController @Inject()(
               throw new RuntimeException(
                 s"no subscription journey record found for agentCode ${agent.agentCodeOpt.getOrElse(" ")} when routing to next page")
           }
-        }
+
         case None =>
           throw new RuntimeException(
             s"no task list mapping record found for id $id and agent code ${agent.agentCodeOpt.getOrElse(" ")}")
@@ -293,13 +288,13 @@ class TaskListMappingController @Inject()(
 
   private def backUrl(id: MappingArnResultId): Future[String] =
     repository.findRecord(id).flatMap {
-      case Some(record) => {
+      case Some(record) =>
         if (record.alreadyMapped) {
           routes.TaskListMappingController.showClientRelationshipsFound(id).url
         } else {
           s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}"
         }
-      }
+
       case None => throw new RuntimeException(s"no task-list mapping record found for id $id for backUrl")
     }
 

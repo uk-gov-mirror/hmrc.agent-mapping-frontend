@@ -31,7 +31,7 @@ mainTemplate: main_template,
         inputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
         )
 
-@(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag],backUrl: String, taskList: Boolean = false)(implicit request: Request[_],messages: Messages,
+@(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], backUrl: String, taskList: Boolean = false)(implicit request: Request[_],messages: Messages,
         appConfig: AppConfig)
 @mainTemplate(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
 
@@ -49,16 +49,13 @@ mainTemplate: main_template,
    @for(clientCountAndGGTag <- clientCountAndGGTags) {
    <tr>
     <td>
-     <span class="bold">@clientCountAndGGTag.clientCount</span>
-    </td>
-     <td class="bold">
-     @if(clientCountAndGGTag.clientCount == 1) {
-      @Messages("existingClientRelationships.single.th")
+     <span class="bold">@if(clientCountAndGGTag.clientCount == 1) {
+      @Messages("existingClientRelationships.single.th", clientCountAndGGTag.clientCount)
      } else {
-      @Messages("existingClientRelationships.multi.th")
-     }
-     </td>
-    <td>@Messages("existingClientRelationships.td")</td>
+      @Messages("existingClientRelationships.multi.th", clientCountAndGGTag.clientCount)
+     }</span>
+    </td>
+    <td>@Messages("existingClientRelationships.ggTag", clientCountAndGGTag.ggTag)</td>
     }
    </tr>
   </tbody>
@@ -86,7 +83,7 @@ mainTemplate: main_template,
   <div class="form-field">
    @if(taskList){
    <button class="button margin-right-5" type="submit" id="existing-client-relationships-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
-           <button class="button--secondary" type="submit" id="existing-client-relationships-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
+   <button class="button--secondary" type="submit" id="existing-client-relationships-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
 
 
    } else {
