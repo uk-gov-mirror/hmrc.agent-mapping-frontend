@@ -11,7 +11,6 @@ import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, Mapping
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -170,51 +169,61 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
   }
 
-//  "/tag-gg GET" should {
-//    val arn = Arn("TARN0000001")
-//    "display the GGTag screen" in {
-//      val clientCount = 12
-//      val id = await(repo.create(arn, clientCount))
-//      givenAuthorisedFor("IR-SA-AGENT")
-//      implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/tag-gg?id=$id")
-//      val result = callEndpointWith(request)
-//
-//      checkHtmlResultContainsEscapedMsgs(
-//        result,
-//        "gg-tag.title",
-//        "gg-tag.p1",
-//        "gg-tag.form.identifier",
-//        "gg-tag.form.hint",
-//        "gg-tag.xs")
-//    }
-//  }
-//
-//  "/tag-gg POST" should {
-//    val arn = Arn("TARN0000001")
-//    "redirect to existing-client-relationships when a valid gg-tag is submitted" in {
-//      val clientCount = 12
-//      val id = await(repo.create(arn, clientCount))
-//      givenAuthorisedFor("IR-SA-AGENT")
-//      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
-//        .withFormUrlEncodedBody("ggTag" -> "1234")
-//      val result = callEndpointWith(request)
-//
-//      status(result) shouldBe 303
-//      redirectLocation(result) shouldBe Some(routes.MappingController.showExistingClientRelationships(id).url)
-//    }
-//
-//    "redisplay the page with errors when an invalid gg-tag is submitted" in {
-//      val clientCount = 12
-//      val id = await(repo.create(arn, clientCount))
-//      givenAuthorisedFor("IR-SA-AGENT")
-//      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
-//        .withFormUrlEncodedBody("ggTag" -> "abcd")
-//      val result = callEndpointWith(request)
-//
-//      status(result) shouldBe 200
-//      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
-//    }
-//  }
+  "/tag-gg GET" should {
+    val arn = Arn("TARN0000001")
+    "display the GGTag screen" in {
+      val clientCount = 12
+      val id = await(repo.create(arn, clientCount))
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/tag-gg?id=$id")
+      val result = callEndpointWith(request)
+
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "gg-tag.title",
+        "gg-tag.p1",
+        "gg-tag.form.identifier",
+        "gg-tag.form.hint",
+        "gg-tag.xs")
+    }
+  }
+
+  "/tag-gg POST" should {
+    val arn = Arn("TARN0000001")
+    "redirect to existing-client-relationships when a valid gg-tag is submitted" in {
+      val clientCount = 12
+      val id = await(repo.create(arn, clientCount))
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
+        .withFormUrlEncodedBody("ggTag" -> "1234")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.showExistingClientRelationships(id).url)
+    }
+
+    "redisplay the page with errors when an invalid gg-tag is submitted" in {
+      val clientCount = 12
+      val id = await(repo.create(arn, clientCount))
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
+        .withFormUrlEncodedBody("ggTag" -> "abcd")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
+    }
+
+    "show the not found page if there is no journey record" in {
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=foo")
+        .withFormUrlEncodedBody("ggTag" -> "1234")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsMsgs(result, "page-not-found.h1", "page-not-found.p1")
+    }
+  }
 
   "/existing-client-relationships - GET" should {
 
