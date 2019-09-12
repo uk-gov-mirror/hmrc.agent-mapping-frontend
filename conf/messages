@@ -24,6 +24,7 @@ clientRelationshipsFound.multi.title=Client relationships found
 clientRelationshipsFound.multi.p1=Your user ID has the following client relationships that you can copy across.
 clientRelationshipsFound.multi.td=VAT and Self Assessment clients
 clientRelationshipsFound.multi.p2=If you continue, they will be copied across to your new agent services account. You will then be able to sign up to Making Tax Digital.
+clientRelationshipsFound.max=or more VAT and Self Assessment clients
 
 #gg-tag
 gg-tag.title=Identify this user ID
@@ -41,6 +42,7 @@ existingClientRelationships.heading=Do you need to copy more clients across?
 existingClientRelationships.p1=To copy more clients across, you need to sign in with another user ID you use to manage VAT and Self Assessment clients.
 existingClientRelationships.yes=Yes
 existingClientRelationships.no=No
+existingClientRelationships.max=or more VAT and Self Assessment clients
 
 
 #PageNotFound

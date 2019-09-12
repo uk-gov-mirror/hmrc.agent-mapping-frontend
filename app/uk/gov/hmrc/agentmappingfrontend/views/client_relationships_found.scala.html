@@ -27,6 +27,8 @@
 
 @returnUrl=@{s"/task-list/client-relationships-found/?id=$id"}
 
+    @maxRecords=@{appConfig.clientCountMaxRecords}
+
 @mainTemplate(appConfig, title = Messages("clientRelationshipsFound.title"), bodyClasses = None, taskList = taskList) {
 
 
@@ -39,10 +41,10 @@
         <tbody>
             <tr class="no-border">
                 <td>
-                    <span class="bold-xxlarge">@clientCount</span>
+                    <span class="bold-xxlarge">@if(clientCount >= maxRecords){ @maxRecords} else { @clientCount}</span>
                 </td>
                 <td class="bold">
-                    @if(clientCount == 1){ @Messages("clientRelationshipsFound.single.td")} else { @Messages("clientRelationshipsFound.multi.td")}
+                    @if(clientCount == 1){ @Messages("clientRelationshipsFound.single.td")} else {@if(clientCount >= appConfig.clientCountMaxRecords){ @Messages("clientRelationshipsFound.max")} else { @Messages("clientRelationshipsFound.multi.td")}}
                 </td>
             </tr>
         </tbody>

@@ -92,5 +92,4 @@ class AgentSubscriptionConnector @Inject()(
         }
     }
   }
-
 }

@@ -47,7 +47,8 @@ abstract class BaseControllerISpec
         "microservice.services.agent-mapping.port" -> wireMockPort,
         "microservice.services.agent-subscription.port" -> wireMockPort,
         "application.router"                       -> "testOnlyDoNotUseInAppConf.Routes",
-        "authentication.login-callback.url"        -> "somehost"
+        "authentication.login-callback.url"        -> "somehost",
+        "clientCount.maxRecords" -> 5
       )
       .overrides(new TestGuiceModule)
 

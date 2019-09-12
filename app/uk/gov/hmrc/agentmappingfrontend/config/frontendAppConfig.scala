@@ -43,6 +43,7 @@ trait AppConfig {
   val agentMappingFrontendExternalUrl: String
   val ggSignIn: String
   val appName: String
+  val clientCountMaxRecords: Int
 }
 @Singleton
 class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppConfig {
@@ -102,5 +103,7 @@ class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppCon
   override lazy val agentMappingFrontendExternalUrl = servicesConfig.getString(
     s"microservice.services.agent-mapping-frontend.external-url"
   )
+
+  override lazy val clientCountMaxRecords: Int = servicesConfig.getInt("clientCount.maxRecords")
 
 }

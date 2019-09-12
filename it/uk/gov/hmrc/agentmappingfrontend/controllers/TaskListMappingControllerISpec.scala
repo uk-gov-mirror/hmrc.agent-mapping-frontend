@@ -129,7 +129,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
       val id = await(repo.create("continue-id"))
-      mappingStubs.givenClientCountRecordsFound(12)
+      mappingStubs.givenClientCountRecordsFound(4)
       val request = FakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
@@ -160,6 +160,27 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
         "clientRelationshipsFound.title","clientRelationshipsFound.multi.title",
         "clientRelationshipsFound.multi.p1",
         "clientRelationshipsFound.multi.td",
+        "clientRelationshipsFound.multi.p2",
+        "button.saveContinue", "button.saveComeBackLater")
+
+      bodyOf(result) should include(appConfig.agentSubscriptionFrontendProgressSavedUrl)
+      bodyOf(result) should include(routes.TaskListMappingController.confirmClientRelationshipsFound(id).url)
+    }
+
+    "200 the show client relationships with max record text if the client count exceeds config max (set here at 5)" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      val id = await(repo.create("continue-id"))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCount = 12, alreadyMapped = true), "continue-id"))
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
+      val result = callEndpointWith(request)
+      status(result) shouldBe 200
+
+      checkHtmlResultContainsEscapedMsgs(result,
+        "clientRelationshipsFound.title","clientRelationshipsFound.multi.title",
+        "clientRelationshipsFound.multi.p1",
+        "clientRelationshipsFound.max",
         "clientRelationshipsFound.multi.p2",
         "button.saveContinue", "button.saveComeBackLater")
 

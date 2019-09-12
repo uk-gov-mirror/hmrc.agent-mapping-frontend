@@ -33,6 +33,9 @@ mainTemplate: main_template,
 
 @(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag],backUrl: String, taskList: Boolean = false)(implicit request: Request[_],messages: Messages,
         appConfig: AppConfig)
+
+@maxRecords=@{appConfig.clientCountMaxRecords}
+
 @mainTemplate(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
 
 
@@ -49,14 +52,14 @@ mainTemplate: main_template,
    @for(clientCountAndGGTag <- clientCountAndGGTags) {
    <tr>
     <td>
-     <span class="bold">@clientCountAndGGTag.clientCount</span>
+     <span class="bold">@if(clientCountAndGGTag.clientCount >= maxRecords){ @maxRecords} else {@{clientCountAndGGTag.clientCount}}</span>
     </td>
      <td class="bold">
      @if(clientCountAndGGTag.clientCount == 1) {
       @Messages("existingClientRelationships.single.th")
-     } else {
+     } else {@if(clientCountAndGGTag.clientCount >= maxRecords) { @Messages("existingClientRelationships.max")} else {
       @Messages("existingClientRelationships.multi.th")
-     }
+     }}
      </td>
     <td>@Messages("existingClientRelationships.td")</td>
     }
