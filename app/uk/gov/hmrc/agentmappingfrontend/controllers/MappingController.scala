@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, MappingDetailsRequest}
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, GGTagForm, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.util._
@@ -53,6 +53,7 @@ class MappingController @Inject()(
   alreadyMappedTemplate: already_mapped,
   notEnrolledTemplate: not_enrolled,
   incorrectAccountTemplate: incorrect_account,
+  ggTagTemplate: gg_tag,
   mcc: MessagesControllerComponents)(implicit val ec: ExecutionContext, val appConfig: AppConfig)
     extends FrontendController(mcc) with I18nSupport with AuthActions {
 
@@ -98,42 +99,39 @@ class MappingController @Inject()(
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
         case Some(record) =>
-          val clientCount = record.currentCount
-          //remove this when GG tag pages get put back in
-          repository
-            .updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ""))
-            .map(_ => Ok(clientRelationShipsFoundTemplate(clientCount, id)))
+          Ok(clientRelationShipsFoundTemplate(record.currentCount, id))
+
         case None => Ok(pageNotFoundTemplate())
       }
     }
   }
 
-//  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-//    withAuthorisedAgent(id) { _ =>
-//      Ok(html.gg_tag(GGTagForm.form, id))
-//    }
-//  }
-//
-//  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-//    withAuthorisedAgent(id) { _ =>
-//      repository.findRecord(id).flatMap {
-//        case Some(record) =>
-//          GGTagForm.form.bindFromRequest
-//            .fold(
-//              formWithErrors => {
-//                Ok(html.gg_tag(formWithErrors, id))
-//              },
-//              ggTag => {
-//                for {
-//                  _ <- repository.updateCurrentGGTag(id, ggTag.value)
-//                  _ <- repository.updateClientCountAndGGTag(id, ClientCountAndGGTag(record.currentCount, ggTag.value))
-//                } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
-//              }
-//            )
-//        case None => Ok(html.page_not_found())
-//      }
-//    }
-//  }
+  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      Ok(ggTagTemplate(GGTagForm.form, id))
+    }
+  }
+
+  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      repository.findRecord(id).flatMap {
+        case Some(record) =>
+          GGTagForm.form.bindFromRequest
+            .fold(
+              formWithErrors => {
+                Ok(ggTagTemplate(formWithErrors, id))
+              },
+              ggTag => {
+                for {
+                  _ <- repository.updateCurrentGGTag(id, ggTag.value)
+                  _ <- repository.updateClientCountAndGGTag(id, ClientCountAndGGTag(record.currentCount, ggTag.value))
+                } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
+              }
+            )
+        case None => Ok(pageNotFoundTemplate())
+      }
+    }
+  }
 
   def updateMappingRecordsAndRedirect(
     arn: Arn,
@@ -160,7 +158,7 @@ class MappingController @Inject()(
     withAuthorisedAgent(id) { providerId =>
       repository.findRecord(id).flatMap {
         case Some(record) =>
-          val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
+          val backUrl = routes.MappingController.showGGTag(id).url
           if (!record.alreadyMapped) {
             mappingConnector.createMapping(record.arn).flatMap {
               case CREATED =>

@@ -167,12 +167,12 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       bodyOf(result) should include(routes.TaskListMappingController.confirmClientRelationshipsFound(id).url)
     }
 
-    "200 the show client relationships with max record text if the client count exceeds config max (set here at 5)" in {
+    "200 the show client relationships with max record text if the client count exceeds config max (set here at 15)" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
       val id = await(repo.create("continue-id"))
       val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12, alreadyMapped = true), "continue-id"))
+      await(repo.upsert(record.copy(clientCount = 16, alreadyMapped = true), "continue-id"))
       val request = FakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
@@ -199,7 +199,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
   }
 
   "task-list/confirm-client-relationships" should {
-    "303 to show existing realtionships page with update db when the current user first visits the page" in {
+    "303 to show gg tag page with update db when the current user first visits the page" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
@@ -219,11 +219,11 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showGGTag(id).url)
       await(repo.findRecord(id).get).alreadyMapped shouldBe true
     }
 
-    "303 to the existing client relationships with no update to db when the current user has already mapped" in {
+    "303 to the gg tag page with no update to db when the current user has already mapped" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
       val id = await(repo.create("continue-id"))
@@ -233,7 +233,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showGGTag(id).url)
     }
 
     "throw RuntimeException when no task list mapping record found (for example when entering the url manually from agent-subscription/task-list)" in {
@@ -279,78 +279,78 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
     }
   }
 
-//  "GET /task-list/tag-gg" should {
-//    "display the ggTag page" in {
-//      givenUserIsAuthenticated(vatEnrolledAgent)
-//      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-//      val id = await(repo.create("continue-id"))
-//
-//      val request = FakeRequest(GET, s"/agent-mapping/task-list/tag-gg/?id=$id")
-//      val result = callEndpointWith(request)
-//
-//      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title",
-//        "gg-tag.p1",
-//        "gg-tag.form.identifier",
-//        "gg-tag.form.hint",
-//        "gg-tag.xs")
-//    }
-//  }
+  "GET /task-list/tag-gg" should {
+    "display the ggTag page" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      val id = await(repo.create("continue-id"))
 
-//  "POST /task-list/tag-gg" should {
-//    "redirect to existing-client-relationships and update sjr to store gg-tag when a valid gg-tag is submitted" in {
-//      givenUserIsAuthenticated(vatEnrolledAgent)
-//      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
-//      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
-//        authProviderId = AuthProviderId("12345-credId"),
-//        agentCode = Some(AgentCode("agentCode-1")),
-//        count = 1,
-//        legacyEnrolments = List.empty,
-//        ggTag = "1234"))))
-//      val id = await(repo.create("continue-id"))
-//
-//      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-//        "ggTag" -> "1234", "continue" -> "continue"
-//      )
-//      val result = callEndpointWith(request)
-//
-//      status(result) shouldBe 303
-//      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
-//    }
-//
-//    "redisplay the page with errors when an invalid gg-tag is submitted" in {
-//      givenUserIsAuthenticated(vatEnrolledAgent)
-//      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-//      val id = await(repo.create("continue-id"))
-//
-//      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-//        "ggTag" -> "abcd", "continue" -> "continue"
-//      )
-//      val result = callEndpointWith(request)
-//
-//      status(result) shouldBe 200
-//      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
-//    }
-//
-//    "throw a RuntimeException when there is an invalid submit action" in {
-//      givenUserIsAuthenticated(vatEnrolledAgent)
-//      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
-//      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
-//        authProviderId = AuthProviderId("12345-credId"),
-//        agentCode = Some(AgentCode("agentCode-1")),
-//        count = 1,
-//        legacyEnrolments = List.empty,
-//        ggTag = "1234"))))
-//      val id = await(repo.create("continue-id"))
-//
-//      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-//        "ggTag" -> "1234", "continue" -> "foo"
-//      )
-//
-//      intercept[RuntimeException] {
-//        await(controller.submitGGTag(id)(request))
-//      }.getMessage should be("unexpected value found in submit Some(foo)")
-//    }
-//  }
+      val request = FakeRequest(GET, s"/agent-mapping/task-list/tag-gg/?id=$id")
+      val result = callEndpointWith(request)
+
+      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title",
+        "gg-tag.p1",
+        "gg-tag.form.identifier",
+        "gg-tag.form.hint",
+        "gg-tag.xs")
+    }
+  }
+
+  "POST /task-list/tag-gg" should {
+    "redirect to existing-client-relationships and update sjr to store gg-tag when a valid gg-tag is submitted" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
+      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
+        authProviderId = AuthProviderId("12345-credId"),
+        agentCode = Some(AgentCode("agentCode-1")),
+        count = 1,
+        legacyEnrolments = List.empty,
+        ggTag = "1234"))))
+      val id = await(repo.create("continue-id"))
+
+      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
+        "ggTag" -> "1234", "continue" -> "continue"
+      )
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
+    }
+
+    "redisplay the page with errors when an invalid gg-tag is submitted" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      val id = await(repo.create("continue-id"))
+
+      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
+        "ggTag" -> "abcd", "continue" -> "continue"
+      )
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
+    }
+
+    "throw a RuntimeException when there is an invalid submit action" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
+      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
+        authProviderId = AuthProviderId("12345-credId"),
+        agentCode = Some(AgentCode("agentCode-1")),
+        count = 1,
+        legacyEnrolments = List.empty,
+        ggTag = "1234"))))
+      val id = await(repo.create("continue-id"))
+
+      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
+        "ggTag" -> "1234", "continue" -> "foo"
+      )
+
+      intercept[RuntimeException] {
+        await(controller.submitGGTag(id)(request))
+      }.getMessage should be("unexpected value found in submit Some(foo)")
+    }
+  }
 
   "GET /task-list/existing-client-relationships" should {
 
