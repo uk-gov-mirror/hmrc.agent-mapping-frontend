@@ -137,14 +137,26 @@ class TaskListMappingController @Inject()(
               case Some(record) => {
                 agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).flatMap {
                   case Some(sjr) =>
-                    val newSjr = sjr.copy(
-                      userMappings = UserMapping(
-                        authProviderId = agent.authProviderId,
-                        agentCode = agent.agentCodeOpt,
-                        count = record.clientCount,
-                        legacyEnrolments = agent.agentEnrolments,
-                        ggTag = ggTag.value
-                      ) :: sjr.userMappings)
+                    val newSjr = if (!record.alreadyMapped) {
+                      sjr.copy(
+                        userMappings = UserMapping(
+                          authProviderId = agent.authProviderId,
+                          agentCode = agent.agentCodeOpt,
+                          count = record.clientCount,
+                          legacyEnrolments = agent.agentEnrolments,
+                          ggTag = ggTag.value
+                        ) :: sjr.userMappings)
+                    } else {
+                      sjr.copy(
+                        userMappings = UserMapping(
+                          authProviderId = agent.authProviderId,
+                          agentCode = agent.agentCodeOpt,
+                          count = record.clientCount,
+                          legacyEnrolments = agent.agentEnrolments,
+                          ggTag = ggTag.value
+                        ) :: sjr.userMappings.tail)
+
+                    }
 
                     agentSubscriptionService.createOrUpdateRecordOrFail(
                       agent,
@@ -273,7 +285,7 @@ class TaskListMappingController @Inject()(
     repository.findRecord(id).flatMap {
       case Some(record) =>
         if (record.alreadyMapped) {
-          routes.TaskListMappingController.showClientRelationshipsFound(id).url
+          routes.TaskListMappingController.showGGTag(id).url
         } else {
           s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}"
         }

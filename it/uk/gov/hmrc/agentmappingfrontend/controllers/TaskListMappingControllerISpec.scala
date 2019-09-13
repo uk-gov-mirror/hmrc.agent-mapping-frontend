@@ -312,7 +312,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
 
       //bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", "6666"))
       bodyOf(result) should include(htmlEscapedMessage("copied.table.single.th", 1))
-      bodyOf(result) should include(routes.TaskListMappingController.showClientRelationshipsFound(id).url)
+      bodyOf(result) should include(routes.TaskListMappingController.showGGTag(id).url)
 
       result should containSubmitButton("button.saveContinue","existing-client-relationships-continue")
       result should containSubmitButton("button.saveComeBackLater","existing-client-relationships-save")
