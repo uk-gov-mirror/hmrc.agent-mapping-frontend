@@ -75,9 +75,22 @@ object MappingStubs {
         .willReturn(aResponse().withStatus(Status.CREATED))
     )
 
-  def mappingDetailsExistFor(arn: Arn, mappingDetailsRepositoryRecord: MappingDetailsRepositoryRecord): StubMapping =
+  def mappingDetailsCreationFails(arn: Arn, mappingDetailsRequest: MappingDetailsRequest): StubMapping =
+    stubFor(
+      post(urlPathEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
+        .withRequestBody(equalToJson(Json.toJson(mappingDetailsRequest).toString()))
+        .willReturn(aResponse().withStatus(Status.CONFLICT))
+    )
+
+  def givenMappingDetailsExistFor(arn: Arn, mappingDetailsRepositoryRecord: MappingDetailsRepositoryRecord): StubMapping =
     stubFor(
       get(urlEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
         .willReturn(aResponse().withStatus(Status.OK).withBody(Json.toJson(mappingDetailsRepositoryRecord).toString()))
+    )
+
+  def givenGetMappingDetailsFailsForReason(arn: Arn, statusCode: Int): StubMapping =
+    stubFor(
+      get(urlEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
+        .willReturn(aResponse().withStatus(statusCode))
     )
 }

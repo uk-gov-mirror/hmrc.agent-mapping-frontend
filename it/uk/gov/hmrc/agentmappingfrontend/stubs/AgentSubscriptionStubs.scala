@@ -48,6 +48,13 @@ trait AgentSubscriptionStubs {
         .withBody(Json.toJson(subscriptionJourneyRecord).toString()))
     )
 
+  def givenSubscriptionJourneyRecordNotFoundForContinueId(continueId: String): StubMapping =
+    stubFor(
+      get(urlPathEqualTo(s"/agent-subscription/subscription/journey/continueId/${encodePathSegment(continueId)}"))
+        .willReturn(aResponse()
+          .withStatus(Status.NO_CONTENT))
+    )
+
   def givenUpdateSubscriptionJourneyRecordSucceeds(subscriptionJourneyRecord: SubscriptionJourneyRecord): StubMapping =
     stubFor(
       post(urlPathEqualTo(s"/agent-subscription/subscription/journey/primaryId/${encodePathSegment(subscriptionJourneyRecord.authProviderId.id)}"))

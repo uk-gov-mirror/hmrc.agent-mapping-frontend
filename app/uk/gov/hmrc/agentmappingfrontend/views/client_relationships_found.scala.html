@@ -51,7 +51,7 @@
     </table>
     <p>@if(clientCount == 1) { @Messages("clientRelationshipsFound.single.p2")} else {@Messages("clientRelationshipsFound.multi.p2")}</p>
     @if(taskList){
-        <a class="button margin-right-5" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.confirmClientRelationshipsFound(id)" role="button">@Messages("button.saveContinue")</a>
+        <a class="button margin-right-5" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.showGGTag(id)" role="button">@Messages("button.saveContinue")</a>
         <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl'>@Messages("button.saveComeBackLater")</a>
     } else {
         <a class="button" name="clients" id="clients" href="@routes.MappingController.showGGTag(id)" role="button">@Messages("button.continue")</a>

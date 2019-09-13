@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, GGTagForm, MappingDetailsRequest}
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, GGTagForm, MappingDetails, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.util._
@@ -63,8 +63,16 @@ class MappingController @Inject()(
 
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
-      case Some(arn) => repository.create(arn).map(id => Ok(startTemplate(id)))
-      case None      => successful(Redirect(routes.MappingController.needAgentServicesAccount()))
+      case Some(arn) =>
+        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] = for {
+          mdOpt   <- mappingConnector.getMappingDetails(arn)
+          details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
+        } yield ClientCountAndGGTag(details.count, details.ggTag)
+
+        clientCountsAndGGTags.flatMap(countsAndTags =>
+          repository.create(arn).map(id => Ok(startTemplate(id, countsAndTags))))
+
+      case None => successful(Redirect(routes.MappingController.needAgentServicesAccount()))
     }
   }
 

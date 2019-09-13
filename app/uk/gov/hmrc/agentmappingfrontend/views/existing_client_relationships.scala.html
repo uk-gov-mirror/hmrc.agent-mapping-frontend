@@ -55,17 +55,17 @@
                 <tr>
                     <td>
                         <span class="bold">@if(clientCountAndGGTag.clientCount == 1) {
-                            @Messages("existingClientRelationships.single.th", clientCountAndGGTag.clientCount)
+                            @Messages("copied.table.single.th", clientCountAndGGTag.clientCount)
                         } else {
                             @if(clientCountAndGGTag.clientCount < maxRecords) {
-                                @Messages("existingClientRelationships.multi.th", clientCountAndGGTag.clientCount)
+                                @Messages("copied.table.multi.th", clientCountAndGGTag.clientCount)
                             } else {
-                                @Messages("existingClientRelationships.max.th", maxRecords)
+                                @Messages("copied.table.max.th", maxRecords)
                             }
                         }
                         </span>
                     </td>
-                    <td>@Messages("existingClientRelationships.ggTag", clientCountAndGGTag.ggTag)</td>
+                    <td>@Messages("copied.table.ggTag", clientCountAndGGTag.ggTag)</td>
                     }
         </tr>
         </tbody>

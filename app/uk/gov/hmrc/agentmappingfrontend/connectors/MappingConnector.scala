@@ -24,7 +24,7 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentmappingfrontend.model.{MappingDetailsRequest, SaMapping, VatMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.{MappingDetailsRepositoryRecord, MappingDetailsRequest, SaMapping, VatMapping}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -91,7 +91,7 @@ class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: 
     ec: ExecutionContext) =
     monitor("ConsumedAPI-Mapping-createOrUpdateMappingDetails-POST") {
       http
-        .POST[MappingDetailsRequest, HttpResponse](createOrUpdateUrl(arn), mappingDetailsRequest)
+        .POST[MappingDetailsRequest, HttpResponse](detailsUrl(arn), mappingDetailsRequest)
         .map { r =>
           r.status
         }
@@ -100,6 +100,19 @@ class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: 
             Logger.error(s"creating or updating mapping details failed for some reason: $ex")
             throw new RuntimeException
         }
+    }
+
+  def getMappingDetails(
+    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MappingDetailsRepositoryRecord]] =
+    monitor("ConsumedAPI-Mapping-getMappingDetails-GET") {
+      http.GET[Option[MappingDetailsRepositoryRecord]](detailsUrl(arn))
+    }.recover {
+      case _: NotFoundException =>
+        Logger.warn(s"no mapping details found for this arn: $arn")
+        None
+      case ex =>
+        Logger.warn(s"retrieval of mapping details failed for unknown reason...$ex")
+        None
     }
 
   private lazy val baseUrl = appConfig.agentMappingBaseUrl
@@ -114,6 +127,6 @@ class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: 
 
   private def findVatUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/vat/${arn.value}"
 
-  private def createOrUpdateUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}"
+  private def detailsUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}"
 
 }

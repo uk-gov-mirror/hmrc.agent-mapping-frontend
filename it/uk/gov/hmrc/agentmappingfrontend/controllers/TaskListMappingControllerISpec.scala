@@ -8,7 +8,7 @@ import uk.gov.hmrc.agentmappingfrontend.config.FrontendAppConfig
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs, MappingStubs}
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{mtdAsAgent, vatEnrolledAgent, agentNotEnrolled}
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{agentNotEnrolled, mtdAsAgent, vatEnrolledAgent}
 import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.domain.AgentCode
 
@@ -77,14 +77,10 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(result,
-        "connectAgentServices.start.whatYouNeedToKnow.heading",
-        "connectAgentServices.start.whatYouNeedToKnow.p1",
-        "connectAgentServices.start.inset",
         "connectAgentServices.start.whatYouNeedToDo.heading",
         "connectAgentServices.start.whatYouNeedToDo.p1",
         "connectAgentServices.start.whatYouNeedToDo.p2",
         "button.continue")
-      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.whatYouNeedToKnow.p1")
       bodyOf(result) should include("/task-list/client-relationships-found?id=")
     }
 
@@ -142,7 +138,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       "button.saveContinue", "button.saveComeBackLater")
 
       bodyOf(result) should include(appConfig.agentSubscriptionFrontendProgressSavedUrl)
-      bodyOf(result) should include(routes.TaskListMappingController.confirmClientRelationshipsFound(id).url)
+      bodyOf(result) should include(routes.TaskListMappingController.showGGTag(id).url)
 
     }
 
@@ -164,7 +160,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
         "button.saveContinue", "button.saveComeBackLater")
 
       bodyOf(result) should include(appConfig.agentSubscriptionFrontendProgressSavedUrl)
-      bodyOf(result) should include(routes.TaskListMappingController.confirmClientRelationshipsFound(id).url)
+      bodyOf(result) should include(routes.TaskListMappingController.showGGTag(id).url)
     }
 
     "200 the show client relationships with max record text if the client count exceeds config max (set here at 15)" in {
@@ -185,7 +181,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
         "button.saveContinue", "button.saveComeBackLater")
 
       bodyOf(result) should include(appConfig.agentSubscriptionFrontendProgressSavedUrl)
-      bodyOf(result) should include(routes.TaskListMappingController.confirmClientRelationshipsFound(id).url)
+      bodyOf(result) should include(routes.TaskListMappingController.showGGTag(id).url)
     }
 
     "throw RuntimeException if there was no task list mapping record found (for example if the user manually entered the url from /agent-subscription" in {
@@ -195,87 +191,6 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       intercept[RuntimeException] {
         await(controller.showClientRelationshipsFound("SOMETHING")(FakeRequest()))
       }.getMessage should be("no task-list mapping record found for agent code HZ1234")
-    }
-  }
-
-  "task-list/confirm-client-relationships" should {
-    "303 to show gg tag page with update db when the current user first visits the page" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
-      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithNoUserMappings
-        .copy(
-          userMappings = UserMapping(
-            AuthProviderId("12345-credId"),
-            agentCode = Some(AgentCode("HZ1234")),
-            count = 12,
-            legacyEnrolments = List.empty,
-            ggTag= "") :: sjrWithNoUserMappings.userMappings))
-
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/confirm-client-relationships-found/?id=$id")
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showGGTag(id).url)
-      await(repo.findRecord(id).get).alreadyMapped shouldBe true
-    }
-
-    "303 to the gg tag page with no update to db when the current user has already mapped" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12, alreadyMapped = true), "continue-id"))
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/confirm-client-relationships-found/?id=$id")
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showGGTag(id).url)
-    }
-
-    "throw RuntimeException when no task list mapping record found (for example when entering the url manually from agent-subscription/task-list)" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-
-      intercept[RuntimeException] {
-        await(controller.confirmClientRelationshipsFound("SOMETHING")(FakeRequest()))
-      }.getMessage should be("no task-list mapping record found for agent code HZ1234")
-    }
-
-    "throw a RuntimeException when updating the journey record failed" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
-      givenUpdateSubscriptionJourneyRecordFails(sjrWithNoUserMappings
-        .copy(
-          userMappings = UserMapping(
-            AuthProviderId("12345-credId"),
-            agentCode = Some(AgentCode("HZ1234")),
-            count = 12,
-            legacyEnrolments = List.empty,
-            ggTag= "") :: sjrWithNoUserMappings.userMappings))
-
-      val request = FakeRequest(GET, s"/agent-mapping/task-list/confirm-client-relationships-found/?id=$id")
-      intercept[RuntimeException]{
-        callEndpointWith(request)
-      }.getMessage should startWith("update subscriptionJourneyRecord call failed")
-    }
-
-    "throw a RuntimeException if no subscription journey record is found by continue id" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      val id = repo.create("continue-id")
-      givenNoSubscriptionJourneyRecordFoundForContinueId("continue-id")
-
-      intercept[RuntimeException] {
-        await(controller.confirmClientRelationshipsFound(id)(FakeRequest()))
-      }.getMessage should be("no subscription journey record found in confirmClientRelationshipsFound for agentCode HZ1234")
     }
   }
 
@@ -299,14 +214,19 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
   "POST /task-list/tag-gg" should {
     "redirect to existing-client-relationships and update sjr to store gg-tag when a valid gg-tag is submitted" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
-      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
-        authProviderId = AuthProviderId("12345-credId"),
-        agentCode = Some(AgentCode("agentCode-1")),
-        count = 1,
-        legacyEnrolments = List.empty,
-        ggTag = "1234"))))
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
       val id = await(repo.create("continue-id"))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithNoUserMappings
+        .copy(
+          userMappings = UserMapping(
+            AuthProviderId("12345-credId"),
+            agentCode = Some(AgentCode("HZ1234")),
+            count = 12,
+            legacyEnrolments =  Seq(AgentEnrolment(AgentRefNo, IdentifierValue("HZ1234"))),
+            ggTag= "1234") :: sjrWithNoUserMappings.userMappings))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
         "ggTag" -> "1234", "continue" -> "continue"
@@ -331,24 +251,42 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
     }
 
-    "throw a RuntimeException when there is an invalid submit action" in {
+    "throw a runtime exception when there is no journey record found for continueId" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithUserAlreadyMapped)
-      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithUserAlreadyMapped.copy(userMappings = List(UserMapping(
-        authProviderId = AuthProviderId("12345-credId"),
-        agentCode = Some(AgentCode("agentCode-1")),
-        count = 1,
-        legacyEnrolments = List.empty,
-        ggTag = "1234"))))
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
+      givenSubscriptionJourneyRecordNotFoundForContinueId("continue-id")
       val id = await(repo.create("continue-id"))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithNoUserMappings
+        .copy(
+          userMappings = UserMapping(
+            AuthProviderId("12345-credId"),
+            agentCode = Some(AgentCode("HZ1234")),
+            count = 12,
+            legacyEnrolments =  Seq(AgentEnrolment(AgentRefNo, IdentifierValue("HZ1234"))),
+            ggTag= "1234") :: sjrWithNoUserMappings.userMappings))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag" -> "1234", "continue" -> "foo"
+        "ggTag" -> "1234", "continue" -> "continue"
+      )
+      intercept[RuntimeException] {
+        callEndpointWith(request)
+      }.getMessage shouldBe "no subscription journey record found when submitting gg tag for agent code HZ1234"
+    }
+
+    "throw a runtime exception when there is no mapping record found" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
+      givenSubscriptionJourneyRecordNotFoundForContinueId("continue-id")
+
+      val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=foo").withFormUrlEncodedBody(
+        "ggTag" -> "1234", "continue" -> "continue"
       )
 
       intercept[RuntimeException] {
-        await(controller.submitGGTag(id)(request))
-      }.getMessage should be("unexpected value found in submit Some(foo)")
+        callEndpointWith(request)
+      }.getMessage shouldBe "no task-list mapping record found for agent code HZ1234"
     }
   }
 
@@ -373,7 +311,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       "existingClientRelationships.no")
 
       //bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", "6666"))
-      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", 1))
+      bodyOf(result) should include(htmlEscapedMessage("copied.table.single.th", 1))
       bodyOf(result) should include(routes.TaskListMappingController.showClientRelationshipsFound(id).url)
 
       result should containSubmitButton("button.saveContinue","existing-client-relationships-continue")

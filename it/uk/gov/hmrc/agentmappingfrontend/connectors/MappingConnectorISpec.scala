@@ -1,6 +1,11 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+import play.api.http.Status
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -76,6 +81,39 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
       mappingsDelete(arn)
       await(connector.deleteAllMappingsBy(arn)) shouldBe 204
     }
+  }
 
+  "createOrUpdateMappingDetails" should {
+    "create mapping details successfully" in {
+      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
+      mappingDetailsAreCreated(arn, mappingDetailsRequest)
+      await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest)) shouldBe Status.CREATED
+    }
+    "creation of mapping fails throw a RuntimeException" in {
+      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
+      mappingDetailsCreationFails(arn, mappingDetailsRequest)
+      intercept[RuntimeException] {
+        await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
+      }
+    }
+  }
+
+  "getMappingDetails" should {
+    val dateTime = LocalDateTime.parse("2019-01-01 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val mappingDetailsRepositoryRecord = MappingDetailsRepositoryRecord(Arn("TARN0000001"), Seq(MappingDetails(AuthProviderId("cred-1234"), "1234", 5, dateTime)))
+    "retrieve the mapping details" in {
+      givenMappingDetailsExistFor(arn, mappingDetailsRepositoryRecord)
+      await(connector.getMappingDetails(arn)) shouldBe Some(mappingDetailsRepositoryRecord)
+    }
+
+    "return None when there are no mapping details" in {
+      givenGetMappingDetailsFailsForReason(arn, 404)
+      await(connector.getMappingDetails(arn)) shouldBe None
+    }
+
+    "return None when there is some exception" in {
+      givenGetMappingDetailsFailsForReason(arn, 404)
+      await(connector.getMappingDetails(arn)) shouldBe None
+    }
   }
 }
