@@ -44,6 +44,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       checkHtmlResultContainsEscapedMsgs(
         result,
         "connectAgentServices.start.copied",
+        "connectAgentServices.start.inset",
         "connectAgentServices.start.whatYouNeedToDo.heading",
         "connectAgentServices.start.whatYouNeedToDo.p1",
         "connectAgentServices.start.whatYouNeedToDo.p2",
