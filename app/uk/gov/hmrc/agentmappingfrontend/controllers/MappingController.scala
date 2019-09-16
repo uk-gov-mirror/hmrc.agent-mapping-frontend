@@ -131,11 +131,10 @@ class MappingController @Inject()(
               },
               ggTag => {
                 val clientCountAndGGTags = if (!record.alreadyMapped) {
-                  record.clientCountAndGGTags :+ ClientCountAndGGTag(record.currentCount, ggTag.value)
+                  ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags
                 } else {
-                  record.clientCountAndGGTags.reverse.tail :+ ClientCountAndGGTag(record.currentCount, ggTag.value)
+                  ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags.tail
                 }
-
                 val newRecord = record.copy(clientCountAndGGTags = clientCountAndGGTags)
                 for {
                   _ <- repository.updateCurrentGGTag(id, ggTag.value)
