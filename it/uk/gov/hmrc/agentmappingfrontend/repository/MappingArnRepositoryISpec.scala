@@ -50,7 +50,7 @@ class MappingArnRepositoryISpec extends UnitSpec with GuiceOneAppPerSuite with M
       val record = MappingArnResult(arn, 0, Seq.empty)
 
       await(repo.insert(record))
-      await(repo.updateClientCountAndGGTag(record.id, ClientCountAndGGTag(12, "")))
+      await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(12,"")), record.id))
       val result = await(repo.findRecord(record.id).get.clientCountAndGGTags.head.clientCount)
 
       result shouldBe 12

@@ -8,7 +8,7 @@ import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Request, Res
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
-import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository}
+import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
@@ -244,7 +244,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         s"200 to /existing-client-relationships for ${enrolmentType.serviceKey} and for a single client relationship $clientCount" in {
 
           val id = await(repo.create(arn, clientCount))
-          await(repo.updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ggTag)))
+          val record = await(repo.findRecord(id)).get
+          await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(clientCount, ggTag)), id))
           await(repo.updateCurrentGGTag(id, ggTag))
           givenAuthorisedFor(enrolmentType.serviceKey)
           mappingIsCreated(arn)
@@ -278,7 +279,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val ggTag = "6666"
       val id = await(repo.create(arn, clientCount))
       await(repo.updateMappingCompleteStatus(id))
-      await(repo.updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ggTag)))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(clientCount, ggTag)), id))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
       val result = callEndpointWith(request)
@@ -373,7 +375,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val count = 1
       val ggTag = "6666"
       val persistedMappingArnResultId = await(repo.create(arn, count))
-      await(repo.updateClientCountAndGGTag(persistedMappingArnResultId, ClientCountAndGGTag(count, ggTag)))
+      val record = await(repo.findRecord(persistedMappingArnResultId)).get
+      await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(count, ggTag)), persistedMappingArnResultId))
       givenUserIsAuthenticated(vatEnrolledAgent)
       val request = fakeRequest(
         POST,
@@ -429,7 +432,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
           val persistedMappingArnResultId = await(repo.create(arn, clientCount))
-          await(repo.updateClientCountAndGGTag(persistedMappingArnResultId, ClientCountAndGGTag(clientCount, "6666")))
+          val record = await(repo.findRecord(persistedMappingArnResultId)).get
+          await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(clientCount, "6666")), persistedMappingArnResultId))
           givenUserIsAuthenticated(user)
           val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
           val result = callEndpointWith(request)

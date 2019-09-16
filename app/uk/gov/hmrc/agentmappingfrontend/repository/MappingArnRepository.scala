@@ -99,15 +99,9 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
       .one(Json.obj("id" -> id), mappingArnResult, upsert = true)
       .checkResult
 
-  def updateClientCountAndGGTag(id: MappingArnResultId, clientCountAndGGTag: ClientCountAndGGTag)(
-    implicit ec: ExecutionContext): Future[Unit] = {
-    val updateOp = Json.obj("$push" -> Json.obj("clientCountAndGGTags" -> clientCountAndGGTag))
-    collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
-  }
-
   def updateCurrentGGTag(id: MappingArnResultId, ggTag: String)(implicit ec: ExecutionContext): Future[Unit] = {
     val updateOp = Json.obj("$set" -> Json.obj("currentGGTag" -> ggTag))
-    collection.update(ordered = true).one(Json.obj("id" -> id), updateOp).checkResult
+    collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
   }
 
   def updateMappingCompleteStatus(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] = {
