@@ -130,9 +130,16 @@ class MappingController @Inject()(
                 Ok(ggTagTemplate(formWithErrors, id))
               },
               ggTag => {
+                val clientCountAndGGTags = if (!record.alreadyMapped) {
+                  record.clientCountAndGGTags :+ ClientCountAndGGTag(record.currentCount, ggTag.value)
+                } else {
+                  record.clientCountAndGGTags.reverse.tail :+ ClientCountAndGGTag(record.currentCount, ggTag.value)
+                }
+
+                val newRecord = record.copy(clientCountAndGGTags = clientCountAndGGTags)
                 for {
                   _ <- repository.updateCurrentGGTag(id, ggTag.value)
-                  _ <- repository.updateClientCountAndGGTag(id, ClientCountAndGGTag(record.currentCount, ggTag.value))
+                  _ <- repository.upsert(newRecord, id)
                 } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
               }
             )

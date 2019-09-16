@@ -136,28 +136,19 @@ class TaskListMappingController @Inject()(
             repository.findRecord(id).flatMap {
               case Some(record) => {
                 agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).flatMap {
-                  case Some(sjr) =>
+                  case Some(sjr) => //TODO use the sjr to determine if record already mapped (to handle case for going back from /existing-client-relationships)
+                    val userMapping = UserMapping(
+                      authProviderId = agent.authProviderId,
+                      agentCode = agent.agentCodeOpt,
+                      count = record.clientCount,
+                      legacyEnrolments = agent.agentEnrolments,
+                      ggTag = ggTag.value
+                    )
                     val newSjr = if (!record.alreadyMapped) {
-                      sjr.copy(
-                        userMappings = UserMapping(
-                          authProviderId = agent.authProviderId,
-                          agentCode = agent.agentCodeOpt,
-                          count = record.clientCount,
-                          legacyEnrolments = agent.agentEnrolments,
-                          ggTag = ggTag.value
-                        ) :: sjr.userMappings)
+                      sjr.copy(userMappings = userMapping :: sjr.userMappings)
                     } else {
-                      sjr.copy(
-                        userMappings = UserMapping(
-                          authProviderId = agent.authProviderId,
-                          agentCode = agent.agentCodeOpt,
-                          count = record.clientCount,
-                          legacyEnrolments = agent.agentEnrolments,
-                          ggTag = ggTag.value
-                        ) :: sjr.userMappings.tail)
-
+                      sjr.copy(userMappings = userMapping :: sjr.userMappings.tail)
                     }
-
                     agentSubscriptionService.createOrUpdateRecordOrFail(
                       agent,
                       newSjr, {
@@ -166,7 +157,6 @@ class TaskListMappingController @Inject()(
                           .map(_ => Redirect(routes.TaskListMappingController.showExistingClientRelationships(id)))
                       }
                     )
-
                   case None =>
                     throw new RuntimeException(
                       s"no subscription journey record found when submitting gg tag for agent code ${agent.agentCodeOpt
