@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentmappingfrontend.repository
 
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.agentmappingfrontend.support.MongoApp
@@ -9,7 +9,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoApp {
+class MappingArnRepositoryISpec extends UnitSpec with GuiceOneAppPerSuite with MongoApp {
 
   protected def builder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
@@ -50,7 +50,7 @@ class MappingArnRepositoryISpec extends UnitSpec with OneAppPerSuite with MongoA
       val record = MappingArnResult(arn, 0, Seq.empty)
 
       await(repo.insert(record))
-      await(repo.updateClientCountAndGGTag(record.id, ClientCountAndGGTag(12, "")))
+      await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(12,"")), record.id))
       val result = await(repo.findRecord(record.id).get.clientCountAndGGTags.head.clientCount)
 
       result shouldBe 12

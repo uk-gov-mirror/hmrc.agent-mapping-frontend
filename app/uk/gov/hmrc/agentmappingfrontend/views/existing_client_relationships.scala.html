@@ -23,70 +23,85 @@
 
 @import uk.gov.hmrc.agentmappingfrontend.model.MappingDetails
 @import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
-@(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], taskList: Boolean = false, backUrl: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@html.main_template(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
+@this(
+        mainTemplate: main_template,
+        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+        formHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+        inputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
+@(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], backUrl: String, taskList: Boolean = false)(implicit request: Request[_], messages: Messages,
+        appConfig: AppConfig)
+
+@maxRecords = @{
+    appConfig.clientCountMaxRecords
+}
+
+@mainTemplate(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
 
 
- <a href="@backUrl" class="link-back">@Messages("button.back")</a>
+    <a href="@backUrl" class="link-back">@Messages("button.back")</a>
 
- @if(addClientsForm.hasErrors) {
-  @errorSummary(Messages("error.summary.heading"), addClientsForm, Seq.empty, Some("additional-clients"))
- }
-
- <h1 class="heading-xlarge margin-bottom-20">@Messages("existingClientRelationships.title")</h1>
-
- <table>
-  <tbody>
-   @for(clientCountAndGGTag <- clientCountAndGGTags) {
-   <tr>
-    <td>
-     <span class="bold">@clientCountAndGGTag.clientCount</span>
-    </td>
-     <td class="bold">
-     @if(clientCountAndGGTag.clientCount == 1) {
-      @Messages("existingClientRelationships.single.th")
-     } else {
-      @Messages("existingClientRelationships.multi.th")
-     }
-     </td>
-    <td>@Messages("existingClientRelationships.td")</td>
+    @if(addClientsForm.hasErrors) {
+        @uiErrorSummary(Messages("error.summary.heading"), addClientsForm, Seq.empty, Some("additional-clients"))
     }
-   </tr>
-  </tbody>
- </table>
 
- <h2 class="heading-medium">@Messages("existingClientRelationships.heading")</h2>
- <p>@Messages("existingClientRelationships.p1")</p>
+    <h1 class="heading-xlarge margin-bottom-20">@Messages("existingClientRelationships.title")</h1>
 
- @form(
-  action = if(taskList) routes.TaskListMappingController.submitExistingClientRelationships(id) else routes.MappingController.submitExistingClientRelationships(id), 'class -> "form js-form") {
-  <div class="form-group margin-top-20">
-  @input_radio_group(
-   addClientsForm("additional-clients"),
-   Seq(
-    "yes" -> Messages("button.yes"),
-    "no" -> Messages("button.no")
-   ),
-   '_groupDivClass -> "soft--ends",
-   '_legendClass -> "visuallyhidden",
-   '_fieldsetAttributes -> Html("""id='existing-client-relationships'""")
+    <table>
+        <tbody>
+            @for(clientCountAndGGTag <- clientCountAndGGTags) {
+                <tr>
+                    <td>
+                        <span class="bold">@if(clientCountAndGGTag.clientCount == 1) {
+                            @Messages("copied.table.single.th", clientCountAndGGTag.clientCount)
+                        } else {
+                            @if(clientCountAndGGTag.clientCount < maxRecords) {
+                                @Messages("copied.table.multi.th", clientCountAndGGTag.clientCount)
+                            } else {
+                                @Messages("copied.table.max.th", maxRecords)
+                            }
+                        }
+                        </span>
+                    </td>
+                    <td>@Messages("copied.table.ggTag", clientCountAndGGTag.ggTag)</td>
+                    }
+        </tr>
+        </tbody>
+    </table>
 
-  )
-  </div>
+    <h2 class="heading-medium">@Messages("existingClientRelationships.heading")</h2>
+    <p>@Messages("existingClientRelationships.p1")</p>
 
-  <div class="form-field">
-   @if(taskList){
-   <button class="button margin-right-5" type="submit" id="existing-client-relationships-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
-           <button class="button--secondary" type="submit" id="existing-client-relationships-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
+    @formHelper(
+        action = if(taskList) routes.TaskListMappingController.submitExistingClientRelationships(id) else routes.MappingController.submitExistingClientRelationships(id), 'class -> "form js-form") {
+        <div class="form-group margin-top-20">
+        @inputRadioGroup(
+            addClientsForm("additional-clients"),
+            Seq(
+                "yes" -> Messages("button.yes"),
+                "no" -> Messages("button.no")
+            ),
+            '_groupDivClass -> "soft--ends",
+            '_legendClass -> "visuallyhidden",
+            '_fieldsetAttributes -> Html("""id='existing-client-relationships'""")
+
+        )
+        </div>
+
+        <div class="form-field">
+        @if(taskList) {
+            <button class="button margin-right-5" type="submit" id="existing-client-relationships-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
+            <button class="button--secondary" type="submit" id="existing-client-relationships-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
 
 
-   } else {
-   <button class="button" type="submit" id="submit-existing-clients">@Messages("button.continue")</button>
-   }
+        } else {
+            <button class="button" type="submit" id="submit-existing-clients">@Messages("button.continue")</button>
+        }
 
-  </div>
- }
+        </div>
+    }
 
 }
 

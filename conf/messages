@@ -7,8 +7,7 @@ start.not-signed-in.title=Copy across your existing Self Assessment and VAT clie
 start.not-signed-in.p1=You need to sign in to your agent services account to use this service.
 
 connectAgentServices.start.title=Copy across your existing Self Assessment and VAT clients to your agent services account
-connectAgentServices.start.whatYouNeedToKnow.heading=What you need to know
-connectAgentServices.start.whatYouNeedToKnow.p1=Before you can sign your clients up for Making Tax Digital, you need to copy your existing relationship from your old Government Gateway user IDs to your agent services account. This means your clients will not have to authorise you again for Making Tax Digital services.
+connectAgentServices.start.copied=Already copied
 connectAgentServices.start.inset=You will not be able to view your client lists through your agent services account. To view your clients, use your third-party software.
 connectAgentServices.start.whatYouNeedToDo.heading=What you need to do
 connectAgentServices.start.whatYouNeedToDo.p1=On the next screen, sign in with an old Government Gateway user ID that you use for managing VAT or Self Assessment clients. This is different to the new user ID of your agent services account.
@@ -24,6 +23,7 @@ clientRelationshipsFound.multi.title=Client relationships found
 clientRelationshipsFound.multi.p1=Your user ID has the following client relationships that you can copy across.
 clientRelationshipsFound.multi.td=VAT and Self Assessment clients
 clientRelationshipsFound.multi.p2=If you continue, they will be copied across to your new agent services account. You will then be able to sign up to Making Tax Digital.
+clientRelationshipsFound.max=or more VAT and Self Assessment clients
 
 #gg-tag
 gg-tag.title=Identify this user ID
@@ -34,13 +34,15 @@ gg-tag.xs=XXXX-XXXX-
 
 #existing-client-relationships
 existingClientRelationships.title=Copied client relationships
-existingClientRelationships.single.th=VAT and Self Assessment client
-existingClientRelationships.multi.th=VAT and Self Assessment clients
-existingClientRelationships.td=Copied to agent services account
+copied.table.single.th={0} VAT and Self Assessment client
+copied.table.multi.th={0} VAT and Self Assessment clients
+copied.table.max.th={0} or more VAT and Self Assessment clients
+copied.table.ggTag=User ID: XXXX-XXXX-{0}
 existingClientRelationships.heading=Do you need to copy more clients across?
 existingClientRelationships.p1=To copy more clients across, you need to sign in with another user ID you use to manage VAT and Self Assessment clients.
 existingClientRelationships.yes=Yes
 existingClientRelationships.no=No
+existingClientRelationships.max=or more VAT and Self Assessment clients
 
 
 #PageNotFound

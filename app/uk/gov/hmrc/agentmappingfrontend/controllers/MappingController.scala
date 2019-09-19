@@ -17,35 +17,45 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, MappingDetailsRequest}
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, ExistingClientRelationshipsForm, GGTagForm, MappingDetails, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.util._
-import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.agentmappingfrontend.views.html.client_relationships_found
+import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MappingController @Inject()(
-  override val messagesApi: MessagesApi,
   val authConnector: AuthConnector,
   mappingConnector: MappingConnector,
   val agentSubscriptionConnector: AgentSubscriptionConnector,
   repository: MappingArnRepository,
+  val config: Configuration,
   val env: Environment,
-  val config: Configuration)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
-    extends MappingBaseController with I18nSupport with AuthActions {
+  signInTemplate: start_sign_in_required,
+  clientRelationShipsFoundTemplate: client_relationships_found,
+  pageNotFoundTemplate: page_not_found,
+  existingClientRelationshipsTemplate: existing_client_relationships,
+  completeTemplate: complete,
+  startTemplate: start,
+  alreadyMappedTemplate: already_mapped,
+  notEnrolledTemplate: not_enrolled,
+  incorrectAccountTemplate: incorrect_account,
+  ggTagTemplate: gg_tag,
+  mcc: MessagesControllerComponents)(implicit val ec: ExecutionContext, val appConfig: AppConfig)
+    extends FrontendController(mcc) with I18nSupport with AuthActions {
 
   val root: Action[AnyContent] = Action {
     Redirect(routes.MappingController.start())
@@ -53,15 +63,23 @@ class MappingController @Inject()(
 
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
-      case Some(arn) => repository.create(arn).map(id => Ok(html.start(id)))
-      case None      => successful(Redirect(routes.MappingController.needAgentServicesAccount()))
+      case Some(arn) =>
+        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] = for {
+          mdOpt   <- mappingConnector.getMappingDetails(arn)
+          details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
+        } yield ClientCountAndGGTag(details.count, details.ggTag)
+
+        clientCountsAndGGTags.flatMap(countsAndTags =>
+          repository.create(arn).map(id => Ok(startTemplate(id, countsAndTags))))
+
+      case None => successful(Redirect(routes.MappingController.needAgentServicesAccount()))
     }
   }
 
   def needAgentServicesAccount: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
       case Some(_) => successful(Redirect(routes.MappingController.start()))
-      case None    => successful(Ok(html.start_sign_in_required()))
+      case None    => successful(Ok(signInTemplate()))
     }
   }
 
@@ -89,42 +107,44 @@ class MappingController @Inject()(
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
         case Some(record) =>
-          val clientCount = record.currentCount
-          //remove this when GG tag pages get put back in
-          repository
-            .updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ""))
-            .map(_ => Ok(client_relationships_found(clientCount, id)))
-        case None => Ok(html.page_not_found())
+          Ok(clientRelationShipsFoundTemplate(record.currentCount, id))
+
+        case None => Ok(pageNotFoundTemplate())
       }
     }
   }
 
-//  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-//    withAuthorisedAgent(id) { _ =>
-//      Ok(html.gg_tag(GGTagForm.form, id))
-//    }
-//  }
-//
-//  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-//    withAuthorisedAgent(id) { _ =>
-//      repository.findRecord(id).flatMap {
-//        case Some(record) =>
-//          GGTagForm.form.bindFromRequest
-//            .fold(
-//              formWithErrors => {
-//                Ok(html.gg_tag(formWithErrors, id))
-//              },
-//              ggTag => {
-//                for {
-//                  _ <- repository.updateCurrentGGTag(id, ggTag.value)
-//                  _ <- repository.updateClientCountAndGGTag(id, ClientCountAndGGTag(record.currentCount, ggTag.value))
-//                } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
-//              }
-//            )
-//        case None => Ok(html.page_not_found())
-//      }
-//    }
-//  }
+  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      Ok(ggTagTemplate(GGTagForm.form, id))
+    }
+  }
+
+  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      repository.findRecord(id).flatMap {
+        case Some(record) =>
+          GGTagForm.form.bindFromRequest
+            .fold(
+              formWithErrors => {
+                Ok(ggTagTemplate(formWithErrors, id))
+              },
+              ggTag => {
+                val clientCountAndGGTags = if (!record.alreadyMapped) {
+                  ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags
+                } else {
+                  ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags.tail
+                }
+                val newRecord = record.copy(clientCountAndGGTags = clientCountAndGGTags, currentGGTag = ggTag.value)
+                for {
+                  _ <- repository.upsert(newRecord, id)
+                } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
+              }
+            )
+        case None => Ok(pageNotFoundTemplate())
+      }
+    }
+  }
 
   def updateMappingRecordsAndRedirect(
     arn: Arn,
@@ -140,18 +160,18 @@ class MappingController @Inject()(
       _ <- repository.updateMappingCompleteStatus(id)
     } yield
       Ok(
-        html.existing_client_relationships(
+        existingClientRelationshipsTemplate(
           ExistingClientRelationshipsForm.form,
           id,
           record.clientCountAndGGTags,
-          taskList = false,
-          backUrl))
+          backUrl,
+          taskList = false))
 
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { providerId =>
       repository.findRecord(id).flatMap {
         case Some(record) =>
-          val backUrl = routes.MappingController.showClientRelationshipsFound(id).url
+          val backUrl = routes.MappingController.showGGTag(id).url
           if (!record.alreadyMapped) {
             mappingConnector.createMapping(record.arn).flatMap {
               case CREATED =>
@@ -163,14 +183,14 @@ class MappingController @Inject()(
             }
           } else
             Ok(
-              html.existing_client_relationships(
+              existingClientRelationshipsTemplate(
                 ExistingClientRelationshipsForm.form,
                 id,
                 record.clientCountAndGGTags,
-                taskList = false,
-                backUrl))
+                backUrl,
+                taskList = false))
 
-        case None => Ok(html.page_not_found())
+        case None => Ok(pageNotFoundTemplate())
       }
     }
   }
@@ -183,12 +203,12 @@ class MappingController @Inject()(
             repository.findRecord(id).flatMap {
               case Some(record) =>
                 Ok(
-                  html.existing_client_relationships(
+                  existingClientRelationshipsTemplate(
                     formWithErrors,
                     id,
                     record.clientCountAndGGTags,
-                    taskList = false,
-                    routes.MappingController.showClientRelationshipsFound(id).url))
+                    routes.MappingController.showClientRelationshipsFound(id).url,
+                    taskList = false))
 
               case None =>
                 Logger.info(s"no record found for id $id")
@@ -205,7 +225,7 @@ class MappingController @Inject()(
   def complete(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
-        case Some(record) => Ok(html.complete(id, record.clientCountAndGGTags.map(_.clientCount).sum))
+        case Some(record) => Ok(completeTemplate(id, record.clientCountAndGGTags.map(_.clientCount).sum))
 
         case None =>
           Logger.warn("user must not completed the mapping journey or have lost the stored arn")
@@ -216,19 +236,19 @@ class MappingController @Inject()(
 
   def alreadyMapped(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      successful(Ok(html.already_mapped(id)))
+      successful(Ok(alreadyMappedTemplate(id)))
     }
   }
 
   def notEnrolled(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      successful(Ok(html.not_enrolled(id)))
+      successful(Ok(notEnrolledTemplate(id)))
     }
   }
 
   def incorrectAccount(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      successful(Ok(html.incorrect_account(id)))
+      successful(Ok(incorrectAccountTemplate(id)))
     }
   }
 }

@@ -2,12 +2,11 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.saJsonBody
-import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
 import play.api.http.Status
 import play.api.libs.json.Json
+import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
 import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
+import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
 
 trait AgentSubscriptionStubs {
 
@@ -47,6 +46,13 @@ trait AgentSubscriptionStubs {
         .willReturn(aResponse()
         .withStatus(Status.OK)
         .withBody(Json.toJson(subscriptionJourneyRecord).toString()))
+    )
+
+  def givenSubscriptionJourneyRecordNotFoundForContinueId(continueId: String): StubMapping =
+    stubFor(
+      get(urlPathEqualTo(s"/agent-subscription/subscription/journey/continueId/${encodePathSegment(continueId)}"))
+        .willReturn(aResponse()
+          .withStatus(Status.NO_CONTENT))
     )
 
   def givenUpdateSubscriptionJourneyRecordSucceeds(subscriptionJourneyRecord: SubscriptionJourneyRecord): StubMapping =

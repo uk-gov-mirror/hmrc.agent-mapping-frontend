@@ -20,7 +20,7 @@ import akka.stream.Materializer
 import com.google.inject.AbstractModule
 import org.jsoup.Jsoup
 import org.scalatest.matchers.{MatchResult, Matcher}
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.{HttpFilters, NoHttpFilters}
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -36,7 +36,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import play.api.test.Helpers._
 
 abstract class BaseControllerISpec
-    extends UnitSpec with OneAppPerSuite with WireMockSupport with EndpointBehaviours {
+    extends UnitSpec with GuiceOneAppPerSuite with WireMockSupport with EndpointBehaviours {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -47,7 +47,8 @@ abstract class BaseControllerISpec
         "microservice.services.agent-mapping.port" -> wireMockPort,
         "microservice.services.agent-subscription.port" -> wireMockPort,
         "application.router"                       -> "testOnlyDoNotUseInAppConf.Routes",
-        "authentication.login-callback.url"        -> "somehost"
+        "authentication.login-callback.url"        -> "somehost",
+        "clientCount.maxRecords" -> 15
       )
       .overrides(new TestGuiceModule)
 

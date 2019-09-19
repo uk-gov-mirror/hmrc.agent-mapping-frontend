@@ -93,11 +93,11 @@ class MappingArnRepository @Inject()(appConfig: AppConfig, mongoComponent: React
   def findRecord(id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Option[MappingArnResult]] =
     find("id" -> id).map(_.headOption)
 
-  def updateClientCountAndGGTag(id: MappingArnResultId, clientCountAndGGTag: ClientCountAndGGTag)(
-    implicit ec: ExecutionContext): Future[Unit] = {
-    val updateOp = Json.obj("$push" -> Json.obj("clientCountAndGGTags" -> clientCountAndGGTag))
-    collection.update(ordered = false).one(Json.obj("id" -> id), updateOp).checkResult
-  }
+  def upsert(mappingArnResult: MappingArnResult, id: MappingArnResultId)(implicit ec: ExecutionContext): Future[Unit] =
+    collection
+      .update(ordered = true)
+      .one(Json.obj("id" -> id), mappingArnResult, upsert = true)
+      .checkResult
 
   def updateCurrentGGTag(id: MappingArnResultId, ggTag: String)(implicit ec: ExecutionContext): Future[Unit] = {
     val updateOp = Json.obj("$set" -> Json.obj("currentGGTag" -> ggTag))

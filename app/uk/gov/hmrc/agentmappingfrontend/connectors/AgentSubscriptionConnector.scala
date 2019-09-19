@@ -16,70 +16,80 @@
 
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
-import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
-import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentSubscriptionConnector @Inject()(
-  @Named("agent-subscription-baseUrl") baseUrl: URL,
-  http: HttpGet with HttpPost,
-  metrics: Metrics
+  http: HttpClient,
+  metrics: Metrics,
+  appConfig: AppConfig
 )(implicit ec: ExecutionContext)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def getSubscriptionJourneyRecord(authProviderId: AuthProviderId)(
-    implicit hc: HeaderCarrier): Future[Option[SubscriptionJourneyRecord]] =
+    implicit hc: HeaderCarrier): Future[Option[SubscriptionJourneyRecord]] = {
+    val url =
+      s"${appConfig.agentSubscriptionBaseUrl}/agent-subscription/subscription/journey/id/${encodePathSegment(authProviderId.id)}"
     monitor("ConsumedAPI-Agent-Subscription-getSubscriptionJourneyRecord-GET") {
-      val url = new URL(baseUrl, s"/agent-subscription/subscription/journey/id/${encodePathSegment(authProviderId.id)}")
       http
-        .GET[HttpResponse](url.toString)
-        .map(response =>
+        .GET[HttpResponse](url)
+        .map(response => {
           response.status match {
             case 200 => Some(Json.parse(response.body).as[SubscriptionJourneyRecord])
             case 204 => None
+          }
         })
     }
+  }
 
   def getSubscriptionJourneyRecord(continueId: String)(
-    implicit hc: HeaderCarrier): Future[Option[SubscriptionJourneyRecord]] =
+    implicit hc: HeaderCarrier): Future[Option[SubscriptionJourneyRecord]] = {
+    val url =
+      s"${appConfig.agentSubscriptionBaseUrl}/agent-subscription/subscription/journey/continueId/${encodePathSegment(continueId)}"
     monitor("ConsumedAPI-Agent-Subscription-findByContinueId-GET") {
-      val path = s"/agent-subscription/subscription/journey/continueId/${encodePathSegment(continueId)}"
       http
-        .GET[HttpResponse](new URL(baseUrl, path).toString)
-        .map(response =>
+        .GET[HttpResponse](url)
+        .map(response => {
+
           response.status match {
             case 200 => Some(Json.parse(response.body).as[SubscriptionJourneyRecord])
             case 204 => None
+          }
         })
     }
+  }
 
   def createOrUpdateJourney(subscriptionJourneyRecord: SubscriptionJourneyRecord)(
-    implicit hc: HeaderCarrier): Future[Either[String, Unit]] =
+    implicit hc: HeaderCarrier): Future[Either[String, Unit]] = {
+    val url =
+      s"${appConfig.agentSubscriptionBaseUrl}/agent-subscription/subscription/journey/primaryId/${encodePathSegment(
+        subscriptionJourneyRecord.authProviderId.id)}"
     monitor("ConsumedAPI-Agent-Subscription-createOrUpdate-POST") {
-      val path =
-        s"/agent-subscription/subscription/journey/primaryId/${encodePathSegment(subscriptionJourneyRecord.authProviderId.id)}"
       http
-        .POST[SubscriptionJourneyRecord, HttpResponse](new URL(baseUrl, path).toString, subscriptionJourneyRecord)
-        .map(response =>
+        .POST[SubscriptionJourneyRecord, HttpResponse](url, subscriptionJourneyRecord)
+        .map(response => {
+
           response.status match {
             case 204    => Right(())
-            case status => Left(s"POST to $path returned $status")
+            case status => Left(s"POST to $url returned $status")
+          }
         })
         .recover {
           case ex: Throwable => Left(s"unexpected response ${ex.getMessage}")
         }
     }
-
+  }
 }

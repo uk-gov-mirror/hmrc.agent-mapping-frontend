@@ -1,23 +1,26 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 import play.api.http.Writeable
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
-import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository}
+import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   private lazy val repo = app.injector.instanceOf[MappingArnRepository]
+
+  val arn = Arn("TARN0000001")
 
   def callEndpointWith[A: Writeable](request: Request[A]): Result = await(play.api.test.Helpers.route(app, request).get)
 
@@ -32,21 +35,23 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   "start" should {
     "200 the start page if user has HMRC-AS-AGENT and 'Sign in with another account' button holds idReference to agent's ARN" in {
+      val mappingDetailsRepositoryRecord = MappingDetailsRepositoryRecord(Arn("TARN0000001"), Seq(MappingDetails(AuthProviderId("12345-credId"), "1234", 5, LocalDateTime.now())))
       givenUserIsAuthenticated(mtdAsAgent)
+      givenMappingDetailsExistFor(arn, mappingDetailsRepositoryRecord)
       val request = FakeRequest(GET, "/agent-mapping/start")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(
         result,
-        "connectAgentServices.start.whatYouNeedToKnow.heading",
-        "connectAgentServices.start.whatYouNeedToKnow.p1",
+        "connectAgentServices.start.copied",
         "connectAgentServices.start.inset",
         "connectAgentServices.start.whatYouNeedToDo.heading",
         "connectAgentServices.start.whatYouNeedToDo.p1",
         "connectAgentServices.start.whatYouNeedToDo.p2",
         "button.continue"
       )
-      checkHtmlResultContainsMsgs(result, "connectAgentServices.start.whatYouNeedToKnow.p1")
+      bodyOf(result) should include(htmlEscapedMessage("copied.table.multi.th", 5))
+      bodyOf(result) should include(htmlEscapedMessage("copied.table.ggTag", "1234"))
       bodyOf(result) should include("/signed-out-redirect?id=")
     }
 
@@ -170,66 +175,77 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
     }
   }
 
-//  "/tag-gg GET" should {
-//    val arn = Arn("TARN0000001")
-//    "display the GGTag screen" in {
-//      val clientCount = 12
-//      val id = await(repo.create(arn, clientCount))
-//      givenAuthorisedFor("IR-SA-AGENT")
-//      implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/tag-gg?id=$id")
-//      val result = callEndpointWith(request)
-//
-//      checkHtmlResultContainsEscapedMsgs(
-//        result,
-//        "gg-tag.title",
-//        "gg-tag.p1",
-//        "gg-tag.form.identifier",
-//        "gg-tag.form.hint",
-//        "gg-tag.xs")
-//    }
-//  }
-//
-//  "/tag-gg POST" should {
-//    val arn = Arn("TARN0000001")
-//    "redirect to existing-client-relationships when a valid gg-tag is submitted" in {
-//      val clientCount = 12
-//      val id = await(repo.create(arn, clientCount))
-//      givenAuthorisedFor("IR-SA-AGENT")
-//      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
-//        .withFormUrlEncodedBody("ggTag" -> "1234")
-//      val result = callEndpointWith(request)
-//
-//      status(result) shouldBe 303
-//      redirectLocation(result) shouldBe Some(routes.MappingController.showExistingClientRelationships(id).url)
-//    }
-//
-//    "redisplay the page with errors when an invalid gg-tag is submitted" in {
-//      val clientCount = 12
-//      val id = await(repo.create(arn, clientCount))
-//      givenAuthorisedFor("IR-SA-AGENT")
-//      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
-//        .withFormUrlEncodedBody("ggTag" -> "abcd")
-//      val result = callEndpointWith(request)
-//
-//      status(result) shouldBe 200
-//      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
-//    }
-//  }
+  "/tag-gg GET" should {
+    val arn = Arn("TARN0000001")
+    "display the GGTag screen" in {
+      val clientCount = 12
+      val id = await(repo.create(arn, clientCount))
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/tag-gg?id=$id")
+      val result = callEndpointWith(request)
+
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "gg-tag.title",
+        "gg-tag.p1",
+        "gg-tag.form.identifier",
+        "gg-tag.form.hint",
+        "gg-tag.xs")
+    }
+  }
+
+  "/tag-gg POST" should {
+    val arn = Arn("TARN0000001")
+    "redirect to existing-client-relationships when a valid gg-tag is submitted" in {
+      val clientCount = 12
+      val id = await(repo.create(arn, clientCount))
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
+        .withFormUrlEncodedBody("ggTag" -> "1234")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.showExistingClientRelationships(id).url)
+    }
+
+    "redisplay the page with errors when an invalid gg-tag is submitted" in {
+      val clientCount = 12
+      val id = await(repo.create(arn, clientCount))
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
+        .withFormUrlEncodedBody("ggTag" -> "abcd")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
+    }
+
+    "show the not found page if there is no journey record" in {
+      givenAuthorisedFor("IR-SA-AGENT")
+      implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=foo")
+        .withFormUrlEncodedBody("ggTag" -> "1234")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsMsgs(result, "page-not-found.h1", "page-not-found.p1")
+    }
+  }
 
   "/existing-client-relationships - GET" should {
 
-    testsForExistingClientRelationships(true)
-    testsForExistingClientRelationships(false)
+    testsForExistingClientRelationships(1)
+    testsForExistingClientRelationships(12)
+    testsForExistingClientRelationships(20)
 
-    def testsForExistingClientRelationships(singleClientCountResponse: Boolean): Unit = {
+    def testsForExistingClientRelationships(clientCount: Int): Unit = {
       val arn = Arn("TARN0000001")
       val ggTag = "6666"
       LegacyAgentEnrolmentType.foreach { enrolmentType =>
-        s"200 to /existing-client-relationships for ${enrolmentType.serviceKey} and for a single client relationship $singleClientCountResponse" in {
+        s"200 to /existing-client-relationships for ${enrolmentType.serviceKey} and for a single client relationship $clientCount" in {
 
-          val clientCount = if (singleClientCountResponse) 1 else 12
           val id = await(repo.create(arn, clientCount))
-          await(repo.updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ggTag)))
+          val record = await(repo.findRecord(id)).get
+          await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(clientCount, ggTag)), id))
           await(repo.updateCurrentGGTag(id, ggTag))
           givenAuthorisedFor(enrolmentType.serviceKey)
           mappingIsCreated(arn)
@@ -245,11 +261,13 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
             "existingClientRelationships.yes",
             "existingClientRelationships.no"
           )
-          //bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
-          if (singleClientCountResponse) {
-            bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", clientCount))
+          bodyOf(result) should include(htmlEscapedMessage("copied.table.ggTag", ggTag))
+          if (clientCount == 1) {
+            bodyOf(result) should include(htmlEscapedMessage("copied.table.single.th", clientCount))
+          } else if(clientCount < 15) {
+            bodyOf(result) should include(htmlEscapedMessage("copied.table.multi.th", clientCount))
           } else {
-            bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.multi.th", clientCount))
+            bodyOf(result) should include(htmlEscapedMessage("copied.table.max.th", 15))
           }
         }
       }
@@ -261,7 +279,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val ggTag = "6666"
       val id = await(repo.create(arn, clientCount))
       await(repo.updateMappingCompleteStatus(id))
-      await(repo.updateClientCountAndGGTag(id, ClientCountAndGGTag(clientCount, ggTag)))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(clientCount, ggTag)), id))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/existing-client-relationships?id=$id")
       val result = callEndpointWith(request)
@@ -275,7 +294,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         "existingClientRelationships.yes",
         "existingClientRelationships.no"
       )
-      //bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
+      bodyOf(result) should include(htmlEscapedMessage("copied.table.ggTag", ggTag))
     }
 
     "redirect to already mapped when mapping creation returns a conflict" in {
@@ -356,9 +375,9 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val count = 1
       val ggTag = "6666"
       val persistedMappingArnResultId = await(repo.create(arn, count))
-      await(repo.updateClientCountAndGGTag(persistedMappingArnResultId, ClientCountAndGGTag(count, ggTag)))
+      val record = await(repo.findRecord(persistedMappingArnResultId)).get
+      await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(count, ggTag)), persistedMappingArnResultId))
       givenUserIsAuthenticated(vatEnrolledAgent)
-      mappingDetailsExistFor(arn, MappingDetailsRepositoryRecord(arn, Seq(MappingDetails(AuthProviderId("12345-credId"), ggTag, count, LocalDateTime.now()))))
       val request = fakeRequest(
         POST,
         routes.MappingController.submitExistingClientRelationships(id = persistedMappingArnResultId).url)
@@ -377,8 +396,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
         "existingClientRelationships.yes",
         "existingClientRelationships.no"
       )
-     // bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.td", ggTag))
-      bodyOf(result) should include(htmlEscapedMessage("existingClientRelationships.single.th", count))
+      bodyOf(result) should include(htmlEscapedMessage("copied.table.single.th", count))
     }
 
     "redirect to start when there is a form error and no record found" in {
@@ -414,7 +432,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
           val clientCount = if (singleClientCountResponse) 1 else 12
           val persistedMappingArnResultId = await(repo.create(arn, clientCount))
-          await(repo.updateClientCountAndGGTag(persistedMappingArnResultId, ClientCountAndGGTag(clientCount, "6666")))
+          val record = await(repo.findRecord(persistedMappingArnResultId)).get
+          await(repo.upsert(record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(clientCount, "6666")), persistedMappingArnResultId))
           givenUserIsAuthenticated(user)
           val request = fakeRequest(GET, routes.MappingController.complete(id = persistedMappingArnResultId).url)
           val result = callEndpointWith(request)

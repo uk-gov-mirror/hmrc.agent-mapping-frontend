@@ -28,16 +28,6 @@ case class BusinessAddress(
 
 object BusinessAddress {
   implicit val format: OFormat[BusinessAddress] = Json.format[BusinessAddress]
-
-  def apply(desAddress: DesAddress): BusinessAddress =
-    BusinessAddress(
-      desAddress.addressLine1,
-      desAddress.addressLine2,
-      desAddress.addressLine3,
-      desAddress.addressLine4,
-      Some(desAddress.postcode),
-      desAddress.countryCode
-    )
 }
 
 case class Registration(

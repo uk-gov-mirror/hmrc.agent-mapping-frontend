@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.controllers
+package forms
 
-import play.api.mvc.RequestHeader
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.agentmappingfrontend.model.GGTagForm
+import uk.gov.hmrc.play.test.UnitSpec
 
-trait MappingBaseController extends BaseController {
+class GGTagFormSpec extends UnitSpec {
 
-  override implicit def hc(implicit rh: RequestHeader): HeaderCarrier =
-    HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, Some(rh.session), Some(rh))
+  "ggtagForm" should {
+
+    "have no errors when ggTag is valid" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "1234"))
+      form.hasErrors shouldBe false
+    }
+
+    "have errors when ggTag is invalid" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "abcd"))
+      form.hasErrors shouldBe true
+      form.errors.head.message shouldBe "error.gg-tag.invalid"
+    }
+  }
+
 }

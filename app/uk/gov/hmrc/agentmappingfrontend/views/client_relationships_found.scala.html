@@ -19,11 +19,17 @@
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-@(clientCount: Int, id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@this(mainTemplate: main_template
+)
+
+@(clientCount: Int, id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_],appConfig: AppConfig, messages: Messages)
 
 @returnUrl=@{s"/task-list/client-relationships-found/?id=$id"}
 
-@html.main_template(appConfig, title = Messages("clientRelationshipsFound.title"), bodyClasses = None, taskList = taskList) {
+    @maxRecords=@{appConfig.clientCountMaxRecords}
+
+@mainTemplate(appConfig, title = Messages("clientRelationshipsFound.title"), bodyClasses = None, taskList = taskList) {
 
 
     <h1 class="heading-xlarge">@if(clientCount == 1){ @Messages("clientRelationshipsFound.single.title")} else { @Messages("clientRelationshipsFound.multi.title")}
@@ -35,20 +41,20 @@
         <tbody>
             <tr class="no-border">
                 <td>
-                    <span class="bold-xxlarge">@clientCount</span>
+                    <span class="bold-xxlarge">@if(clientCount >= maxRecords){ @maxRecords} else { @clientCount}</span>
                 </td>
                 <td class="bold">
-                    @if(clientCount == 1){ @Messages("clientRelationshipsFound.single.td")} else { @Messages("clientRelationshipsFound.multi.td")}
+                    @if(clientCount == 1){ @Messages("clientRelationshipsFound.single.td")} else {@if(clientCount >= appConfig.clientCountMaxRecords){ @Messages("clientRelationshipsFound.max")} else { @Messages("clientRelationshipsFound.multi.td")}}
                 </td>
             </tr>
         </tbody>
     </table>
     <p>@if(clientCount == 1) { @Messages("clientRelationshipsFound.single.p2")} else {@Messages("clientRelationshipsFound.multi.p2")}</p>
     @if(taskList){
-        <a class="button margin-right-5" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.confirmClientRelationshipsFound(id)" role="button">@Messages("button.saveContinue")</a>
+        <a class="button margin-right-5" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.showGGTag(id)" role="button">@Messages("button.saveContinue")</a>
         <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl'>@Messages("button.saveComeBackLater")</a>
     } else {
-        <a class="button" name="clients" id="clients" href="@routes.MappingController.showExistingClientRelationships(id)" role="button">@Messages("button.continue")</a>
+        <a class="button" name="clients" id="clients" href="@routes.MappingController.showGGTag(id)" role="button">@Messages("button.continue")</a>
     }
 
 }
