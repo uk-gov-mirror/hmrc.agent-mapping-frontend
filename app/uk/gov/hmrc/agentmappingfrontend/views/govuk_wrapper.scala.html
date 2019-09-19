@@ -120,4 +120,4 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
       sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop,  Some(uiLayouts.footer_links(additionalLinks = Some(footerLinks))), true)(content)
+@govUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links(additionalLinks = Some(footerLinks))), true)(content)
