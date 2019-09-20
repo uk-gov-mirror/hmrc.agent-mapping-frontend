@@ -18,22 +18,19 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.Inject
-import play.api.mvc.{Action, AnyContent}
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.views.html
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.agentmappingfrontend.views.html.accessibility_statement
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.ExecutionContext
-
-class AccessibilityStatementController @Inject()()(
-  implicit val appConfig: AppConfig,
-  metrics: Metrics,
-  implicit val messagesApi: MessagesApi)
-    extends MappingBaseController() with I18nSupport {
+class AccessibilityStatementController @Inject()(
+  accessibilityView: accessibility_statement,
+  mcc: MessagesControllerComponents)(implicit val appConfig: AppConfig, metrics: Metrics)
+    extends FrontendController(mcc) with I18nSupport {
 
   def showAccessibilityStatement: Action[AnyContent] = Action { implicit request =>
-    Ok(html.accessibility_statement())
+    Ok(accessibilityView())
   }
 
 }
