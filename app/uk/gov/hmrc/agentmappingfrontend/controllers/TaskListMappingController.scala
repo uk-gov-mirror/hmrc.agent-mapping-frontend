@@ -253,7 +253,7 @@ class TaskListMappingController @Inject()(
           agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).map {
             case Some(sjr) =>
               if (sjr.userMappings.map(_.authProviderId).isEmpty) {
-                Ok(startTemplate(id, Seq.empty, taskList = true)) //first time here
+                Ok(startTemplate(id, Seq.empty, appConfig.agentSubscriptionFrontendTaskListUrl, taskList = true)) //first time here
               } else if (sjr.cleanCredsAuthProviderId.contains(agent.authProviderId) ||
                          sjr.userMappings.map(_.authProviderId).contains(agent.authProviderId)) {
                 Redirect(routes.TaskListMappingController.showExistingClientRelationships(id))
@@ -277,7 +277,7 @@ class TaskListMappingController @Inject()(
         if (record.alreadyMapped) {
           routes.TaskListMappingController.showGGTag(id).url
         } else {
-          s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}"
+          appConfig.agentSubscriptionFrontendTaskListUrl
         }
 
       case None => throw new RuntimeException(s"no task-list mapping record found for id $id for backUrl")

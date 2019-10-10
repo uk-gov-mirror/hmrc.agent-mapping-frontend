@@ -240,7 +240,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithAuthorisedAgent
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 
@@ -299,7 +299,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
         givenUserHasUnsupportedAuthProvider()
         val result = TestController.testWithSubscribingAgent
         status(result) shouldBe 303
-        result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+        result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
       }
     }
   }
@@ -316,7 +316,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithBasicAuth
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 
@@ -332,7 +332,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithBasicAgentAuth
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("somehost/foo", "utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 

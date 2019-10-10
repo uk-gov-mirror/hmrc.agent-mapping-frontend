@@ -329,7 +329,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val result = callEndpointWith(request)
       status(result) shouldBe 200
 
-      bodyOf(result) should include(s"${appConfig.agentSubscriptionFrontendExternalUrl}${appConfig.agentSubscriptionFrontendTaskListPath}")
+      bodyOf(result) should include(appConfig.agentSubscriptionFrontendTaskListUrl)
     }
   }
 

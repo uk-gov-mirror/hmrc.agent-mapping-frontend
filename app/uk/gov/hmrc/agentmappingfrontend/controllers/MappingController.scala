@@ -69,8 +69,11 @@ class MappingController @Inject()(
           details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
         } yield ClientCountAndGGTag(details.count, details.ggTag)
 
-        clientCountsAndGGTags.flatMap(countsAndTags =>
-          repository.create(arn).map(id => Ok(startTemplate(id, countsAndTags))))
+        clientCountsAndGGTags.flatMap(
+          countsAndTags =>
+            repository
+              .create(arn)
+              .map(id => Ok(startTemplate(id, countsAndTags, appConfig.agentServicesFrontendBaseUrl))))
 
       case None => successful(Redirect(routes.MappingController.needAgentServicesAccount()))
     }

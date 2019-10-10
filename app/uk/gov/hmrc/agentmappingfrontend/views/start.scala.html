@@ -23,7 +23,7 @@
 @this(mainTemplate: main_template
         )
 
-@(id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], taskList: Boolean = false)(implicit request: Request[_],appConfig: AppConfig,
+@(id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], backLink: String, taskList: Boolean = false)(implicit request: Request[_],appConfig: AppConfig,
         messages: Messages)
 
 @maxRecords = @{
@@ -31,6 +31,9 @@
 }
 
 @mainTemplate(appConfig, title = Messages("connectAgentServices.start.title"), bodyClasses = None, taskList = taskList) {
+
+    <a href=@backLink class="link-back">@Messages("button.back")</a>
+
     <h1 class="heading-xlarge">@Messages("connectAgentServices.start.title")</h1>
 
   @if(clientCountAndGGTags.nonEmpty) {

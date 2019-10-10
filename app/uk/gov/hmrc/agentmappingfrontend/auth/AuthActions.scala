@@ -160,7 +160,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       Forbidden
 
     case _: NoActiveSession =>
-      toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+      toGGLogin(s"${appConfig.agentMappingFrontendBaseUrl}${request.uri}")
 
     case _: InsufficientEnrolments =>
       Logger.warn(s"Logged in user does not have required enrolments")
@@ -168,7 +168,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
     case _: UnsupportedAuthProvider =>
       Logger.warn("User is not logged in via  GovernmentGateway, signing out and redirecting")
-      toGGLogin(s"${appConfig.authenticationLoginCallbackUrl}${request.uri}")
+      toGGLogin(s"${appConfig.agentMappingFrontendBaseUrl}${request.uri}")
   }
 
 }
