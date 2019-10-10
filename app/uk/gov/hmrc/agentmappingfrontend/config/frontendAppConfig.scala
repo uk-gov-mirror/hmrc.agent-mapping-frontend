@@ -60,15 +60,17 @@ class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppCon
     s"$contactFrontendHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
   //base urls
-  override lazy val companyAuthFrontendBaseUrl: String = servicesConfig.baseUrl("company-auth-frontend")
-  override lazy val agentSubscriptionBaseUrl: String = servicesConfig.baseUrl("agent-subscription")
+  override lazy val companyAuthFrontendBaseUrl: String =
+    servicesConfig.getString("microservice.services.company-auth-frontend.external-url")
+  override lazy val agentSubscriptionBaseUrl: String =
+    servicesConfig.baseUrl("agent-subscription")
   override lazy val agentMappingBaseUrl: String = servicesConfig.baseUrl("agent-mapping")
   override lazy val agentSubscriptionFrontendBaseUrl: String =
-    s"${servicesConfig.baseUrl("agent-subscription-frontend")}/agent-subscription"
+    s"${servicesConfig.getString("microservice.services.agent-subscription-frontend.external-url")}/agent-subscription"
   override lazy val agentMappingFrontendBaseUrl: String =
-    s"${servicesConfig.baseUrl("agent-mapping-frontend")}"
+    s"${servicesConfig.getString("microservice.services.agent-mapping-frontend.external-url")}"
   override lazy val agentServicesFrontendBaseUrl: String =
-    s"${servicesConfig.baseUrl("agent-services-account-frontend")}/agent-services-account"
+    s"${servicesConfig.getString("microservice.services.agent-services-account-frontend.external-url")}/agent-services-account"
 
   //constructed urls
   override lazy val signOutRedirectUrl: String = s"$agentMappingFrontendBaseUrl/agent-mapping/start-submit"
