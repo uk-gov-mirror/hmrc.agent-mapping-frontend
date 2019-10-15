@@ -27,6 +27,7 @@ trait AppConfig {
   val analyticsHost: String
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
+  def accessibilityUrl(userAction: String): String
   val signOutRedirectUrl: String
   val taskListSignOutRedirectUrl: String
   val signInAndContinue: String
@@ -58,6 +59,8 @@ class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppCon
     s"$contactFrontendHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   override lazy val reportAProblemNonJSUrl =
     s"$contactFrontendHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  override def accessibilityUrl(userAction: String): String =
+    s"$contactFrontendHost/contact/accessibility?service=$contactFormServiceIdentifier&userAction=$userAction"
 
   //base urls
   override lazy val companyAuthFrontendBaseUrl: String =

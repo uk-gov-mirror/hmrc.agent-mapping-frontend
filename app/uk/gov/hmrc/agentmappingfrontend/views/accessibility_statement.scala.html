@@ -21,7 +21,7 @@
 mainTemplate: main_template
 )
 
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(accessibilityLink: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @mainTemplate(appConfig, title = Messages("accessibility.statement.title"), bodyClasses = None) {
 
@@ -52,7 +52,7 @@ mainTemplate: main_template
     <p>@Html(Messages("accessibility.statement.whattodo.p1"))</p>
 
     <h2 class="govuk-heading-l">@Messages("accessibility.statement.reporting.heading")</h2>
-    <p>@Html(Messages("accessibility.statement.reporting.p1"))</p>
+    <p>@Html(Messages("accessibility.statement.reporting.p1", accessibilityLink))</p>
 
     <h2 class="govuk-heading-l">@Messages("accessibility.statement.enforcement.heading")</h2>
     <p>@Html(Messages("accessibility.statement.enforcement.p1"))</p>

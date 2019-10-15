@@ -3,6 +3,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import org.scalatest.matchers.{MatchResult, Matcher}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
+import play.mvc.Http.HeaderNames
 
 
 class AccessibilityStatementControllerISpec extends BaseControllerISpec {
@@ -10,11 +11,12 @@ class AccessibilityStatementControllerISpec extends BaseControllerISpec {
   private lazy val controller = app.injector.instanceOf[AccessibilityStatementController]
 
   "GET /accessibility-statement" should {
-    "show the accessibility statement content" in {
-      val result = await(controller.showAccessibilityStatement(FakeRequest()))
+    "show the accessibility statement content and accessibility link" in {
+      val result = await(controller.showAccessibilityStatement(FakeRequest().withHeaders(HeaderNames.REFERER -> "foo")))
 
       status(result) shouldBe 200
       result should containMessages("accessibility.statement.h1")
+      result should containSubstrings("/contact/accessibility?service=AOSS&userAction=foo")
      }
   }
 

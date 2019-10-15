@@ -20,6 +20,7 @@ import com.kenshoo.play.metrics.Metrics
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.views.html.accessibility_statement
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -30,7 +31,7 @@ class AccessibilityStatementController @Inject()(
     extends FrontendController(mcc) with I18nSupport {
 
   def showAccessibilityStatement: Action[AnyContent] = Action { implicit request =>
-    Ok(accessibilityView())
+    val userAction: String = request.headers.get(HeaderNames.REFERER).getOrElse("")
+    Ok(accessibilityView(appConfig.accessibilityUrl(userAction)))
   }
-
 }
