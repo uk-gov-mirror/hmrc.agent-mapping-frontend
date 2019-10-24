@@ -23,7 +23,7 @@ case class GGTag(value: String)
 
 object GGTagForm {
 
-  val ggTagRegex = "^[0-9]{4}$"
+  val ggTagRegex = "^[a-zA-Z0-9]{4}$"
 
   val form: Form[GGTag] =
     Form[GGTag](

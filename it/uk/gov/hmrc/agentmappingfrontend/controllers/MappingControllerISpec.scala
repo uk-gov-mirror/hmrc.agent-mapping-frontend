@@ -201,7 +201,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
-        .withFormUrlEncodedBody("ggTag" -> "1234")
+        .withFormUrlEncodedBody("ggTag" -> "12Aa")
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
@@ -213,7 +213,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
-        .withFormUrlEncodedBody("ggTag" -> "abcd")
+        .withFormUrlEncodedBody("ggTag" -> "ab-*")
       val result = callEndpointWith(request)
 
       status(result) shouldBe 200

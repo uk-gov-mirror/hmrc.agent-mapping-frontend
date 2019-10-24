@@ -23,13 +23,35 @@ class GGTagFormSpec extends UnitSpec {
 
   "ggtagForm" should {
 
-    "have no errors when ggTag is valid" in {
+    "have no errors when ggTag is valid with only digits" in {
       val form = GGTagForm.form.bind(Map("ggTag" -> "1234"))
       form.hasErrors shouldBe false
     }
 
-    "have errors when ggTag is invalid" in {
+    "have no errors when ggTag is valid with only alphabets" in {
       val form = GGTagForm.form.bind(Map("ggTag" -> "abcd"))
+      form.hasErrors shouldBe false
+    }
+
+    "be case in-sensitive" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "ABcd"))
+      form.hasErrors shouldBe false
+    }
+
+    "have errors when ggTag is invalid" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "ab_&"))
+      form.hasErrors shouldBe true
+      form.errors.head.message shouldBe "error.gg-tag.invalid"
+    }
+
+    "have errors when ggTag has more than 4 characters" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "ab12AS"))
+      form.hasErrors shouldBe true
+      form.errors.head.message shouldBe "error.gg-tag.invalid"
+    }
+
+    "have errors when ggTag has less than 4 characters" in {
+      val form = GGTagForm.form.bind(Map("ggTag" -> "aA1"))
       form.hasErrors shouldBe true
       form.errors.head.message shouldBe "error.gg-tag.invalid"
     }
