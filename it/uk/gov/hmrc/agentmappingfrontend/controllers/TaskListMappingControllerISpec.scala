@@ -243,7 +243,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val id = await(repo.create("continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag" -> "abcd", "continue" -> "continue"
+        "ggTag" -> "ab!7", "continue" -> "continue"
       )
       val result = callEndpointWith(request)
 
