@@ -164,5 +164,17 @@
     }
 }
 
+@media (max-width: 640px) {
+  .button--secondary {
+    width: 100%;
+  }
+}
+
+@media (min-width: 640px) {
+  .button--secondary {
+    line-height: 27px;
+  }
+}
+
 @import 'modules/_focus';
 @import 'modules/_palette';
