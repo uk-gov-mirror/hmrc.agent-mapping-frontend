@@ -27,7 +27,7 @@ clientRelationshipsFound.max=or more VAT and Self Assessment clients
 
 #gg-tag
 gg-tag.title=Identify this user ID
-gg-tag.p1=Enter the last 4 numbers of the user ID you signed in with, so you can identify it later.
+gg-tag.p1=Enter the last 4 characters of the user ID you signed in with, so you can identify it later.
 gg-tag.form.identifier=Government Gateway user ID
 gg-tag.form.hint=For example, XXXX-XXXX-1234
 gg-tag.xs=XXXX-XXXX-
@@ -97,7 +97,7 @@ error.utr.invalid.length=Unique Taxpayer Reference (UTR) must be 10 numbers
 error.arn.invalid=Enter a valid agent services account number that only includes letters A to Z, numbers and hyphens, like XARN-123-4567 or XARN1234567
 error.arn.blank=Enter your agent services account number
 error.existingClientRelationships.choice.invalid=Select yes if you wish to copy across additional clients
-error.gg-tag.invalid=Enter the last 4 numbers of the Government Gateway user ID you signed in with
+error.gg-tag.invalid=Enter the last 4 characters of the Government Gateway user ID you signed in with
 
 #TestOnly
 view.mappings.title=Here are your Mappings
