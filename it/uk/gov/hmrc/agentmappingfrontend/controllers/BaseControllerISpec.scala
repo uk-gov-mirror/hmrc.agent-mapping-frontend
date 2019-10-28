@@ -136,8 +136,7 @@ abstract class BaseControllerISpec
   protected def containSubmitButton(
                                      expectedMessageKey: String,
                                      expectedElementId: String,
-                                     expectedTagName: String = "button",
-                                     expectedType: String = "submit"): Matcher[Result] = {
+                                     expectedTagName: String = "button"): Matcher[Result] = {
     new Matcher[Result] {
       override def apply(result: Result): MatchResult = {
         val doc = Jsoup.parse(bodyOf(result))
@@ -150,16 +149,15 @@ abstract class BaseControllerISpec
           case None => false
           case Some(elAmls) => {
             val isExpectedTag = elAmls.tagName() == expectedTagName
-            val isExpectedType = elAmls.attr("type") == expectedType
             val hasExpectedMsg = elAmls.text() == htmlEscapedMessage(expectedMessageKey)
-            isExpectedTag && isExpectedType && hasExpectedMsg
+            isExpectedTag && hasExpectedMsg
           }
         }
 
         MatchResult(
           isAsExpected,
-          s"""Response does not contain a submit button with id "$expectedElementId" and type "$expectedType" with content for message key "$expectedMessageKey" """,
-          s"""Response contains a submit button with id "$expectedElementId" and type "$expectedType" with content for message key "$expectedMessageKey" """
+          s"""Response does not contain a submit button with id "$expectedElementId" with content for message key "$expectedMessageKey" """,
+          s"""Response contains a submit button with id "$expectedElementId" with content for message key "$expectedMessageKey" """
         )
       }
     }
