@@ -59,9 +59,8 @@
 
             <div class="form-field">
             @if(taskList) {
-                <input type="hidden" name="shim" value="" />
-                <button class="button margin-right-5 margin-bottom-10" type="submit" id="gg-tag-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
-                <button class="button--secondary" type="submit" id="gg-tag-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
+                <button class="button margin-right-5 margin-bottom-10" id="gg-tag-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
+                <button class="button--secondary" id="gg-tag-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
             } else {
                 <button class="button" type="submit" id="submit-gg-tag">@Messages("button.continue")</button>
             }
