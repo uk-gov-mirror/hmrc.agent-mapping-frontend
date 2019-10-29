@@ -47,15 +47,16 @@ class ErrorHandler @Inject()(
 
   override def resolveError(request: RequestHeader, exception: Throwable) = {
     auditServerError(request, exception)
-    implicit val r = Request(request, "")
+    implicit val r: Request[String] = Request(request, "")
     exception match {
       case _ =>
         Ok(
-          standardErrorTemplate(
+          errorTemplate(
             Messages("global.error.500.title"),
             Messages("global.error.500.heading"),
-            Messages("global.error.500.message")))
-          .withHeaders(CACHE_CONTROL -> "no-cache")
+            Messages("global.error.500.message"),
+            is5xx = true)
+        ).withHeaders(CACHE_CONTROL -> "no-cache")
     }
   }
 

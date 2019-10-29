@@ -117,11 +117,14 @@ global.error.passcode.message=
 global.error.404.title=Page not found - 404
 global.error.404.heading=This page can''t be found
 global.error.404.message=Please check that you have entered the correct web address.
-global.error.500.title=Sorry, we are experiencing technical difficulties - 500
-global.error.500.heading=Sorry, we''re experiencing technical difficulties
-global.error.500.message=Please try again in a few minutes.
-
-
+global.error.500.title=Sorry, there is a problem with the service - 500
+global.error.500.heading=Sorry, there is a problem with the service
+global.error.500.message=Try again later.
+global.error.500.p2=We may not have saved your answers. When the service is available, you may have to start again.
+global.error.500.vat_helpline.link=Call the VAT online services helpline
+global.error.500.vat_helpline=if you need help with Making Tax Digital for VAT.
+global.error.500.sa_helpline.link=Call the HMRC Self Assessment online services helpline
+global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
 
 accessibility.statement.title=Accessibility statement for agent service account
 accessibility.statement.h1=Accessibility statement for agent service account
