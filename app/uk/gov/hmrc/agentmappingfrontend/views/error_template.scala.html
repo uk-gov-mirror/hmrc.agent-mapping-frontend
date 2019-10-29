@@ -20,7 +20,7 @@
         uiGovUkWrapper: govuk_wrapper
 )
 
-@(pageTitle: String, heading: String, message: String, is5xx: Boolean = true)(implicit request: Request[_], messages: Messages,
+@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages,
         appConfig: AppConfig)
 
 @contentHeader = {
@@ -29,22 +29,6 @@
 
 @mainContent = {
     <p>@message</p>
-
-@if(is5xx) {
-    <p>@Messages("global.error.500.p2")</p>
-            <p>
-                <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk">
-                    @Messages("global.error.500.vat_helpline.link")
-                </a>
-                &nbsp;@Messages("global.error.500.vat_helpline")
-            </p>
-            <p>
-                <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk">
-                    @Messages("global.error.500.sa_helpline.link")
-                </a>
-                &nbsp;@Messages("global.error.500.sa_helpline")
-            </p>
-}
 }
 
 @uiGovUkWrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

@@ -21,7 +21,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.views.html.error_template
+import uk.gov.hmrc.agentmappingfrontend.views.html.{error_template, error_template_5xx}
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -35,7 +35,8 @@ class ErrorHandler @Inject()(
   val env: Environment,
   val messagesApi: MessagesApi,
   val auditConnector: AuditConnector,
-  errorTemplate: error_template)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
+  errorTemplate: error_template,
+  errorTemplate5xx: error_template_5xx)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
     extends FrontendErrorHandler with AuthRedirects with ErrorAuditing {
 
   val appName: String = appConfig.appName
@@ -48,16 +49,9 @@ class ErrorHandler @Inject()(
   override def resolveError(request: RequestHeader, exception: Throwable) = {
     auditServerError(request, exception)
     implicit val r: Request[String] = Request(request, "")
-    exception match {
-      case _ =>
         Ok(
-          errorTemplate(
-            Messages("global.error.500.title"),
-            Messages("global.error.500.heading"),
-            Messages("global.error.500.message"),
-            is5xx = true)
+          errorTemplate5xx()
         ).withHeaders(CACHE_CONTROL -> "no-cache")
-    }
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(
