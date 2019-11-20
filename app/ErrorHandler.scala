@@ -49,9 +49,9 @@ class ErrorHandler @Inject()(
   override def resolveError(request: RequestHeader, exception: Throwable) = {
     auditServerError(request, exception)
     implicit val r: Request[String] = Request(request, "")
-        Ok(
-          errorTemplate5xx()
-        ).withHeaders(CACHE_CONTROL -> "no-cache")
+    Ok(
+      errorTemplate5xx()
+    ).withHeaders(CACHE_CONTROL -> "no-cache")
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(
