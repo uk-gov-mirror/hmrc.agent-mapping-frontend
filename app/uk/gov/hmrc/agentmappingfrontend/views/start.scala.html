@@ -70,9 +70,9 @@
     <p>@Messages("connectAgentServices.start.whatYouNeedToDo.p2")</p>
 
             @if(taskList) {
-        <a class="button" name="start" id="start" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button">@Messages("button.continue")</a>
+        <a class="button" name="start" id="start" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.continue")</a>
     } else {
-        <a class="button" name="start" id="start" href="@routes.SignedOutController.signOutAndRedirect(id)" role="button">@Messages("button.continue")</a>
+        <a class="button" name="start" id="start" href="@routes.SignedOutController.signOutAndRedirect(id)" role="button" draggable="false">@Messages("button.continue")</a>
     }
 
 }

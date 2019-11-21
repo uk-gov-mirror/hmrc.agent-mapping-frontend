@@ -22,7 +22,19 @@ $(function() {
         });
     });
     //Add aria-hidden to hidden inputs
-    $('[type="hidden"]').attr("aria-hidden", true)
+    $('[type="hidden"]').attr("aria-hidden", true);
+
+    $('a[role=button]').keyup(function(e) {
+        // get the target element
+        var target = e.target;
+
+        // if the element has a role=’button’ and the pressed key is a space, we’ll simulate a click
+        if (e.keyCode === 32) {
+            e.preventDefault();
+            // trigger the target’s click event
+            target.click()
+        }
+    });
 
     var showHideContent = new GOVUK.ShowHideContent()
     showHideContent.init()

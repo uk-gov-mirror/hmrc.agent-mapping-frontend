@@ -37,9 +37,9 @@ mainTemplate: main_template
 
     <p>
         @if(taskList){
-  <a href="@routes.SignedOutController.taskListSignOutAndRedirect(idRefForArn)" class="button" id="buttonTryAgain" role="button">@Messages("button.tryAgain")</a>
+  <a href="@routes.SignedOutController.taskListSignOutAndRedirect(idRefForArn)" class="button" id="buttonTryAgain" role="button" draggable="false">@Messages("button.tryAgain")</a>
  } else {
-  <a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" class="button" id="buttonTryAgain" role="button">@Messages("button.tryAgain")</a>
+  <a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" class="button" id="buttonTryAgain" role="button" draggable="false">@Messages("button.tryAgain")</a>
  }
     </p>
 
