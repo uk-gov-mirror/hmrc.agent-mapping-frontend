@@ -6,12 +6,21 @@ servicename.titleSuffix=- GOV.UK
 start.not-signed-in.title=Copy across your existing Self Assessment and VAT clients to your agent services account
 start.not-signed-in.p1=You need to sign in to your agent services account to use this service.
 
-connectAgentServices.start.title=Copy across your existing Self Assessment and VAT clients to your agent services account
-connectAgentServices.start.copied=Already copied
-connectAgentServices.start.inset=You will not be able to view your client lists through your agent services account. To view your clients, use your third-party software.
-connectAgentServices.start.whatYouNeedToDo.heading=What you need to do
-connectAgentServices.start.whatYouNeedToDo.p1=On the next screen, sign in with an old Government Gateway user ID that you use for managing VAT or Self Assessment clients. This is different to the new user ID of your agent services account.
-connectAgentServices.start.whatYouNeedToDo.p2=If you have more than one Government Gateway user ID, you will need to repeat this for each user ID.
+start.title=Copy across your existing Self Assessment and VAT clients to your agent services account
+start.copied=Already copied
+start.inset=You will not be able to view your client lists through your agent services account. To view your clients, use your third-party software.
+start.need-to-do=What you need to do
+start.need-to-do.p1=On the next screen, sign in with an old Government Gateway user ID that you use for managing VAT or Self Assessment clients. This is different to the new user ID of your agent services account.
+start.need-to-do.p2=If you have more than one Government Gateway user ID, you will need to repeat this for each user ID.
+
+start.task-list.heading=Copy across your existing VAT and Self Assessment clients to your agent services account
+start.task-list.need-to-know=What you need to know
+start.task-list.need-to-know.p1=Before you can sign your clients up for Making Tax Digital, you need to copy your existing relationship from your old Government Gateway user IDs to your new agent services account.
+start.task-list.need-to-know.p2=This means your clients will not have to authorise you again for Making Tax Digital services.
+start.task-list.need-to-know.panel=You cannot view your client lists through your agent services account.
+start.task-list.need-to-do=What you need to do
+start.task-list.need-to-do.p1=On the next screen you will see how many VAT or Self Assessment clients you have linked to your current user ID
+start.task-list.need-to-do.p2=If you have more than one Government Gateway user ID, you will need to sign in with each user ID to copy more clients accross.
 
 #client-relationships-found
 clientRelationshipsFound.title=Client relationships found

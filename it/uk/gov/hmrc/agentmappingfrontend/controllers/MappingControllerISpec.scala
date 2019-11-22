@@ -43,11 +43,11 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(
         result,
-        "connectAgentServices.start.copied",
-        "connectAgentServices.start.inset",
-        "connectAgentServices.start.whatYouNeedToDo.heading",
-        "connectAgentServices.start.whatYouNeedToDo.p1",
-        "connectAgentServices.start.whatYouNeedToDo.p2",
+        "start.copied",
+        "start.inset",
+        "start.need-to-do",
+        "start.need-to-do.p1",
+        "start.need-to-do.p2",
         "button.continue"
       )
       bodyOf(result) should include(htmlEscapedMessage("copied.table.multi.th", 5))

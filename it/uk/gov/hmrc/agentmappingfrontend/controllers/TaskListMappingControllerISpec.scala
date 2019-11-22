@@ -77,21 +77,12 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(result,
-        "connectAgentServices.start.whatYouNeedToDo.heading",
-        "connectAgentServices.start.whatYouNeedToDo.p1",
-        "connectAgentServices.start.whatYouNeedToDo.p2",
+        "start.task-list.heading",
+        "start.task-list.need-to-do",
+        "start.task-list.need-to-know",
+        "start.task-list.need-to-know.panel",
         "button.continue")
       bodyOf(result) should include("/task-list/client-relationships-found?id=")
-    }
-
-    "200 the start sign in required if the user is logged in with the clean cred id" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithCleanCredId)
-      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
-      val request = FakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
-      val result = callEndpointWith(request)
-      status(result) shouldBe 200
-      checkHtmlResultContainsEscapedMsgs(result, "start.not-signed-in.title")
     }
 
     "303 to /task-list/client-relationships-found if there already exists some mappings but the current user has not yet mapped" in {

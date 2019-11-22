@@ -1,0 +1,50 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
+@import uk.gov.hmrc.agentmappingfrontend.views.html
+@import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
+@import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
+
+@this(mainTemplate: main_template
+)
+
+@(id: MappingArnResultId, backLink: String)(implicit request: Request[_], appConfig: AppConfig,
+        messages: Messages)
+
+@maxRecords = @{
+    appConfig.clientCountMaxRecords
+}
+
+@mainTemplate(appConfig, title = Messages("start.task-list.heading"), bodyClasses = None, taskList = true) {
+
+    <a href='@backLink' class="link-back">@Messages("button.back")</a>
+
+    <h1 class="heading-xlarge">@Messages("start.task-list.heading")</h1>
+
+            <h2 class="heading-medium">@Messages("start.task-list.need-to-know")</h2>
+            <p>@Messages("start.task-list.need-to-know.p1")</p>
+            <p>@Messages("start.task-list.need-to-know.p2")</p>
+
+            <p class="panel panel-border-wide margin-bottom-30">@Messages("start.task-list.need-to-know.panel")</p>
+
+            <h2 class="heading-medium">@Messages("start.task-list.need-to-do")</h2>
+            <p>@Messages("start.task-list.need-to-do.p1")</p>
+            <p>@Messages("start.task-list.need-to-do.p2")</p>
+
+            <a class="button" name="start" id="start" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.continue")</a>
+}

@@ -21,58 +21,52 @@
 @import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 
 @this(mainTemplate: main_template
-        )
+)
 
-@(id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], backLink: String, taskList: Boolean = false)(implicit request: Request[_],appConfig: AppConfig,
+@(id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], backLink: String)(implicit request: Request[_], appConfig: AppConfig,
         messages: Messages)
 
 @maxRecords = @{
     appConfig.clientCountMaxRecords
 }
 
-@mainTemplate(appConfig, title = Messages("connectAgentServices.start.title"), bodyClasses = None, taskList = taskList) {
+@mainTemplate(appConfig, title = Messages("start.title"), bodyClasses = None, taskList = false) {
 
     <a href=@backLink class="link-back">@Messages("button.back")</a>
 
-    <h1 class="heading-xlarge">@Messages("connectAgentServices.start.title")</h1>
+    <h1 class="heading-xlarge">@Messages("start.title")</h1>
 
-  @if(clientCountAndGGTags.nonEmpty) {
-    <h2 class="heading-medium">@Messages("connectAgentServices.start.copied")</h2>
+    @if(clientCountAndGGTags.nonEmpty) {
+        <h2 class="heading-medium">@Messages("start.copied")</h2>
 
-    <table class="margin-bottom-40">
-        <tbody>
-            @for(clientCountAndGGTag <- clientCountAndGGTags) {
-                <tr>
-                    <td>
-                        <span class="bold">@if(clientCountAndGGTag.clientCount == 1) {
-                            @Messages("copied.table.single.th", clientCountAndGGTag.clientCount)
-                        } else {
-                            @if(clientCountAndGGTag.clientCount < maxRecords) {
-                                @Messages("copied.table.multi.th", clientCountAndGGTag.clientCount)
+        <table class="margin-bottom-40">
+            <tbody>
+                @for(clientCountAndGGTag <- clientCountAndGGTags) {
+                    <tr>
+                        <td>
+                            <span class="bold">@if(clientCountAndGGTag.clientCount == 1) {
+                                @Messages("copied.table.single.th", clientCountAndGGTag.clientCount)
                             } else {
-                                @Messages("copied.table.max.th", maxRecords)
+                                @if(clientCountAndGGTag.clientCount < maxRecords) {
+                                    @Messages("copied.table.multi.th", clientCountAndGGTag.clientCount)
+                                } else {
+                                    @Messages("copied.table.max.th", maxRecords)
+                                }
                             }
+                            </span>
+                        </td>
+                        <td>@Messages("copied.table.ggTag", clientCountAndGGTag.ggTag)</td>
                         }
-                        </span>
-                    </td>
-                    <td>@Messages("copied.table.ggTag", clientCountAndGGTag.ggTag)</td>
-                    }
-        </tr>
-        </tbody>
-    </table>
-  }
-
-    <p class="panel panel-border-wide margin-bottom-30">@Messages("connectAgentServices.start.inset")</p>
-
-    <h2 class="heading-medium">@Messages("connectAgentServices.start.whatYouNeedToDo.heading")</h2>
-
-    <p>@Messages("connectAgentServices.start.whatYouNeedToDo.p1")</p>
-    <p>@Messages("connectAgentServices.start.whatYouNeedToDo.p2")</p>
-
-            @if(taskList) {
-        <a class="button" name="start" id="start" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.continue")</a>
-    } else {
-        <a class="button" name="start" id="start" href="@routes.SignedOutController.signOutAndRedirect(id)" role="button" draggable="false">@Messages("button.continue")</a>
+            </tr>
+            </tbody>
+        </table>
     }
 
+    <p class="panel panel-border-wide margin-bottom-30">@Messages("start.inset")</p>
+
+    <h2 class="heading-medium">@Messages("start.need-to-do")</h2>
+    <p>@Messages("start.need-to-do.p1")</p>
+    <p>@Messages("start.need-to-do.p2")</p>
+
+    <a class="button" name="start" id="start" href="@routes.SignedOutController.signOutAndRedirect(id)" role="button" draggable="false">@Messages("button.continue")</a>
 }
