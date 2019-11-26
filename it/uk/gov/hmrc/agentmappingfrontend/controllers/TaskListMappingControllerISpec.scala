@@ -81,7 +81,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
         "start.task-list.need-to-do",
         "start.task-list.need-to-know",
         "start.task-list.need-to-know.panel",
-        "button.continue")
+        "button.saveContinue", "button.saveComeBackLater")
       bodyOf(result) should include("/task-list/client-relationships-found?id=")
     }
 

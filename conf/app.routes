@@ -20,7 +20,7 @@ GET         /re-log-in-redirect                                  uk.gov.hmrc.age
 
 GET         /assets/*file                                        controllers.Assets.at(path="/public", file)
 
-GET         /task-list/                                          uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.root(continueId: String)
+GET         /task-list                                          uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.root(continueId: String)
 GET         /task-list/start                                     uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.start(continueId: String)
 GET         /task-list/error/incorrect-account                   uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.incorrectAccount(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /task-list/error/already-linked                      uk.gov.hmrc.agentmappingfrontend.controllers.TaskListMappingController.alreadyMapped(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)

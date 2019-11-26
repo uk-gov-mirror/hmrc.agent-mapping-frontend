@@ -23,12 +23,14 @@
 @this(mainTemplate: main_template
 )
 
-@(id: MappingArnResultId, backLink: String)(implicit request: Request[_], appConfig: AppConfig,
+@(continueId: String, id: MappingArnResultId, backLink: String)(implicit request: Request[_], appConfig: AppConfig,
         messages: Messages)
 
 @maxRecords = @{
     appConfig.clientCountMaxRecords
 }
+
+@returnUrl=@{s"/task-list/start?continueId=$continueId"}
 
 @mainTemplate(appConfig, title = Messages("start.task-list.heading"), bodyClasses = None, taskList = true) {
 
@@ -46,5 +48,6 @@
             <p>@Messages("start.task-list.need-to-do.p1")</p>
             <p>@Messages("start.task-list.need-to-do.p2")</p>
 
-            <a class="button" name="start" id="start" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.continue")</a>
+            <a class="button margin-right-5 margin-bottom-10" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.saveContinue")</a>
+            <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl' draggable="false">@Messages("button.saveComeBackLater")</a>
 }
