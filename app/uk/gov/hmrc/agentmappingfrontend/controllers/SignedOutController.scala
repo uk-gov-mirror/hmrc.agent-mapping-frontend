@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.Inject
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -57,6 +57,17 @@ class SignedOutController @Inject()(appConfig: AppConfig, cc: MessagesController
     val url =
       s"${appConfig.agentSubscriptionFrontendBaseUrl}/return-after-mapping"
     Future.successful(Redirect(url))
+  }
+
+  def signOut: Action[AnyContent] = Action {
+    startNewSession
+  }
+
+  private def startNewSession: Result =
+    Redirect(routes.MappingController.root()).withNewSession
+
+  def keepAlive = Action.async { implicit request =>
+    Future successful Ok("OK")
   }
 
 }

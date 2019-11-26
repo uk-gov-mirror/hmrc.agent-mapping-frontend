@@ -58,4 +58,13 @@ class SignOutControllerISpec extends BaseControllerISpec {
     }
   }
 
+  "signOut" should {
+    "redirect to start" in {
+      val result = await(controller.signOut()(fakeRequest))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/agent-mapping")
+    }
+  }
+
 }

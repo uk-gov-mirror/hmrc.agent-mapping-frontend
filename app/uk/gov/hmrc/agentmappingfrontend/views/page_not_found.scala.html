@@ -23,9 +23,9 @@ mainTemplate: main_template
 
  )
 
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(hasTimeout: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@mainTemplate(appConfig, title = Messages("page-not-found.title"), bodyClasses = None) {
+@mainTemplate(appConfig, title = Messages("page-not-found.title"), bodyClasses = None, hasTimeout = hasTimeout) {
     <h1 class="heading-xlarge">@Messages("page-not-found.h1")</h1>
 
     <p>@Messages("page-not-found.p1")</p>

@@ -41,6 +41,8 @@ trait AppConfig {
   val agentMappingFrontendBaseUrl: String
   val appName: String
   val clientCountMaxRecords: Int
+  val timeout: Int
+  val timeoutCountdown: Int
 }
 @Singleton
 class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppConfig {
@@ -88,4 +90,6 @@ class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppCon
 
   override lazy val clientCountMaxRecords: Int = servicesConfig.getInt("clientCount.maxRecords")
 
+  override val timeout: Int = servicesConfig.getInt("timeoutDialog.timeout-seconds")
+  override val timeoutCountdown: Int = servicesConfig.getInt("timeoutDialog.timeout-countdown-seconds")
 }

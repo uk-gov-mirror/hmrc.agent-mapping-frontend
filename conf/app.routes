@@ -36,3 +36,6 @@ GET         /task-list/return                                    uk.gov.hmrc.age
 GET         /task-list/return-after-mapping                      uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.returnAfterMapping()
 
 GET         /accessibility-statement                             uk.gov.hmrc.agentmappingfrontend.controllers.AccessibilityStatementController.showAccessibilityStatement
+
+GET         /finish-sign-out                                     uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
+GET         /keep-alive                                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.keepAlive
