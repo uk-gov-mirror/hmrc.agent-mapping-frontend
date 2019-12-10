@@ -24,14 +24,15 @@
         mainTemplate: main_template,
         uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
         uiXCustomInput: x_custom_input,
-        formHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+        formHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+        errorPrefix: error_prefix
 
 )
 
 @(ggTagForm: Form[GGTag], id: MappingArnResultId, taskList: Boolean = false)(implicit request: Request[_], messages: Messages,
         appConfig: AppConfig)
 
-@mainTemplate(appConfig, title = Messages("gg-tag.title"), bodyClasses = None, taskList = taskList) {
+@mainTemplate(appConfig, title = errorPrefix(ggTagForm) + Messages("gg-tag.title"), bodyClasses = None, taskList = taskList) {
 
     <a href="@{
         if(taskList) routes.TaskListMappingController.showClientRelationshipsFound(id) else routes.MappingController.showClientRelationshipsFound(id)

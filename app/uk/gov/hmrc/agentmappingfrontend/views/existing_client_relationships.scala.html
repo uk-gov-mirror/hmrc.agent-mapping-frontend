@@ -28,7 +28,8 @@
         mainTemplate: main_template,
         uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
         formHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        inputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        inputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup,
+        errorPrefix: error_prefix
 )
 
 @(addClientsForm: Form[RadioInputAnswer], id: MappingArnResultId, clientCountAndGGTags: Seq[ClientCountAndGGTag], backUrl: String, taskList: Boolean = false)(implicit request: Request[_], messages: Messages,
@@ -38,7 +39,7 @@
     appConfig.clientCountMaxRecords
 }
 
-@mainTemplate(appConfig, title = Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
+@mainTemplate(appConfig, title = errorPrefix(addClientsForm) +  Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
 
 
     <a href="@backUrl" class="link-back">@Messages("button.back")</a>
