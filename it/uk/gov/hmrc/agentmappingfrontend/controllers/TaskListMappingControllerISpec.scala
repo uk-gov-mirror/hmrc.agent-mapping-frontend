@@ -431,7 +431,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showClientRelationshipsFound(newId).url)
     }
 
-    "200 to /already-mapped page when the user has already mapped" in {
+    "303 to /already-mapped page when the user has already mapped" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
       val id = await(repo.create("continue-id"))
@@ -447,7 +447,8 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val request = FakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
       val result = callEndpointWith(request)
 
-      status(result) shouldBe 200
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.alreadyMapped(id).url)
     }
 
     "throw a runtime exception when there is no mapping record" in {
