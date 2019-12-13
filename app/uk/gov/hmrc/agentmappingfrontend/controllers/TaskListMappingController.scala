@@ -91,7 +91,7 @@ class TaskListMappingController @Inject()(
                        r     <- nextPage(newId)
                      } yield r
                    } else {
-                     Future.successful(Ok(alreadyMappedTemplate(id, taskList = true)))
+                     Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
                    }
         } yield result
       } else Redirect(routes.TaskListMappingController.notEnrolled(id))
