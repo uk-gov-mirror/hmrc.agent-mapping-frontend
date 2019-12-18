@@ -39,3 +39,4 @@ GET         /accessibility-statement                             uk.gov.hmrc.age
 
 GET         /finish-sign-out                                     uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
 GET         /keep-alive                                          uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.keepAlive
+GET         /timed-out                                           uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.timedOut

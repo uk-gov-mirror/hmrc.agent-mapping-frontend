@@ -20,12 +20,14 @@ import javax.inject.Inject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
+import uk.gov.hmrc.agentmappingfrontend.views.html.timed_out
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.helper.urlEncode
 
 import scala.concurrent.Future
 
-class SignedOutController @Inject()(appConfig: AppConfig, cc: MessagesControllerComponents)
+class SignedOutController @Inject()(timedOutTemplate: timed_out, cc: MessagesControllerComponents)(
+  implicit appConfig: AppConfig)
     extends FrontendController(cc) {
 
   def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>
@@ -66,8 +68,11 @@ class SignedOutController @Inject()(appConfig: AppConfig, cc: MessagesController
   private def startNewSession: Result =
     Redirect(routes.MappingController.root()).withNewSession
 
-  def keepAlive = Action.async { implicit request =>
+  def keepAlive: Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok("OK")
   }
 
+  def timedOut: Action[AnyContent] = Action.async { implicit request =>
+    Future successful Forbidden(timedOutTemplate())
+  }
 }
