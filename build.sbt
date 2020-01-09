@@ -1,6 +1,5 @@
-import sbt.Tests.{Group, SubProcess}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -21,7 +20,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "play-ui" % "7.40.0-play-26",
   "uk.gov.hmrc" %% "auth-client" % "2.27.0-play-26",
   "uk.gov.hmrc" %% "play-partials" % "6.9.0-play-26",
-  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-26",
+  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.22.0-play-26",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.16.0-play-26",
   "com.typesafe.play" %% "play-json-joda" % "2.6.10",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.3.0"
@@ -29,7 +28,7 @@ lazy val compileDeps = Seq(
 
 def tmpMacWorkaround(): Seq[ModuleID] =
   if (sys.props.get("os.name").fold(false)(_.toLowerCase.contains("mac")))
-    Seq("org.reactivemongo" % "reactivemongo-shaded-native" % "0.16.1-osx-x86-64" % "runtime,test,it")
+    Seq("org.reactivemongo" % "reactivemongo-shaded-native" % "0.18.6-osx-x86-64" % "runtime,test,it")
   else Seq()
 
 def testDeps(scope: String) = Seq(
