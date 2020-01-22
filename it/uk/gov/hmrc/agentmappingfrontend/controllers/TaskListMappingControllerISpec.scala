@@ -498,7 +498,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       status(result) shouldBe 200
 
       checkHtmlResultContainsEscapedMsgs(result,
-        "incorrectAccount.p1", "incorrectAccount.p2")
+        "incorrectAccount.h1", "incorrectAccount.p1")
 
     }
   }
@@ -512,7 +512,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       status(result) shouldBe 200
 
       checkHtmlResultContainsEscapedMsgs(result,
-        "alreadyMapped.p1", "alreadyMapped.p2")
+        "alreadyMapped.h1", "alreadyMapped.p1")
     }
   }
 
@@ -525,7 +525,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       status(result) shouldBe 200
 
       checkHtmlResultContainsEscapedMsgs(result,
-        "notEnrolled.p1", "notEnrolled.p2")
+        "notEnrolled.h1", "notEnrolled.p1", "notEnrolled.p2")
     }
   }
 }

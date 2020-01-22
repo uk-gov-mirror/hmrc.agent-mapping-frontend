@@ -488,9 +488,8 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(
         result,
-        "error.title",
+        "alreadyMapped.h1",
         "alreadyMapped.p1",
-        "alreadyMapped.p2",
         "button.tryAgain")
     }
   }
@@ -515,7 +514,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
     "return 200 response and contain appropriate content" in new IncorrectAccountFixture {
       status(result) shouldBe 200
-      checkHtmlResultContainsEscapedMsgs(result, "error.title", "incorrectAccount.p1", "incorrectAccount.p2")
+      checkHtmlResultContainsEscapedMsgs(result, "incorrectAccount.h1", "incorrectAccount.p1")
     }
   }
 }

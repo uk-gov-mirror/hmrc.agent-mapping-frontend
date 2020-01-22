@@ -32,10 +32,9 @@
  <p>@Messages("start.not-signed-in.p1")</p>
 
  @if(taskList) {
-  <a class="button button-start button--get-started form-field--submit" name="signIn" id="start" href="@routes.SignedOutController.taskListSignOutAndRedirect(id.getOrElse("unknown"))" role="button">@Messages("button.signIn")</a>
+  <a class="button" href="@routes.SignedOutController.taskListSignOutAndRedirect(id.getOrElse("unknown"))" role="button">@Messages("button.signIn")</a>
 
  } else {
-
-  <a class="button button-start button--get-started form-field--submit" name="signIn" id="start" href="@routes.SignedOutController.reLogForMappingStart()" role="button">@Messages("button.signIn")</a>
+  <a class="button" href="@routes.SignedOutController.reLogForMappingStart()" role="button">@Messages("button.signIn")</a>
  }
 }

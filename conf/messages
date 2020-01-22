@@ -3,10 +3,10 @@ app.name=Create an agent services account
 app.name-alreadySubscribed=Agent services account
 servicename.titleSuffix=- GOV.UK
 #Connect agent services
-start.not-signed-in.title=Copy across your existing Self Assessment and VAT clients to your agent services account
+start.not-signed-in.title=Copy across your existing VAT and Self Assessment clients to your agent services account
 start.not-signed-in.p1=You need to sign in to your agent services account to use this service.
 
-start.title=Copy across your existing Self Assessment and VAT clients to your agent services account
+start.title=Copy across your existing VAT and Self Assessment clients to your agent services account
 start.copied=Already copied
 start.inset=You will not be able to view your client lists through your agent services account. To view your clients, use your third-party software.
 start.need-to-do=What you need to do
@@ -60,16 +60,16 @@ page-not-found.h1=Page not found
 page-not-found.p1=You need to sign in to your agent services account again.
 
 #Already linked
-alreadyMapped.p1=This Government Gateway user ID is already linked to your agent services account.
-alreadyMapped.p2=If you need to link another Government Gateway user ID, sign in with the user ID and password for that account.
+alreadyMapped.h1=This user ID is already linked to your agent services account
+alreadyMapped.p1=If you need to link another Government Gateway user ID, sign in with the user ID and password for that account.
 #Incorrect account
-incorrectAccount.p1=You tried to sign in with your agent services account user ID.
-incorrectAccount.p2=You need to sign in with a Government Gateway user ID you use to manage your Self Assessment or VAT clients.
+incorrectAccount.h1=You tried to sign in with your agent services account user ID.
+incorrectAccount.p1=You need to sign in with a Government Gateway user ID you use to manage your VAT or Self Assessment clients.
 
 #Not enrolled
-notEnrolled.p1=You cannot link this user ID to your agent services account.
-notEnrolled.p2=You can only link Government Gateway user IDs registered to your business.
-notEnrolled.p3=If you need to link another Government Gateway user ID, sign in with the user ID and password.
+notEnrolled.h1=You cannot link this user ID to your agent services account.
+notEnrolled.p1=You can only link user IDs registered to your business.
+notEnrolled.p2=If you need to link another Government Gateway user ID, sign in with the user ID and password.
 
 #Connection complete
 connectionComplete.title=Client relationships copied

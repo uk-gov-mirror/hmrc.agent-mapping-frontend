@@ -28,12 +28,11 @@ mainTemplate: main_template
         appConfig: AppConfig
 )
 
-@mainTemplate(appConfig, title = Messages("error.title"), bodyClasses = None, taskList = taskList ) {
+@mainTemplate(appConfig, title = Messages("incorrectAccount.h1"), bodyClasses = None, taskList = taskList ) {
 
-<h1 class="heading-xlarge">@Messages("error.title")</h1>
+<h1 class="heading-xlarge">@Messages("incorrectAccount.h1")</h1>
 
 <p>@Messages("incorrectAccount.p1")</p>
-<p>@Messages("incorrectAccount.p2")</p>
 
     <p>
         @if(taskList){
