@@ -33,9 +33,9 @@ mainTemplate: main_template
     <p>@Messages("notEnrolled.p1")</p>
     <p>@Messages("notEnrolled.p2")</p>
 
-            @if(taskList){
-        <a href="@routes.SignedOutController.taskListSignOutAndRedirect(idRefForArn)" id="buttonSignOut" class="button" role="button" draggable="false">@Messages("button.tryAgain")</a>
+    @if(taskList){
+        <a href="@routes.SignedOutController.taskListSignOutAndRedirect(idRefForArn)" id="buttonSignOut" class="button" role="button" draggable="false">@Messages("button.signInAlt")</a>
     } else {
-        <a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" id="buttonSignOut" class="button" role="button" draggable="false">@Messages("button.tryAgain")</a>
+        <a href="@routes.SignedOutController.signOutAndRedirect(idRefForArn)" id="buttonSignOut" class="button" role="button" draggable="false">@Messages("button.signInAlt")</a>
     }
-            }
+}

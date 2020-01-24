@@ -476,7 +476,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       val request = fakeRequest(GET, routes.MappingController.notEnrolled(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
-      checkHtmlResultContainsEscapedMsgs(result, "notEnrolled.p1", "button.tryAgain")
+      checkHtmlResultContainsEscapedMsgs(result, "notEnrolled.p1", "button.signInAlt")
     }
   }
 

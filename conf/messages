@@ -61,13 +61,13 @@ page-not-found.p1=You need to sign in to your agent services account again.
 
 #Already linked
 alreadyMapped.h1=This user ID is already linked to your agent services account
-alreadyMapped.p1=If you need to link another Government Gateway user ID, sign in with the user ID and password for that account.
+alreadyMapped.p1=If you need to link another Government Gateway user ID, sign in with the user ID and password.
 #Incorrect account
 incorrectAccount.h1=You tried to sign in with your agent services account user ID.
 incorrectAccount.p1=You need to sign in with a Government Gateway user ID you use to manage your VAT or Self Assessment clients.
 
 #Not enrolled
-notEnrolled.h1=You cannot link this user ID to your agent services account.
+notEnrolled.h1=You cannot link this user ID to your agent services account
 notEnrolled.p1=You can only link user IDs registered to your business.
 notEnrolled.p2=If you need to link another Government Gateway user ID, sign in with the user ID and password.
 
@@ -95,6 +95,7 @@ button.no=No
 button.back=Back
 button.tryAgain=Try again
 button.signIn=Sign in
+button.signInAlt=Sign in with another user ID
 
 #Errors
 error.title=There is a problem
