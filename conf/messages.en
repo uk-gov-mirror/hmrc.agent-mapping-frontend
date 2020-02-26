@@ -31,7 +31,7 @@ clientRelationshipsFound.single.p2=If you continue, they will be copied across t
 clientRelationshipsFound.multi.title=Client relationships found
 clientRelationshipsFound.multi.p1=Your user ID has the following client relationships that you can copy across.
 clientRelationshipsFound.multi.td=VAT and Self Assessment clients
-clientRelationshipsFound.multi.p2=If you continue, they will be copied across to your new agent services account. You will then be able to sign up to Making Tax Digital.
+clientRelationshipsFound.multi.p2=If you continue, they will be copied across to your new agent services account. You will then be able to sign them up to Making Tax Digital.
 clientRelationshipsFound.max=or more VAT and Self Assessment clients
 
 #gg-tag
@@ -128,7 +128,7 @@ timed-out.p2.link=Sign in again
 timed-out.p2=to use this service.
 
 # General Messages
-# Error messages for digital services
+# Error messages.en for digital services
 global.error.400.title=Bad request - 400
 global.error.400.heading=Bad request
 global.error.400.message=Please check that you have entered the correct web address.

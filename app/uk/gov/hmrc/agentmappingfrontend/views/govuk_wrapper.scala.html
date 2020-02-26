@@ -71,7 +71,6 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
             window.jsConfig.timeout = @{appConfig.timeout};
             window.jsConfig.countdown = @{appConfig.timeoutCountdown};
             window.jsConfig.keep_alive_url = "@{routes.SignedOutController.keepAlive().url}";
-            window.jsConfig.message = "@{Messages("timeout-dialog.p1")}";
             window.jsConfig.timed_out_url = "@{routes.SignedOutController.timedOut().url}";
             window.jsConfig.logout_url = "@{routes.SignedOutController.signOut().url}";
     </script>
@@ -84,12 +83,22 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
 
     @navTitle = @{if(taskList){Some(Messages("app.name"))} else Some(Messages("app.name-alreadySubscribed"))}
 
+    @insideHeaderNavLinks = {
+    @if(appConfig.languageToggle){
+        <div class="text--right">@views.html.language_selection(
+            appConfig.languageMap,
+            appConfig.routeToSwitchLanguage,
+            customClass = Some("welsh-toggle")
+        )</div>
+    }
+    }
+
 @insideHeader = {
     @uiHeaderNav(
       navTitle = navTitle,
       navTitleLink = None,
       showBetaLink = false,
-      navLinks = None)
+      navLinks = Some(insideHeaderNavLinks))
 }
 
 @afterHeader = {}
