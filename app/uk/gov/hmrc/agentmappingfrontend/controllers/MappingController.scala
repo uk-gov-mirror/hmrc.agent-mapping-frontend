@@ -48,6 +48,7 @@ class MappingController @Inject()(
   clientRelationShipsFoundTemplate: client_relationships_found,
   pageNotFoundTemplate: page_not_found,
   existingClientRelationshipsTemplate: existing_client_relationships,
+  copyAcrossClientsTemplate: copy_across_clients,
   completeTemplate: complete,
   startTemplate: start,
   alreadyMappedTemplate: already_mapped,
@@ -218,10 +219,19 @@ class MappingController @Inject()(
                 Redirect(routes.MappingController.start())
             }
           }, {
-            case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))
+            case Yes => Redirect(routes.MappingController.showCopyAcrossClients(id))
             case No  => Redirect(routes.MappingController.complete(id))
           }
         )
+    }
+  }
+
+  def showCopyAcrossClients(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAgent(id) { _ =>
+      Ok(
+        copyAcrossClientsTemplate(
+          idRefForArn = id,
+          backUrl = routes.MappingController.showExistingClientRelationships(id).url))
     }
   }
 
