@@ -49,6 +49,7 @@ class TaskListMappingController @Inject()(
   cc: MessagesControllerComponents,
   startTemplate: task_list_start,
   alreadyMappedTemplate: already_mapped,
+  copyAcrossClientsTemplate: copy_across_clients,
   clientRelationshipsFoundTemplate: client_relationships_found,
   existingClientRelationshipsTemplate: existing_client_relationships,
   incorrectAccountTemplate: incorrect_account,
@@ -204,10 +205,20 @@ class TaskListMappingController @Inject()(
                     taskList = true
                   )))
           }, {
-            case Yes => Redirect(continueOrStop(routes.SignedOutController.taskListSignOutAndRedirect(id), id))
+            case Yes => Redirect(continueOrStop(routes.TaskListMappingController.showCopyAcrossClients(id), id))
             case No  => Redirect(continueOrStop(routes.SignedOutController.returnAfterMapping(), id))
           }
         )
+    }
+  }
+
+  def showCopyAcrossClients(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withSubscribingAgent(id) { _ =>
+      Ok(
+        copyAcrossClientsTemplate(
+          id,
+          backUrl = routes.TaskListMappingController.showExistingClientRelationships(id).url,
+          taskList = true))
     }
   }
 
