@@ -18,6 +18,9 @@ package uk.gov.hmrc.agentmappingfrontend.config
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
+import play.api.i18n.Lang
+import play.api.mvc.Call
+import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import views.html.helper.urlEncode
 
@@ -43,6 +46,9 @@ trait AppConfig {
   val clientCountMaxRecords: Int
   val timeout: Int
   val timeoutCountdown: Int
+  val languageToggle: Boolean
+  val languageMap: Map[String, Lang]
+  val routeToSwitchLanguage: String => Call
 }
 @Singleton
 class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppConfig {
@@ -92,4 +98,14 @@ class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppCon
 
   override val timeout: Int = servicesConfig.getInt("timeoutDialog.timeout-seconds")
   override val timeoutCountdown: Int = servicesConfig.getInt("timeoutDialog.timeout-countdown-seconds")
+
+  override val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
+
+  override val languageMap: Map[String, Lang] = Map(
+    "english" -> Lang("en"),
+    "cymraeg" -> Lang("cy")
+  )
+
+  override val routeToSwitchLanguage: String => Call = (lang: String) =>
+    routes.AgentMappingLanguageController.switchToLanguage(lang)
 }

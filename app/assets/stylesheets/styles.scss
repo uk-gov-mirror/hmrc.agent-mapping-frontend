@@ -177,5 +177,19 @@
   }
 }
 
+.welsh-toggle {
+  padding-right: 15px;
+  float: right;
+  color: #b1b4b6;
+  font-weight: bold;
+  margin-bottom: 0;
+  text-decoration: none;
+}
+
+#cymraeg-switch:hover, #english-switch:hover{
+  color: white;
+  text-decoration: underline;
+}
+
 @import 'modules/_focus';
 @import 'modules/_palette';
