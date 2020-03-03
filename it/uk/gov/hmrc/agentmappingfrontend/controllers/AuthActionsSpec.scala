@@ -269,7 +269,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
     }
 
     "redirect to task-list/error/incorrect-account" when {
-      "agent has a HMRC-AS-AGENT enrolment" in {
+      "agent has only HMRC-AS-AGENT enrolment" in {
         behave like testSubscribingAgentRedirectedTo(
           expectedLocation = routes.TaskListMappingController.incorrectAccount("mappingArnResultId").url,
           enrolments = "HMRC-AS-AGENT" -> "AgentRefNumber"
@@ -278,10 +278,19 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
     }
 
     "redirect to task-list/error/already-linked" when {
-      "agent has HMRC-AGENT-AGENT enrolment" in {
+      "agent has only HMRC-AGENT-AGENT enrolment" in {
         behave like testSubscribingAgentRedirectedTo(
           expectedLocation = routes.TaskListMappingController.alreadyMapped("mappingArnResultId").url,
           enrolments = "HMRC-AGENT-AGENT" -> "AgentRefNumber"
+        )
+      }
+    }
+
+    "redirect to /task-list/not-enrolled" when {
+      "agent has no eligible enrolments and neither HMRC-AS-AGENT nor HMRC-AGENT-AGENT enrolment" in {
+        behave like testSubscribingAgentRedirectedTo(
+          expectedLocation = routes.TaskListMappingController.notEnrolled("mappingArnResultId").url,
+          enrolments = "NOT_VALID" -> "something"
         )
       }
     }

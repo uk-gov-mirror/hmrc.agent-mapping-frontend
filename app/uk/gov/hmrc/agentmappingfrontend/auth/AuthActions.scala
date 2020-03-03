@@ -117,14 +117,10 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       .retrieve(credentials and agentCode and allEnrolments) {
         case Some(Credentials(providerId, _)) ~ agentCodeOpt ~ enrols =>
           val activeEnrolments: Set[Enrolment] = enrols.enrolments.filter(_.isActivated)
+          val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
 
-          if (userHasAsAgentEnrolment(activeEnrolments)) {
-            Future.successful(Redirect(routes.TaskListMappingController.incorrectAccount(id)))
-          } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
-            Future.successful(Redirect(routes.TaskListMappingController.alreadyMapped(id)))
-          } else
+          if (eligibleEnrolments.nonEmpty) {
             agentSubscriptionConnector.getSubscriptionJourneyRecord(AuthProviderId(providerId)).flatMap { maybeSjr =>
-              val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
               body(new Agent(
                 providerId = AuthProviderId(providerId),
                 maybeAgentCode = agentCodeOpt.flatMap(ac => Some(AgentCode(ac))),
@@ -132,6 +128,16 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
                 maybeSjr
               ))
             }
+          } else {
+            val redirectRoute = if (userHasAsAgentEnrolment(activeEnrolments)) {
+              routes.TaskListMappingController.incorrectAccount(id)
+            } else if (userHasAtedAgentEnrolment(activeEnrolments)) {
+              routes.TaskListMappingController.alreadyMapped(id)
+            } else {
+              routes.TaskListMappingController.notEnrolled(id)
+            }
+            Future.successful(Redirect(redirectRoute))
+          }
       }
       .recover {
         handleException
