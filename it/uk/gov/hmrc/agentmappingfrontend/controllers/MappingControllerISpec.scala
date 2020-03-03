@@ -355,7 +355,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       redirectLocation(result) shouldBe Some(routes.MappingController.complete(persistedMappingArnResultId).url)
     }
 
-    "redirect to gg/sign-in when the user selects YES" in {
+    "redirect to /copy-across-clients when the user selects YES" in {
       val persistedMappingArnResultId = await(repo.create(arn))
       givenUserIsAuthenticated(vatEnrolledAgent)
       val request = fakeRequest(
@@ -368,7 +368,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       status(result) shouldBe 303
 
       redirectLocation(result) shouldBe Some(
-        routes.SignedOutController.signOutAndRedirect(persistedMappingArnResultId).url)
+        routes.MappingController.showCopyAcrossClients(persistedMappingArnResultId).url)
     }
 
     "200 OK to /existing-clients with error message when inputs invalid data" in {
@@ -411,7 +411,22 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.MappingController.start().url)
     }
+  }
 
+  "GET /copy-across-clients" should {
+
+    "render content as expected" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      val id = await(repo.create(arn))
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, s"/agent-mapping/copy-across-clients?id=$id")
+      val result = callEndpointWith(request)
+
+      checkHtmlResultContainsEscapedMsgs(
+        result, "copyAcross.h1", "copyAcross.heading", "copyAcross.p1", "copyAcross.p2"
+      )
+      result should containLink("button.continue",s"/agent-mapping/signed-out-redirect?id=$id")
+      result should containLink("button.back", s"${routes.MappingController.showExistingClientRelationships(id).url}")
+    }
   }
 
   "complete" should {

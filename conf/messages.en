@@ -53,6 +53,11 @@ existingClientRelationships.yes=Yes
 existingClientRelationships.no=No
 existingClientRelationships.max=or more VAT and Self Assessment clients
 
+#Copy Across
+copyAcross.h1=Copy across your existing VAT and Self Assessment clients to your agent services account
+copyAcross.heading=What you need to do
+copyAcross.p1=On the next screen, sign in with another Government Gateway user ID that you use for managing VAT or Self Assessment clients.
+copyAcross.p2=You will need to repeat this for each user ID that you use.
 
 #PageNotFound
 page-not-found.title=Page not found
