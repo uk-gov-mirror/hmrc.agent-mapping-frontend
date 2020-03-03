@@ -60,15 +60,15 @@ page-not-found.h1=Heb ddod o hyd i’r dudalen
 page-not-found.p1=Mae’n rhaid i chi fewngofnodi i’ch cyfrif gwasanaethau asiant eto.
 
 #Already linked
-alreadyMapped.h1=
+alreadyMapped.h1=Mae’r Dynodydd Defnyddiwr (ID) hwn eisoes wedi’i gysylltu â’ch cyfrif gwasanaethau asiant
 alreadyMapped.p1=Os oes angen i chi gysylltu Dynodydd Defnyddiwr (ID) arall ar gyfer Porth y Llywodraeth, mewngofnodwch gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair.
 #Incorrect account
 incorrectAccount.h1=Gwnaethoch geisio mewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer eich cyfrif gwasanaethau asiant.
-incorrectAccount.p1=
+incorrectAccount.p1=Mae’n rhaid i chi fewngofnodi gan ddefnyddio Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth yr ydych yn ei ddefnyddio i reoli’ch cleientiaid TAW neu Hunanasesiad.
 
 #Not enrolled
 notEnrolled.h1=Ni allwch gysylltu’r Dynodydd Defnyddiwr (ID) hwn â’ch cyfrif gwasanaethau asiant
-notEnrolled.p1=
+notEnrolled.p1=Gallwch ond cysylltu Dynodyddion Defnyddiwr (IDs) sydd wedi’u cofrestru i’ch busnes.
 notEnrolled.p2=Os oes angen i chi gysylltu Dynodydd Defnyddiwr (ID) arall ar gyfer Porth y Llywodraeth, mewngofnodwch gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair.
 
 #Connection complete
@@ -95,7 +95,7 @@ button.no=Na
 button.back=Yn ôl
 button.tryAgain=Rhoi cynnig arall arni
 button.signIn=Mewngofnodi
-button.signInAlt=
+button.signInAlt=Mewngofnodi gyda Dynodydd Defnyddiwr (ID) arall
 
 #Errors
 error.title=Mae problem wedi codi

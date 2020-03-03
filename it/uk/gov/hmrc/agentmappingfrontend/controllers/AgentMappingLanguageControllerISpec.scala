@@ -1,7 +1,8 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import play.api.test.FakeRequest
-import play.api.test.Helpers.redirectLocation
+import play.api.test.Helpers.{cookies, redirectLocation}
+
 import scala.concurrent.duration._
 
 class AgentMappingLanguageControllerISpec extends BaseControllerISpec {
@@ -23,11 +24,7 @@ class AgentMappingLanguageControllerISpec extends BaseControllerISpec {
       status(result) shouldBe 303
       redirectLocation(result)(timeout) shouldBe Some("https://www.gov.uk/fallback")
 
-
-      //TODO test the cookie value
-
-
-
+      cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "en"
     }
 
     "redirect to /some-page when the request header contains referer /some-page" in {
@@ -38,6 +35,18 @@ class AgentMappingLanguageControllerISpec extends BaseControllerISpec {
       status(result) shouldBe 303
       redirectLocation(result)(timeout) shouldBe Some("/some-page")
 
+      cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "en"
+    }
+
+    "redirect to /some-page with lang set to 'cy' when the user has selected Welsh" in {
+
+      val request = FakeRequest("GET", "/language/cymraeg").withHeaders("referer" -> "/some-page")
+
+      val result = controller.switchToLanguage("cymraeg")(request)
+      status(result) shouldBe 303
+      redirectLocation(result)(timeout) shouldBe Some("/some-page")
+
+      cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "cy"
     }
   }
 
