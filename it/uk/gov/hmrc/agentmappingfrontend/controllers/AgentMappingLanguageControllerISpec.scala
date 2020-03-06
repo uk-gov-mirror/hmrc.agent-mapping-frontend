@@ -18,11 +18,11 @@ class AgentMappingLanguageControllerISpec extends BaseControllerISpec {
 
     val request = FakeRequest("GET", "/language/english")
 
-    "redirect to https://www.gov.uk/fallback when the request header contains no referer" in {
+    "redirect to https://www.tax.service.gov.uk/agent-mapping when the request header contains no referer" in {
 
       val result = controller.switchToLanguage("english")(request)
       status(result) shouldBe 303
-      redirectLocation(result)(timeout) shouldBe Some("https://www.gov.uk/fallback")
+      redirectLocation(result)(timeout) shouldBe Some("https://www.tax.service.gov.uk/agent-mapping")
 
       cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "en"
     }
