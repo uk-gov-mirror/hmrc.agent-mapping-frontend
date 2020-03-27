@@ -53,6 +53,11 @@ existingClientRelationships.yes=Iawn
 existingClientRelationships.no=Na
 existingClientRelationships.max=neu ragor o gleientiaid TAW a Hunanasesiad
 
+#Copy Across
+copyAcross.h1=Copïwch eich cleientiaid Hunanasesiad a TAW presennol ar draws i’ch cyfrif gwasanaethau asiant
+copyAcross.heading=Yr hyn y mae angen i chi ei wneud
+copyAcross.p1=Ar y sgrin nesaf, mewngofnodwch gan ddefnyddio Dynodydd Defnyddiwr (ID) arall ar gyfer Porth y Llywodraeth yr ydych yn ei ddefnyddio i reoli cleientiaid Hunanasesiad neu TAW.
+copyAcross.p2=Bydd yn rhaid i chi ailadrodd hyn ar gyfer pob Dynodydd Defnyddiwr (ID) yr ydych yn ei ddefnyddio.
 
 #PageNotFound
 page-not-found.title=Heb ddod o hyd i’r dudalen
