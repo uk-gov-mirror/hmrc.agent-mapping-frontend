@@ -30,7 +30,10 @@ final case class SubscriptionJourneyRecord(
   userMappings: List[UserMapping] = List.empty,
   mappingComplete: Boolean = false,
   cleanCredsAuthProviderId: Option[AuthProviderId] = None,
-  lastModifiedDate: Option[LocalDateTime] = None)
+  lastModifiedDate: Option[LocalDateTime] = None,
+  contactEmailData: Option[ContactEmailData] = None,
+  contactTradingNameData: Option[ContactTradingNameData] = None,
+  contactTradingAddressData: Option[ContactTradingAddressData] = None)
 
 object SubscriptionJourneyRecord {
 
@@ -44,6 +47,11 @@ object SubscriptionJourneyRecord {
       (JsPath \ "userMappings").format[List[UserMapping]] and
       (JsPath \ "mappingComplete").format[Boolean] and
       (JsPath \ "cleanCredsAuthProviderId").formatNullable[AuthProviderId] and
-      (JsPath \ "lastModifiedDate")
-        .formatNullable[LocalDateTime])(SubscriptionJourneyRecord.apply, unlift(SubscriptionJourneyRecord.unapply))
+      (JsPath \ "lastModifiedDate").formatNullable[LocalDateTime] and
+      (JsPath \ "contactEmailData").formatNullable[ContactEmailData] and
+      (JsPath \ "contactTradingNameData").formatNullable[ContactTradingNameData] and
+      (JsPath \ "contactTradingAddressData")
+        .formatNullable[ContactTradingAddressData])(
+      SubscriptionJourneyRecord.apply,
+      unlift(SubscriptionJourneyRecord.unapply))
 }
