@@ -128,7 +128,9 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
     @uiServiceInfo(
       betaBanner = HtmlFormat.empty,
       includeGridWrapper = false,
-      serviceInfoContent = Some(serviceInfoContent))
+      serviceInfoContent = Some(serviceInfoContent),
+        setLang = request.cookies
+                .get("PLAY_LANG").map(_.value).getOrElse("en"))
 }
 
 @mainContentHeader = {
