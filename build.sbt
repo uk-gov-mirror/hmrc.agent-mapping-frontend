@@ -20,7 +20,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "play-ui" % "8.6.0-play-26",
   "uk.gov.hmrc" %% "auth-client" % "2.27.0-play-26",
   "uk.gov.hmrc" %% "play-partials" % "6.9.0-play-26",
-  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.22.0-play-26",
+  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.16.0-play-26",
   "com.typesafe.play" %% "play-json-joda" % "2.6.10",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.3.0",
@@ -38,7 +38,7 @@ def testDeps(scope: String) = Seq(
   "org.mockito" % "mockito-core" % "2.27.0" % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
   "com.github.tomakehurst" % "wiremock-jre8" % "2.23.2" % scope,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.14.0-play-26" % scope,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26" % scope,
   "org.jsoup" % "jsoup" % "1.12.1" % scope
 )
 
