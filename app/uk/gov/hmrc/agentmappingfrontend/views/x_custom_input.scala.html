@@ -49,7 +49,7 @@
     @elements.args.get('_labelDataAttributes)}>
 
 @if(parentElements.isDefined) {
-    @parentElements.get.errors.map { error => <span class="error-notification"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(error)</span> }
+    @parentElements.get.errors.map { error => <span class="error-notification"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(error.toString)</span> }
 }
 
 @if(!labelAfter && elements.args.contains('_label)) {
@@ -79,7 +79,7 @@
             }
         role="tooltip"
         data-journey="search-page:error:@elements.field.name"><span class="visuallyhidden">@Messages("error.prefix")</span>
-            @Messages(error)
+            @Messages(error.toString)
         </span>
     }
 }

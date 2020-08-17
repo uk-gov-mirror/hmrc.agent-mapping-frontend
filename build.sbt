@@ -15,16 +15,16 @@ lazy val scoverageSettings = {
 
 lazy val compileDeps = Seq(
   ws,
-  "uk.gov.hmrc" %% "bootstrap-play-26" % "0.45.0",
-  "uk.gov.hmrc" %% "govuk-template" % "5.38.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "8.6.0-play-26",
-  "uk.gov.hmrc" %% "auth-client" % "2.27.0-play-26",
-  "uk.gov.hmrc" %% "play-partials" % "6.9.0-play-26",
+  "uk.gov.hmrc" %% "bootstrap-frontend-play-27" % "2.24.0",
+  "uk.gov.hmrc" %% "govuk-template" % "5.55.0-play-27",
+  "uk.gov.hmrc" %% "play-ui" % "8.11.0-play-27",
+  "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-27",
+  "uk.gov.hmrc" %% "play-partials" % "6.11.0-play-27",
   "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
-  "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.16.0-play-26",
-  "com.typesafe.play" %% "play-json-joda" % "2.6.10",
-  "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.3.0",
-  "uk.gov.hmrc" %% "play-language" % "4.2.0-play-26"
+  "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.19.0-play-27",
+  "com.typesafe.play" %% "play-json-joda" % "2.7.4",
+  "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.4.0",
+  "uk.gov.hmrc" %% "play-language" % "4.3.0-play-27"
 )
 
 def tmpMacWorkaround(): Seq[ModuleID] =
@@ -36,9 +36,9 @@ def testDeps(scope: String) = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % scope,
   "org.scalatest" %% "scalatest" % "3.0.8" % scope,
   "org.mockito" % "mockito-core" % "2.27.0" % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
-  "com.github.tomakehurst" % "wiremock-jre8" % "2.23.2" % scope,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26" % scope,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3" % scope,
+  "com.github.tomakehurst" % "wiremock-jre8" % "2.27.1" % scope,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-27" % scope,
   "org.jsoup" % "jsoup" % "1.12.1" % scope
 )
 
@@ -46,9 +46,9 @@ lazy val root = (project in file("."))
   .settings(
     name := "agent-mapping-frontend",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.11.11",
+    scalaVersion := "2.12.10",
     scalacOptions ++= Seq(
-      "-Xfatal-warnings",
+      //"-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
       "-Yno-adapted-args",
       "-Ywarn-value-discard",

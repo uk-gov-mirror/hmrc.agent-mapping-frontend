@@ -17,23 +17,19 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import akka.stream.Materializer
-import com.google.inject.AbstractModule
 import org.jsoup.Jsoup
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.{HttpFilters, NoHttpFilters}
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentmappingfrontend.support.{EndpointBehaviours, WireMockSupport}
 import uk.gov.hmrc.http.SessionKeys
-import uk.gov.hmrc.play.audit.http.config.AuditingConfig
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
-import play.api.test.Helpers._
 
 abstract class BaseControllerISpec
     extends UnitSpec with GuiceOneAppPerSuite with WireMockSupport with EndpointBehaviours {
@@ -49,16 +45,6 @@ abstract class BaseControllerISpec
         "application.router"                       -> "testOnlyDoNotUseInAppConf.Routes",
         "clientCount.maxRecords" -> 15
       )
-      .overrides(new TestGuiceModule)
-
-  private class TestGuiceModule extends AbstractModule {
-    override def configure(): Unit = {
-      bind(classOf[HttpFilters]).to(classOf[NoHttpFilters])
-      bind(classOf[AuditConnector]).toInstance(new AuditConnector {
-        override def auditingConfig: AuditingConfig = AuditingConfig(None, enabled = false, auditSource = "agent-mapping")
-      })
-    }
-  }
 
   protected implicit val materializer: Materializer = app.materializer
 

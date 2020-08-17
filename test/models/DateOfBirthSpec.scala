@@ -18,7 +18,7 @@ package models
 
 import java.time.LocalDate
 
-import play.api.libs.json.{JsError, JsNumber, JsPath, JsResultException, JsString, Json, JsonValidationError}
+import play.api.libs.json.{JsNumber, JsResultException, JsString, Json}
 import uk.gov.hmrc.agentmappingfrontend.model.DateOfBirth
 import uk.gov.hmrc.play.test.UnitSpec
 
