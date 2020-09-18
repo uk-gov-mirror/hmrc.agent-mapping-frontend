@@ -4,9 +4,26 @@
   margin-bottom: 10px !important;
 }
 
+.margin-bottom-0 {
+  margin-bottom: 0px;
+}
+
+.margin-top-0 {
+  margin-top: 0px;
+}
+.margin-bottom-30 {
+  margin-bottom: 30px;
+}
+
 .govuk-input--width-4 {
   max-width: 9ex;
 }
+
+.error-container {
+  padding-top: 0;
+  padding-bottom: 0
+}
+
 
 .flash.error-summary {
   border: 5px solid #d4351c;
@@ -53,7 +70,20 @@
   height: 40px;
 }
 
-.form-field--error legend h1 {
+/* no js style for dates */
+.no-js .form-date .form-field--error {
+  border-left: none;
+  padding: inherit;
+  -webkit-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+.flash.error-summary a, .flash.error-summary .link-style, .flash.error-summary .button--link-style {
+  color: #d4351c;
+}
+
+
+.form-field--error legend h1, .form-field--error legend h2 {
   margin-top: 0 !important
 }
 
@@ -191,5 +221,5 @@
   text-decoration: underline;
 }
 
-@import 'modules/_focus';
 @import 'modules/_palette';
+@import 'modules/_focus';

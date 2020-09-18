@@ -83,7 +83,7 @@ connectionComplete.banner.single.paragraph=You copied 1 client relationship to y
 connectionComplete.banner.multi.paragraph=You copied {0} client relationships to your agent services account
 connectionComplete.h3.1=What you can do next
 connectionComplete.p1=To submit VAT returns digitally for a client, you now need to {0}{1}{2}
-connectionComplete.mtdLink=sign your client up for Making Tax Digital for VAT (opens in a new window or tab).
+connectionComplete.mtdLink=sign your client up for Making Tax Digital for VAT (opens in a new tab).
 connectionComplete.finish=Finish and sign out
 
 #Buttons/links
@@ -179,7 +179,7 @@ accessibility.statement.whattodo.heading=What to do if you have difficulty using
 accessibility.statement.whattodo.p1=If you have difficulty using this service, use the ‘Get help with this page’ link on the page in the online service.
 
 accessibility.statement.reporting.heading=Reporting accessibility problems with this service
-accessibility.statement.reporting.p1=We are always looking to improve the accessibility of this service. If you find any problems that are not listed on this page or think we are not meeting accessibility requirements, report the <a href="{0}" target="_blank">accessibility problem (opens in a new window or tab)</a>.
+accessibility.statement.reporting.p1=We are always looking to improve the accessibility of this service. If you find any problems that are not listed on this page or think we are not meeting accessibility requirements, report the <a href="{0}" target="_blank">accessibility problem (opens in a new tab)</a>.
 
 accessibility.statement.enforcement.heading=What to do if you are not happy with how we respond to your complaint
 accessibility.statement.enforcement.p1=The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). If you are not happy with how we respond to your complaint, <a href="https://www.equalityadvisoryservice.com/">contact the Equality Advisory and Support Service</a> (EASS), or the <a href="https://www.equalityni.org/Home">Equality Commission for Northern Ireland</a> (ECNI) if you live in Northern Ireland.

@@ -4,13 +4,7 @@ $(function() {
     $input = $('input:text')
     //Error summary focus
     if (errorSummary){ errorSummary.focus() }
-    $input.each( function(){
-        if($(this).closest('label').hasClass('form-field--error')){
-            $(this).attr('aria-invalid', true)
-        }else{
-            $(this).attr('aria-invalid', false)
-        }
-    });
+
     //Trim inputs and Capitalize postode
     $('[type="submit"]').click(function(){
         $input.each( function(){
@@ -21,6 +15,17 @@ $(function() {
             }
         });
     });
+
+    // ------------------------------------
+    // Introduce direct skip link control, to work around voiceover failing of hash links
+    // https://bugs.webkit.org/show_bug.cgi?id=179011
+    // https://axesslab.com/skip-links/
+    // ------------------------------------
+    $('.skiplink').click(function(e) {
+        e.preventDefault();
+        $(':header:first').attr('tabindex', '-1').focus();
+    });
+
     //Add aria-hidden to hidden inputs
     $('[type="hidden"]').attr("aria-hidden", true);
 

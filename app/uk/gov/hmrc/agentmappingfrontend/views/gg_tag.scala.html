@@ -41,23 +41,43 @@
     @if(ggTagForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), ggTagForm, Seq.empty, Some("gg-tag"))
     }
-    <fieldset>
-        <legend>
-            <h1 class="heading-xlarge">@Messages("gg-tag.title")</h1>
-        </legend>
-        <p>@Messages("gg-tag.p1")</p>
 
         @formHelper(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'class -> "form js-form", 'id -> "gg-tag-form") {
 
-            <div class="form-group">
-            @uiXCustomInput(
-                ggTagForm("ggTag"),
-                '_label -> Messages("gg-tag.form.identifier"),
-                '_inputClass -> "govuk-input--width-4",
-                '_inputHint -> Messages("gg-tag.form.hint"),
-                '_hintId -> "gg-tag"
-            )
+
+
+            <div class="form-group @if(ggTagForm.hasErrors){form-field--error error-container}">
+                <h1>
+                    <label class="heading-xlarge" for="ggTag">
+                        @Messages("gg-tag.title")
+                    </label>
+                </h1>
+                <p>@Messages("gg-tag.p1")</p>
+                <span class="margin-top-0">@Messages("gg-tag.form.identifier")</span>
+
+                <span class="form-hint" id="ggTag-hint">@Messages("gg-tag.form.hint")</span>
+                @ggTagForm.error("ggTag").map { error =>
+                    <span class="error-message" id="ggTag-error">
+                    <span class="visuallyhidden">@Messages("error.prefix")</span>
+                        @Messages(error.message)
+                    </span>}
+                <div>
+                    <span>@Messages("gg-tag.xs")</span>
+                <input
+                class="govuk-input--width-4"
+                name="ggTag"
+                    type="text"
+                id="ggTag"
+                spellcheck="false"
+                aria-describedby="ggTag-hint @if(ggTagForm.error("ggTag")){ggTag-error})"
+                @ggTagForm.data.get("ggTag").map { v => value="@v" }
+                >
             </div>
+                </div>
+
+
+
+
 
     </fieldset>
     <div class="form-field">

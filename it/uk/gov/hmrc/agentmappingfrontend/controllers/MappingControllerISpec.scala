@@ -471,7 +471,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
           result should containSubstrings(
             "To submit VAT returns digitally for a client, you now need to",
-            "sign your client up for Making Tax Digital for VAT (opens in a new window or tab).")
+            "sign your client up for Making Tax Digital for VAT (opens in a new tab).")
         }
 
         s"return an exception when repository does not hold the record for the user with enrolment ${user.activeEnrolments

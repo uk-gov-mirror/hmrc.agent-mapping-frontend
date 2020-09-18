@@ -38,6 +38,10 @@
 @maxRecords = @{
     appConfig.clientCountMaxRecords
 }
+    @formValue = @{
+        addClientsForm.data.get("additional-clients").map {v => v}
+    }
+
 
 @mainTemplate(appConfig, title = errorPrefix(addClientsForm) +  Messages("existingClientRelationships.title"), bodyClasses = None, taskList = taskList) {
 
@@ -48,9 +52,9 @@
         @uiErrorSummary(Messages("error.summary.heading"), addClientsForm, Seq.empty, Some("additional-clients"))
     }
 
-    <h1 class="heading-xlarge margin-bottom-20">@Messages("existingClientRelationships.title")</h1>
+    <h1 class="heading-xlarge">@Messages("existingClientRelationships.title")</h1>
 
-    <table>
+    <table @if(addClientsForm.hasErrors){class="margin-bottom-30"}>
         <tbody>
             @for(clientCountAndGGTag <- clientCountAndGGTags) {
                 <tr>
@@ -72,24 +76,44 @@
         </tbody>
     </table>
 
-    <h2 class="heading-medium">@Messages("existingClientRelationships.heading")</h2>
-    <p>@Messages("existingClientRelationships.p1")</p>
-
     @formHelper(
         action = if(taskList) routes.TaskListMappingController.submitExistingClientRelationships(id) else routes.MappingController.submitExistingClientRelationships(id), 'class -> "form js-form") {
-        <div class="form-group margin-top-20">
-        @inputRadioGroup(
-            addClientsForm("additional-clients"),
-            Seq(
-                "yes" -> Messages("button.yes"),
-                "no" -> Messages("button.no")
-            ),
-            '_groupDivClass -> "soft--ends",
-            '_legendClass -> "visuallyhidden",
-            '_fieldsetAttributes -> Html("""id='additional-clients'"""),
-            '_errorPrefix -> Messages("error.prefix")
 
-        )
+        <div class="form-group @if(addClientsForm.hasErrors){form-field--error error-container}">
+            <fieldset aria-describedby="additional-clients-hint @if(addClientsForm.hasErrors){additional-clients-error}">
+                <legend>
+                    <h2>@Messages("existingClientRelationships.heading")</h2>
+                </legend>
+
+            <p id="additional-clients-hint">@Messages("existingClientRelationships.p1")</p>
+                @addClientsForm.error("additional-clients").map { error => <span class="error-message" id="additional-clients-error">
+                    <span class="visuallyhidden">@Messages("error.prefix")</span>
+                    @Messages(error.message)
+                </span>}
+            <div id="additional-clients">
+                <div class="multiple-choice">
+                    <input
+                    type="radio"
+                    id="additional-clients-yes"
+                    name="additional-clients"
+                    value="yes"
+                    @formValue.map{ v => @if(v == "yes"){checked="checked"}}
+                    >
+                    <label for="additional-clients-yes">@Messages("button.yes")</label>
+                </div>
+                <div class="multiple-choice">
+                    <input
+                    type="radio"
+                    id="additional-clients-no"
+                    name="additional-clients"
+                    value="no"
+                        @formValue.map{ v => @if(v == "no"){checked="checked"}}
+                    >
+                    <label for="additional-clients-no">@Messages("button.no")</label>
+                </div>
+
+            </div>
+            </fieldset>
         </div>
 
         <div class="form-field">

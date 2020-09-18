@@ -83,7 +83,7 @@ connectionComplete.banner.single.paragraph=Rydych wedi copïo 1 berthynas â chl
 connectionComplete.banner.multi.paragraph=Rydych wedi copïo {0} o berthnasoedd â chleientiaid i’ch cyfrif gwasanaethau asiant
 connectionComplete.h3.1=Yr hyn y gallwch ei wneud nesaf
 connectionComplete.p1=I gyflwyno Ffurflenni TAW drwy ddull digidol ar gyfer cleient, mae angen i chi wneud y canlynol nawr: {0}{1}{2}
-connectionComplete.mtdLink=cofrestru’ch cleient ar gyfer Troi Treth yn Ddigidol ar gyfer TAW (yn agor ffenestr neu dab newydd).
+connectionComplete.mtdLink=cofrestru’ch cleient ar gyfer Troi Treth yn Ddigidol ar gyfer TAW (yn agor tab newydd).
 connectionComplete.finish=Gorffen ac allgofnodi
 
 #Buttons/links
@@ -179,7 +179,7 @@ accessibility.statement.whattodo.heading=Beth i’w wneud os ydych yn cael anhaw
 accessibility.statement.whattodo.p1=Os ydych yn cael anhawster wrth ddefnyddio’r gwasanaeth hwn, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’ ar y dudalen yn y gwasanaeth ar-lein.
 
 accessibility.statement.reporting.heading=Rhoi gwybod am broblemau hygyrchedd gyda’r gwasanaeth hwn
-accessibility.statement.reporting.p1=Rydym bob amser yn ceisio gwella hygyrchedd y gwasanaeth hwn. Os byddwch yn dod o hyd i unrhyw broblemau nad ydynt wedi’u rhestru ar y dudalen hon, neu os ydych o’r farn nad ydym yn bodloni gofynion hygyrchedd, rhowch wybod am y<a href="{0}" target="_blank"> broblem hygyrchedd (yn agor ffenestr neu dab newydd)</a>.
+accessibility.statement.reporting.p1=Rydym bob amser yn ceisio gwella hygyrchedd y gwasanaeth hwn. Os byddwch yn dod o hyd i unrhyw broblemau nad ydynt wedi’u rhestru ar y dudalen hon, neu os ydych o’r farn nad ydym yn bodloni gofynion hygyrchedd, rhowch wybod am y<a href="{0}" target="_blank"> broblem hygyrchedd (yn agor tab newydd)</a>.
 
 accessibility.statement.enforcement.heading=Beth i’w wneud os nad ydych yn hapus â sut rydym yn ateb eich cwyn
 accessibility.statement.enforcement.p1=Mae’r Comisiwn Cydraddoldeb a Hawliau Dynol (EHRC) yn gyfrifol am orfodi Rheoliadau Hygyrchedd Cyrff Sector Cyhoeddus (Gwefannau a Chymwysiadau Symudol) (Rhif 2) 2018 (y ‘rheoliadau hygyrchedd’). Os nad ydych yn hapus â sut rydym yn ateb eich cwyn, <a href="https://www.equalityadvisoryservice.com/">cysylltwch â’r Gwasanaeth Cynghori a Chymorth Cydraddoldeb</a> (EASS), neu’r <a href="https://www.equalityni.org/Home">Equality Commission for Northern Ireland</a> (ECNI) os ydych yn byw yng Ngogledd Iwerddon.
