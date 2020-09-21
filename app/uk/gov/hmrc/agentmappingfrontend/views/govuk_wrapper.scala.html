@@ -114,13 +114,7 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
 
 @footerTop = {}
 @footerLinks = {
-    <li>
-        <a href='@Messages("footer.links.accessibility.url")'
-           data-sso="false"
-           data-journey-click="footer:Click:Accessibility">
-            @Messages("footer.links.accessibility.text")
-        </a>
-    </li>
+
 }
 
 
@@ -154,4 +148,4 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
       sidebar = sidebar)
 }
 
-@govUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiFooterLinks(additionalLinks = Some(footerLinks))), true)(content)
+@govUkTemplate(Some(title + " - " + titleSuffix + " " + Messages("servicename.titleSuffix")), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiFooterLinks()), true)(content)
