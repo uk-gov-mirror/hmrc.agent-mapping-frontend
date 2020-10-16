@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_sa_mappings, view_vat_mappings}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.ExecutionContext
 

@@ -17,16 +17,15 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import com.codahale.metrics.MetricRegistry
+import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

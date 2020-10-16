@@ -17,32 +17,31 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import com.codahale.metrics.MetricRegistry
-import javax.inject.{Inject, Singleton}
-import play.api.Logger
-import play.api.http.Status
-import play.api.libs.json.JsValue
-import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Singleton}
+import play.api.Logging
+import play.api.http.Status
+import play.api.http.Status._
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.model.{MappingDetailsRepositoryRecord, MappingDetailsRequest, SaMapping, VatMapping}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HttpClient, _}
+import uk.gov.hmrc.http.HttpErrorFunctions._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: AppConfig) extends HttpAPIMonitor {
+class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: AppConfig)
+    extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def createMapping(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor("ConsumedAPI-Mapping-CreateMapping-PUT") {
       http
-        .PUT(createUrl(arn), "")
-        .map { r =>
-          r.status
-        }
+        .PUT[String, HttpResponse](createUrl(arn), "")
+        .map(_.status)
         .recover {
           case e: Upstream4xxResponse if Status.FORBIDDEN.equals(e.upstreamResponseCode) => Status.FORBIDDEN
           case e: Upstream4xxResponse if Status.CONFLICT.equals(e.upstreamResponseCode)  => Status.CONFLICT
@@ -61,44 +60,47 @@ class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: 
 
   def findSaMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[SaMapping]] =
     monitor("ConsumedAPI-Mapping-FindSaMappingsForArn-GET") {
-      http.GET[JsValue](findSaUrl(arn)).map { response =>
-        (response \ "mappings").as[Seq[SaMapping]]
-      } recover {
-        case _: NotFoundException => Seq.empty
-        case ex: Throwable        => throw new RuntimeException(ex)
+      val url = findSaUrl(arn)
+      http.GET[HttpResponse](url).map { response =>
+        response.status match {
+          case OK        => (response.json \ "mappings").as[Seq[SaMapping]]
+          case NOT_FOUND => Seq.empty
+          case s         => throw new RuntimeException(s"unexpected error when calling $url, status: $s")
+        }
       }
     }
 
   def findVatMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatMapping]] =
     monitor("ConsumedAPI-Mapping-FindVatMappingsForArn-GET") {
-      http.GET[JsValue](findVatUrl(arn)).map { response =>
-        (response \ "mappings").as[Seq[VatMapping]]
-      } recover {
-        case _: NotFoundException => Seq.empty
-        case ex: Throwable        => throw new RuntimeException(ex)
+      val url = findVatUrl(arn)
+      http.GET[HttpResponse](url).map { response =>
+        response.status match {
+          case OK        => (response.json \ "mappings").as[Seq[VatMapping]]
+          case NOT_FOUND => Seq.empty
+          case s         => throw new RuntimeException(s"unexpected error when calling $url, status: $s")
+        }
       }
     }
 
   def deleteAllMappingsBy(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor("ConsumedAPI-Mapping-DeleteAllMappingsByArn-DELETE") {
-      http.DELETE(deleteUrl(arn)).map { r =>
-        r.status
-      }
+      http.DELETE[HttpResponse](deleteUrl(arn)).map(_.status)
     }
 
   def createOrUpdateMappingDetails(arn: Arn, mappingDetailsRequest: MappingDetailsRequest)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext) =
+    ec: ExecutionContext): Future[Int] =
     monitor("ConsumedAPI-Mapping-createOrUpdateMappingDetails-POST") {
       http
         .POST[MappingDetailsRequest, HttpResponse](detailsUrl(arn), mappingDetailsRequest)
         .map { r =>
-          r.status
-        }
-        .recover {
-          case ex =>
-            Logger.error(s"creating or updating mapping details failed for some reason: $ex")
-            throw new RuntimeException
+          r.status match {
+            case status if is2xx(status) =>
+              status
+            case status =>
+              logger.error(s"creating or updating mapping details failed for some reason: $status on arn: $arn")
+              throw new RuntimeException
+          }
         }
     }
 
@@ -108,10 +110,10 @@ class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: 
       http.GET[Option[MappingDetailsRepositoryRecord]](detailsUrl(arn))
     }.recover {
       case _: NotFoundException =>
-        Logger.warn(s"no mapping details found for this arn: $arn")
+        logger.warn(s"no mapping details found for this arn: $arn")
         None
       case ex =>
-        Logger.warn(s"retrieval of mapping details failed for unknown reason...$ex")
+        logger.warn(s"retrieval of mapping details failed for unknown reason...$ex")
         None
     }
 

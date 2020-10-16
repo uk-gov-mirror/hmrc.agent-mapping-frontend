@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,9 +55,9 @@ class TaskListMappingController @Inject()(
   incorrectAccountTemplate: incorrect_account,
   ggTagTemplate: gg_tag,
   notEnrolledTemplate: not_enrolled)(implicit val appConfig: AppConfig, val ec: ExecutionContext)
-    extends FrontendController(cc) with I18nSupport with AuthActions {
+    extends FrontendController(cc) with I18nSupport with AuthActions with Logging {
 
-  def root(continueId: String): Action[AnyContent] = Action.async { implicit request =>
+  def root(continueId: String): Action[AnyContent] = Action.async {
     Redirect(routes.TaskListMappingController.start(continueId))
   }
 
@@ -248,7 +248,7 @@ class TaskListMappingController @Inject()(
     val call = submitAction.headOption match {
       case Some("continue") => next.url
       case Some("save") =>
-        Logger.info(s"user has selected save and come back later on /existing-client-relationships")
+        logger.info(s"user has selected save and come back later on /existing-client-relationships")
         s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
 
       case e => throw new RuntimeException(s"unexpected value found in submit $e")

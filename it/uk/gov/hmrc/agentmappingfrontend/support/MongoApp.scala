@@ -1,7 +1,6 @@
 package uk.gov.hmrc.agentmappingfrontend.support
 
 import org.scalatest.{BeforeAndAfterEach, Suite}
-import org.scalatestplus.play.OneServerPerSuite
 import uk.gov.hmrc.mongo.{MongoSpecSupport, Awaiting => MongoAwaiting}
 
 import scala.concurrent.ExecutionContext

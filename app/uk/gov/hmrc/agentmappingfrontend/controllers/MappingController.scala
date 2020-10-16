@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
@@ -56,7 +56,7 @@ class MappingController @Inject()(
   incorrectAccountTemplate: incorrect_account,
   ggTagTemplate: gg_tag,
   mcc: MessagesControllerComponents)(implicit val ec: ExecutionContext, val appConfig: AppConfig)
-    extends FrontendController(mcc) with I18nSupport with AuthActions {
+    extends FrontendController(mcc) with I18nSupport with AuthActions with Logging {
 
   val root: Action[AnyContent] = Action {
     Redirect(routes.MappingController.start())
@@ -101,7 +101,7 @@ class MappingController @Inject()(
           } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
 
         case None =>
-          Logger.warn(s"could not find a record for id $id")
+          logger.warn(s"could not find a record for id $id")
           Redirect(routes.MappingController.start())
       }
     }
@@ -182,7 +182,7 @@ class MappingController @Inject()(
                 updateMappingRecordsAndRedirect(record.arn, AuthProviderId(providerId), record, id, backUrl)
               case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
               case e =>
-                Logger.warn(s"unexpected response from server $e")
+                logger.warn(s"unexpected response from server $e")
                 InternalServerError
             }
           } else
@@ -215,7 +215,7 @@ class MappingController @Inject()(
                     taskList = false))
 
               case None =>
-                Logger.info(s"no record found for id $id")
+                logger.info(s"no record found for id $id")
                 Redirect(routes.MappingController.start())
             }
           }, {
@@ -241,7 +241,7 @@ class MappingController @Inject()(
         case Some(record) => Ok(completeTemplate(id, record.clientCountAndGGTags.map(_.clientCount).sum))
 
         case None =>
-          Logger.warn("user must not completed the mapping journey or have lost the stored arn")
+          logger.warn("user must not completed the mapping journey or have lost the stored arn")
           InternalServerError
       }
     }

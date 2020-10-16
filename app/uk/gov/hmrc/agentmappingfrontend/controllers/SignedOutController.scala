@@ -21,7 +21,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.views.html.timed_out
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import views.html.helper.urlEncode
 
 import scala.concurrent.Future
@@ -30,7 +30,7 @@ class SignedOutController @Inject()(timedOutTemplate: timed_out, cc: MessagesCon
   implicit appConfig: AppConfig)
     extends FrontendController(cc) {
 
-  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>
+  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
     val url = s"${appConfig.signOutRedirectUrl}?id=$id"
     val signOutAndRedirectUrl: String =
       s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(url)}"
@@ -38,7 +38,7 @@ class SignedOutController @Inject()(timedOutTemplate: timed_out, cc: MessagesCon
     Redirect(signOutAndRedirectUrl)
   }
 
-  def taskListSignOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action { implicit request =>
+  def taskListSignOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
     val url = s"${appConfig.taskListSignOutRedirectUrl}?id=$id"
     Redirect(constructRedirectUrl(url))
   }
@@ -46,16 +46,16 @@ class SignedOutController @Inject()(timedOutTemplate: timed_out, cc: MessagesCon
   private def constructRedirectUrl(continue: String): String =
     s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(continue)}"
 
-  def reLogForMappingStart: Action[AnyContent] = Action { implicit request =>
+  def reLogForMappingStart: Action[AnyContent] = Action {
     Redirect(appConfig.signInAndContinue).withNewSession
   }
 
-  def taskList(): Action[AnyContent] = Action.async { implicit request =>
+  def taskList(): Action[AnyContent] = Action.async {
     val url = appConfig.agentSubscriptionFrontendTaskListUrl
     Future.successful(Redirect(url))
   }
 
-  def returnAfterMapping(): Action[AnyContent] = Action.async { implicit request =>
+  def returnAfterMapping(): Action[AnyContent] = Action.async {
     val url =
       s"${appConfig.agentSubscriptionFrontendBaseUrl}/return-after-mapping"
     Future.successful(Redirect(url))
@@ -68,7 +68,7 @@ class SignedOutController @Inject()(timedOutTemplate: timed_out, cc: MessagesCon
   private def startNewSession: Result =
     Redirect(routes.MappingController.root()).withNewSession
 
-  def keepAlive: Action[AnyContent] = Action.async { implicit request =>
+  def keepAlive: Action[AnyContent] = Action.async {
     Future successful Ok("OK")
   }
 

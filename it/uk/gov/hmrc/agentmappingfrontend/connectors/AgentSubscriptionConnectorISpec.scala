@@ -7,7 +7,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
 import uk.gov.hmrc.agentmappingfrontend.stubs.AgentSubscriptionStubs
 import uk.gov.hmrc.agentmappingfrontend.support.{MetricTestSupport, SubscriptionJourneyRecordSamples}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.auth
 
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result, _}
-import play.api.{Environment, Logger}
+import play.api.{Environment, Logging}
 import uk.gov.hmrc.agentmappingfrontend.auth.EnrolmentHelper._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
@@ -36,7 +36,7 @@ import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthActions extends AuthorisedFunctions with AuthRedirects {
+trait AuthActions extends AuthorisedFunctions with AuthRedirects with Logging {
 
   def env: Environment
 
@@ -159,21 +159,21 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
       identifier <- enrolment.getIdentifier(ArnEnrolmentKey)
     } yield Arn(identifier.value)
 
-  private def handleException(implicit ec: ExecutionContext, request: Request[_]): PartialFunction[Throwable, Result] = {
+  private def handleException(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
 
     case _: UnsupportedAffinityGroup =>
-      Logger.warn(s"Logged in user does not have the required affinity group")
+      logger.warn(s"Logged in user does not have the required affinity group")
       Forbidden
 
     case _: NoActiveSession =>
       toGGLogin(s"${appConfig.agentMappingFrontendBaseUrl}${request.uri}")
 
     case _: InsufficientEnrolments =>
-      Logger.warn(s"Logged in user does not have required enrolments")
+      logger.warn(s"Logged in user does not have required enrolments")
       Forbidden
 
     case _: UnsupportedAuthProvider =>
-      Logger.warn("User is not logged in via  GovernmentGateway, signing out and redirecting")
+      logger.warn("User is not logged in via  GovernmentGateway, signing out and redirecting")
       toGGLogin(s"${appConfig.agentMappingFrontendBaseUrl}${request.uri}")
   }
 

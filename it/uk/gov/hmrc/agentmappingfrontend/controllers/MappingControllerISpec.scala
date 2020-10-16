@@ -1,14 +1,13 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 import play.api.http.Writeable
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
-import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository, MappingArnResult}
+import uk.gov.hmrc.agentmappingfrontend.model._
+import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}

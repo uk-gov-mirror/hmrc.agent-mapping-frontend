@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import java.time.LocalDateTime
-
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 import uk.gov.hmrc.domain.AgentCode
