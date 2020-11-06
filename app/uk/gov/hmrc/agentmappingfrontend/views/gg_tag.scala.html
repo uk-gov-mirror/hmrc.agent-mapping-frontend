@@ -69,7 +69,7 @@
                     type="text"
                 id="ggTag"
                 spellcheck="false"
-                aria-describedby="ggTag-hint @if(ggTagForm.error("ggTag")){ggTag-error})"
+                aria-describedby="ggTag-hint @if(ggTagForm.error("ggTag")){ggTag-error}"
                 @ggTagForm.data.get("ggTag").map { v => value="@v" }
                 >
             </div>
