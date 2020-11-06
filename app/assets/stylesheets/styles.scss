@@ -43,14 +43,11 @@
 
 .flash.error-summary a {
   font-weight: bold;
+  color: #d4351c;
 }
 
 #error-summary-heading {
   font-size: 24px;
-}
-
-.error-summary:focus {
-  outline: none;
 }
 
 .form-field--error .error-notification {
@@ -220,6 +217,3 @@
   color: white;
   text-decoration: underline;
 }
-
-@import 'modules/_palette';
-@import 'modules/_focus';
