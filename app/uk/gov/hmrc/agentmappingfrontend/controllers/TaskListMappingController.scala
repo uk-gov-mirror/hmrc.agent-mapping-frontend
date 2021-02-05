@@ -251,7 +251,11 @@ class TaskListMappingController @Inject()(
         logger.info(s"user has selected save and come back later on /existing-client-relationships")
         s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
 
-      case e => throw new RuntimeException(s"unexpected value found in submit $e")
+      case e => {
+        logger.warn(s"unexpected value in submit $e")
+        next.url
+        //throw new RuntimeException(s"unexpected value found in submit $e")
+      }
     }
     call
   }
