@@ -243,7 +243,7 @@ class TaskListMappingController @Inject()(
   private def continueOrStop(next: Call, id: MappingArnResultId)(implicit request: Request[AnyContent]): String = {
 
     val submitAction = request.body.asFormUrlEncoded
-      .fold(Seq.empty: Seq[String])(someMap => someMap.getOrElse("continue", Seq.empty))
+      .fold(Seq.empty: Seq[String])(someMap => someMap.getOrElse("submit", Seq.empty))
 
     val call = submitAction.headOption match {
       case Some("continue") => next.url
@@ -252,9 +252,7 @@ class TaskListMappingController @Inject()(
         s"${appConfig.agentSubscriptionFrontendProgressSavedUrl}/task-list/existing-client-relationships/?id=$id"
 
       case e => {
-        logger.warn(s"unexpected value in submit $e")
-        next.url
-        //throw new RuntimeException(s"unexpected value found in submit $e")
+        throw new RuntimeException(s"unexpected value found in submit $e")
       }
     }
     call

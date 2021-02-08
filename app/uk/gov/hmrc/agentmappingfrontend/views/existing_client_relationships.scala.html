@@ -118,8 +118,8 @@
 
         <div class="form-field">
         @if(taskList) {
-            <button class="button margin-right-5 margin-bottom-10" id="existing-client-relationships-continue" name="continue" value="continue">@Messages("button.saveContinue")</button>
-            <button class="button--secondary" id="existing-client-relationships-save" name="continue" value="save">@Messages("button.saveComeBackLater")</button>
+            <button type="submit" class="button margin-right-5 margin-bottom-10" id="existing-client-relationships-continue" name="submit" value="continue">@Messages("button.saveContinue")</button>
+            <button type="submit" class="button--secondary" id="existing-client-relationships-save" name="submit" value="save">@Messages("button.saveComeBackLater")</button>
         } else {
             <button class="button" type="submit" id="submit-existing-clients">@Messages("button.continue")</button>
         }

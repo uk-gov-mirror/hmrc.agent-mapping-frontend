@@ -48,6 +48,6 @@
             <p>@Messages("start.task-list.need-to-do.p1")</p>
             <p>@Messages("start.task-list.need-to-do.p2")</p>
 
-            <a class="button margin-right-5 margin-bottom-10" name="continue" id="clients-found-continue" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.saveContinue")</a>
-            <a class="button--secondary" name="continue" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl' draggable="false">@Messages("button.saveComeBackLater")</a>
+            <a class="button margin-right-5 margin-bottom-10" name="submit" id="clients-found-continue" href="@routes.TaskListMappingController.showClientRelationshipsFound(id)" role="button" draggable="false">@Messages("button.saveContinue")</a>
+            <a class="button--secondary" name="submit" id="clients-found-save" href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl' draggable="false">@Messages("button.saveComeBackLater")</a>
 }
