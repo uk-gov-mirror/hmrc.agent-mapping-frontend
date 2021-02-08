@@ -220,7 +220,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
             ggTag= "1234") :: sjrWithNoUserMappings.userMappings))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag" -> "1234", "continue" -> "continue"
+        "ggTag" -> "1234", "submit" -> "continue"
       )
       val result = callEndpointWith(request)
 
@@ -234,7 +234,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       val id = await(repo.create("continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag" -> "ab!7", "continue" -> "continue"
+        "ggTag" -> "ab!7", "submit" -> "continue"
       )
       val result = callEndpointWith(request)
 
@@ -259,7 +259,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
             ggTag= "1234") :: sjrWithNoUserMappings.userMappings))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag" -> "1234", "continue" -> "continue"
+        "ggTag" -> "1234", "submit" -> "continue"
       )
       intercept[RuntimeException] {
         callEndpointWith(request)
@@ -272,7 +272,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       givenSubscriptionJourneyRecordNotFoundForContinueId("continue-id")
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=foo").withFormUrlEncodedBody(
-        "ggTag" -> "1234", "continue" -> "continue"
+        "ggTag" -> "1234", "submit" -> "continue"
       )
 
       intercept[RuntimeException] {
@@ -334,7 +334,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-        "additional-clients" -> "no", "continue" -> "continue"
+        "additional-clients" -> "no", "submit" -> "continue"
       )
 
       val result = callEndpointWith(request)
@@ -352,7 +352,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-        "additional-clients" -> "yes", "continue" -> "continue"
+        "additional-clients" -> "yes", "submit" -> "continue"
       )
 
       val result = callEndpointWith(request)
@@ -370,7 +370,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-        "additional-clients" -> "yes", "continue" -> "save"
+        "additional-clients" -> "yes", "submit" -> "save"
       )
 
       val result = callEndpointWith(request)
@@ -388,7 +388,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-        "additional-clients" -> "no", "continue" -> "save"
+        "additional-clients" -> "no", "submit" -> "save"
       )
 
       val result = callEndpointWith(request)
@@ -406,7 +406,7 @@ class TaskListMappingControllerISpec extends BaseControllerISpec with AuthStubs 
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = FakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-        "additional-clients" -> "foo", "continue" -> "save"
+        "additional-clients" -> "foo", "submit" -> "save"
       )
 
       val result = callEndpointWith(request)
