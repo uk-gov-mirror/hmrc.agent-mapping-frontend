@@ -148,7 +148,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
         LegacyAgentEnrolmentType.exists(enrolment._1) shouldBe true
       }
       LegacyAgentEnrolmentType.foreach { t =>
-        eligibleEnrolments.get(t.serviceKey).isDefined shouldBe true
+        eligibleEnrolments.contains(t.serviceKey) shouldBe true
       }
     }
 
@@ -240,7 +240,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithAuthorisedAgent
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/bas-gateway/sign-in?continue_url=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 
@@ -308,7 +308,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
         givenUserHasUnsupportedAuthProvider()
         val result = TestController.testWithSubscribingAgent
         status(result) shouldBe 303
-        result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
+        result.header.headers(HeaderNames.LOCATION) shouldBe s"/bas-gateway/sign-in?continue_url=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
       }
     }
   }
@@ -325,7 +325,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithBasicAuth
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/bas-gateway/sign-in?continue_url=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 
@@ -341,7 +341,7 @@ class AuthActionsSpec extends BaseControllerISpec with AuthStubs with AgentSubsc
       givenUnauthorisedWith("MissingBearerToken")
       val result = TestController.testWithBasicAgentAuth
       status(result) shouldBe 303
-      result.header.headers(HeaderNames.LOCATION) shouldBe s"/gg/sign-in?continue=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
+      result.header.headers(HeaderNames.LOCATION) shouldBe s"/bas-gateway/sign-in?continue_url=${URLEncoder.encode("http://localhost:9438/foo", "utf-8")}&origin=agent-mapping-frontend"
     }
   }
 

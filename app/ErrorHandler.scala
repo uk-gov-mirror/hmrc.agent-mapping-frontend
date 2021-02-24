@@ -15,6 +15,7 @@
  */
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logger.logger
 import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.i18n.MessagesApi
 import play.api.mvc.Results._
@@ -43,20 +44,22 @@ class ErrorHandler @Inject()(
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
+    logger.error(s"onClientError $message")
     super.onClientError(request, statusCode, message)
   }
 
   override def resolveError(request: RequestHeader, exception: Throwable) = {
     auditServerError(request, exception)
     implicit val r: Request[String] = Request(request, "")
-    Ok(
-      errorTemplate5xx()
-    ).withHeaders(CACHE_CONTROL -> "no-cache")
+    logger.error(s"resolveError $exception")
+    Ok(errorTemplate5xx()).withHeaders(CACHE_CONTROL -> "no-cache")
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(
-    implicit request: Request[_]) =
+    implicit request: Request[_]) = {
+    logger.error(s"$message")
     errorTemplate(pageTitle, heading, message)
+  }
 }
 
 object EventTypes {

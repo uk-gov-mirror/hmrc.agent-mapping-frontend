@@ -27,7 +27,7 @@ trait EndpointBehaviours extends AuthStubs {
       val result = await(doRequest(request))
 
       result.header.status shouldBe 303
-      result.header.headers("Location") should include("/gg/sign-in")
+      result.header.headers("Location") should include("/bas-gateway/sign-in")
     }
   }
 

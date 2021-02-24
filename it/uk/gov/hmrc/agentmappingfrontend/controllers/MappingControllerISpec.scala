@@ -10,7 +10,7 @@ import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository}
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{eligibleAgent, _}
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,7 +19,7 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs {
 
   private lazy val repo = app.injector.instanceOf[MappingArnRepository]
 
-  val arn = Arn("TARN0000001")
+  val arn: Arn = Arn("TARN0000001")
 
   def callEndpointWith[A: Writeable](request: Request[A]): Result = await(play.api.test.Helpers.route(app, request).get)
 
