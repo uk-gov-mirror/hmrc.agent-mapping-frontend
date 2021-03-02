@@ -50,7 +50,6 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
 @scriptElement = {
     @scriptElem
     <script src="@controllers.routes.Assets.at("javascripts/scripts.js")" type="text/javascript"></script>
-    <script src="@controllers.routes.Assets.at("javascripts/ga-events.js")" type="text/javascript"></script>
     <script src="@controllers.routes.Assets.at("javascripts/details.pollyfill.js")" type="text/javascript"></script>
     <script src="@controllers.routes.Assets.at("javascripts/session-timeout.js")" type="text/javascript"></script>
     <script src="@controllers.routes.Assets.at("javascripts/am-fe.js")" type="text/javascript"></script>
@@ -105,8 +104,8 @@ uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
 
 @bodyEnd = {
     @uiFooter(
-      analyticsToken = Some(appConfig.analyticsToken),
-      analyticsHost = appConfig.analyticsHost,
+      analyticsToken = None,
+      analyticsHost = "n/a",
       ssoUrl = None,
       scriptElem = Some(scriptElement),
       gaCalls = None)
