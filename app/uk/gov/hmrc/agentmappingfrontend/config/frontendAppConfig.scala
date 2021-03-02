@@ -26,8 +26,6 @@ import views.html.helper.urlEncode
 
 @ImplementedBy(classOf[FrontendAppConfig])
 trait AppConfig {
-  val analyticsToken: String
-  val analyticsHost: String
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
   def accessibilityUrl(userAction: String): String
@@ -61,8 +59,6 @@ class FrontendAppConfig @Inject()(servicesConfig: ServicesConfig) extends AppCon
 
   private lazy val contactFrontendHost: String = servicesConfig.getString("contact-frontend.host")
 
-  override lazy val analyticsToken: String = servicesConfig.getString(s"google-analytics.token")
-  override lazy val analyticsHost: String = servicesConfig.getString(s"google-analytics.host")
   override lazy val reportAProblemPartialUrl =
     s"$contactFrontendHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   override lazy val reportAProblemNonJSUrl =
