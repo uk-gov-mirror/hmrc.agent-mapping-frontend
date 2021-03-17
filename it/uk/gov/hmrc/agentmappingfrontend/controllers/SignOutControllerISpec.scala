@@ -67,4 +67,16 @@ class SignOutControllerISpec extends BaseControllerISpec {
     }
   }
 
+  "timedOut" should {
+    "return 403" in {
+      val result = await(controller.timedOut()(fakeRequest))
+
+      status(result) shouldBe 403
+      checkHtmlResultContainsEscapedMsgs(result,
+        "timed-out.header",
+        "timed-out.p2.link",
+        "timed-out.p2")
+    }
+  }
+
 }
