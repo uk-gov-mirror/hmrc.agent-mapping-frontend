@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
@@ -29,7 +30,8 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.http.HttpErrorFunctions._
-import scala.concurrent.{ExecutionContext, Future}
+
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 @Singleton
 class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: AppConfig)
@@ -61,11 +63,11 @@ class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: 
   def findSaMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[SaMapping]] =
     monitor("ConsumedAPI-Mapping-FindSaMappingsForArn-GET") {
       val url = findSaUrl(arn)
-      http.GET[HttpResponse](url).map { response =>
+      http.GET[HttpResponse](url).flatMap { response =>
         response.status match {
-          case OK        => (response.json \ "mappings").as[Seq[SaMapping]]
-          case NOT_FOUND => Seq.empty
-          case s         => throw new RuntimeException(s"unexpected error when calling $url, status: $s")
+          case OK        => Future((response.json \ "mappings").as[Seq[SaMapping]])
+          case NOT_FOUND => Future(Seq.empty)
+          case s         => Future.failed(new RuntimeException(s"unexpected error when calling $url, status: $s"))
         }
       }
     }

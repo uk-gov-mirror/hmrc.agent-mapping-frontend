@@ -1,3 +1,4 @@
+import sbt.Keys.resolvers
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
@@ -23,7 +24,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc"       %% "simple-reactivemongo"       % "7.31.0-play-26",
   "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.22.0-play-27",
   "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.4.0",
-  "uk.gov.hmrc"       %% "play-language"              % "4.10.0-play-27"
+  "uk.gov.hmrc"       %% "play-language"              % "4.12.0-play-27"
 )
 
 def testDeps(scope: String) = Seq(
@@ -53,9 +54,10 @@ lazy val root = (project in file("."))
       "-P:silencer:pathFilters=views;routes"),
     PlayKeys.playDefaultPort := 9438,
     resolvers := Seq(
-      Resolver.typesafeRepo("releases"),
-      Resolver.jcenterRepo
+      Resolver.typesafeRepo("releases")
     ),
+    resolvers += "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
+    resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
     libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.0" cross CrossVersion.full),
