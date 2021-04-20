@@ -53,8 +53,6 @@ lazy val root = (project in file("."))
       "-P:silencer:pathFilters=views;routes"),
     PlayKeys.playDefaultPort := 9438,
     resolvers := Seq(
-      Resolver.bintrayRepo("hmrc", "releases"),
-      Resolver.bintrayRepo("hmrc", "release-candidates"),
       Resolver.typesafeRepo("releases"),
       Resolver.jcenterRepo
     ),
