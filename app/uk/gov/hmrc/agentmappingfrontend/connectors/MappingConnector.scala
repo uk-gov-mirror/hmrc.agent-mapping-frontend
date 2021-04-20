@@ -31,7 +31,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.http.HttpErrorFunctions._
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MappingConnector @Inject()(http: HttpClient, metrics: Metrics, appConfig: AppConfig)
