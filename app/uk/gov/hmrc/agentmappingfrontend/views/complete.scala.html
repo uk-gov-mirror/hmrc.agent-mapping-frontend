@@ -14,36 +14,25 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-@import uk.gov.hmrc.govukfrontend.views.html.components.GovukPanel
-@import uk.gov.hmrc.govukfrontend.views.html.components.{Panel, Text, HtmlContent}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 
 @this(
-mainTemplate: MainTemplate,
-govukPanel: GovukPanel
+        mainTemplate: MainTemplate,
+        govukPanel: GovukPanel
 )
 
 @(
-idRefForArn: MappingArnResultId,
-totalClients: Int
-)(implicit request: Request[_],msgs: Messages, appConfig: AppConfig)
-
-@panelContent = {
-@if(totalClients == 1){
-    @msgs("connectionComplete.banner.single.paragraph")
-    } else {
-    @msgs("connectionComplete.banner.multi.paragraph",s"${totalClients.toString}")
-    }
-}
+        idRefForArn: MappingArnResultId,
+        totalClients: Int
+)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(title = msgs("connectionComplete.title",totalClients.toString)) {
 
     @govukPanel(Panel(
-    title = Text(msgs("connectionComplete.banner.header", totalClients.toString))
+        title = Text(msgs("connectionComplete.banner.header", totalClients.toString))
     ))
 
     <h2 class="govuk-heading-l">@msgs(s"connectionComplete.section1.h2")</h2>

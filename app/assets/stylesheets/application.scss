@@ -1,27 +1,4 @@
-$govuk-assets-path: "/agent-mapping/assets/lib/govuk-frontend/govuk/assets/";
-$hmrc-assets-path: "/agent-mapping/assets/lib/hmrc-frontend/hmrc/";
 
-@import "lib/govuk-frontend/govuk/all";
-@import "lib/hmrc-frontend/hmrc/all";
+@import "lib/govuk-frontend/dist/govuk/base";
 
 @import 'modules/_custom';
-
-$govuk-global-styles: true;
-
-
-a {
-  @extend .govuk-link;
-}
-
-p {
-  @extend .govuk-body;
-}
-
-h2 {
- @extend .govuk-heading-m;
-}
-
-h3 {
- @extend .govuk-heading-s;
-}
-

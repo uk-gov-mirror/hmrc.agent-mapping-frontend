@@ -14,8 +14,7 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-@import uk.gov.hmrc.agentmappingfrontend.views.html
+@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.model.GGTag
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
@@ -23,7 +22,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{Legend, Text, Hint, ErrorLink, ErrorSummary, ErrorMessage, FormWithCSRF}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.agentmappingfrontend.views.html.helpers.{error_prefix}
+@import uk.gov.hmrc.agentmappingfrontend.views.html.helpers.error_prefix
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,12 +33,23 @@
 )
 
 @(
-ggTagForm: Form[GGTag],
-id: MappingArnResultId,
-taskList: Boolean = false)(implicit request: Request[_], msgs: Messages,appConfig: AppConfig)
+        ggTagForm: Form[GGTag],
+        id: MappingArnResultId,
+        taskList: Boolean = false
+)(implicit request: RequestHeader, msgs: Messages)
 
-@mainTemplate(title = errorPrefix(ggTagForm) + msgs("gg-tag.title"), taskList = taskList,
-backLinkHref = if(taskList) Some(routes.TaskListMappingController.showClientRelationshipsFound(id).url) else Some(routes.MappingController.showClientRelationshipsFound(id).url)
+@backLink = @{
+    if (taskList) {
+        routes.TaskListMappingController.showClientRelationshipsFound(id).url
+    } else {
+        routes.MappingController.showClientRelationshipsFound(id).url
+    }
+}
+
+@mainTemplate(
+    title = errorPrefix(ggTagForm) + msgs("gg-tag.title"),
+    taskList = taskList,
+    backLinkHref = Some(backLink)
 ) {
 
     @formHelper(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'id -> "gg-tag-form") {
@@ -55,7 +65,7 @@ backLinkHref = if(taskList) Some(routes.TaskListMappingController.showClientRela
             </label>
         </h1>
 
-        <p>@msgs("gg-tag.p1")</p>
+        <p class="govuk-body">@msgs("gg-tag.p1")</p>
 
         <span class="govuk-hint" id="ggTag-hint">@msgs("gg-tag.form.hint")</span>
         @ggTagForm.error("ggTag").map { error =>

@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import com.google.inject.AbstractModule
 import play.api.http.Writeable
+import play.api.http.Status
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -382,7 +383,11 @@ class MappingControllerISpec extends BaseControllerISpec with AuthStubs with Mon
       val id = await(repo.create(arn, clientCount))
       givenAuthorisedFor("IR-SA-AGENT")
       mappingIsCreated(arn)
-      mappingDetailsCreationFails(arn, MappingDetailsRequest(AuthProviderId("12345-credId"), "1111", clientCount))
+      mappingDetailsCreationFails(
+        arn,
+        MappingDetailsRequest(AuthProviderId("12345-credId"), "1111", clientCount),
+        Status.CONFLICT
+      )
       implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, s"/agent-mapping/tag-gg?id=$id")
         .withFormUrlEncodedBody("ggTag" -> "1111")
       val result = callEndpointWith(request)

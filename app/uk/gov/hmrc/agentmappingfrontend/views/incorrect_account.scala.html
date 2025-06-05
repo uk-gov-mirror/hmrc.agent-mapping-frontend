@@ -14,23 +14,25 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-@import uk.gov.hmrc.agentmappingfrontend.views.html
+@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 
-@this(mainTemplate: MainTemplate)
+@this(
+        appConfig: AppConfig,
+        mainTemplate: MainTemplate
+)
 
 @(
-idRefForArn: MappingArnResultId,
-taskList: Boolean = false
-)(implicit request: Request[_],msgs: Messages, appConfig: AppConfig)
+        idRefForArn: MappingArnResultId,
+        taskList: Boolean = false
+)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(title = msgs("incorrectAccount.h1"), taskList = taskList) {
 
 <h1 class="govuk-heading-xl">@msgs("incorrectAccount.h1")</h1>
 
-<p>@msgs("incorrectAccount.p1")</p>
+<p class="govuk-body">@msgs("incorrectAccount.p1")</p>
 
  @if(taskList){
   <a href="@routes.SignedOutController.taskListSignOutAndRedirect(idRefForArn)" class="govuk-button" id="buttonTryAgain" role="button" draggable="false">@msgs("button.tryAgain")</a>

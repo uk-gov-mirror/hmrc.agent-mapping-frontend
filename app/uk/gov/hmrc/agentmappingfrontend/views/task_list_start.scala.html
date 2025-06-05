@@ -14,18 +14,20 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 
-@this(mainTemplate: MainTemplate)
+@this(
+        appConfig: AppConfig,
+        mainTemplate: MainTemplate
+)
 
 @(
     continueId: String,
     id: MappingArnResultId,
     backLink: String
-)(implicit request: Request[_], appConfig: AppConfig, msgs: Messages)
+)(implicit request: RequestHeader, msgs: Messages)
 
 @returnUrl=@{s"/task-list/start?continueId=$continueId"}
 
@@ -37,14 +39,14 @@
 
     <h1 class="govuk-heading-xl">@msgs("start.task-list.heading")</h1>
 
-    <p>@msgs("start.task-list.p1")</p>
+    <p class="govuk-body">@msgs("start.task-list.p1")</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@msgs("start.task-list.li1")</li>
         <li>@msgs("start.task-list.li2")</li>
         <li>@msgs("start.task-list.li3")</li>
     </ul>
 
-    <p>@msgs("start.task-list.p2")</p>
+    <p class="govuk-body">@msgs("start.task-list.p2")</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@msgs("start.task-list.li4")</li>
         <li>@msgs("start.task-list.li5")</li>

@@ -14,14 +14,12 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 @import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 @import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer
 
-@import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.govukfrontend.views.Implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -39,7 +37,7 @@
         clientCountAndGGTags: Seq[ClientCountAndGGTag],
         backLink: String,
         form: Form[RadioInputAnswer]
-)(implicit request: Request[_], msgs: Messages, appConfig: AppConfig)
+)(implicit request: RequestHeader, msgs: Messages)
 
 @addedTag = {
     <strong class="govuk-tag govuk-tag--blue">

@@ -14,19 +14,21 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-@import uk.gov.hmrc.agentmappingfrontend.views.html
+@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-@import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 
-@this(mainTemplate: MainTemplate ,govukInsetText : GovukInsetText)
-
+@this(
+        appConfig: AppConfig,
+        mainTemplate: MainTemplate,
+        govukInsetText : GovukInsetText
+)
 
 @(
-clientCount: Int,
-id: MappingArnResultId,
-taskList: Boolean = false)(implicit request: Request[_],appConfig: AppConfig, msgs: Messages)
+        clientCount: Int,
+        id: MappingArnResultId,
+        taskList: Boolean = false
+)(implicit request: RequestHeader, msgs: Messages)
 
 @returnUrl=@{s"/task-list/client-relationships-found/?id=$id"}
 
@@ -55,7 +57,7 @@ taskList: Boolean = false)(implicit request: Request[_],appConfig: AppConfig, ms
         </div>
     </dl>
 
-    <p>@if(clientCount == 1) { @msgs("clientRelationshipsFound.single.p2")} else {@msgs("clientRelationshipsFound.multi.p2")}</p>
+    <p class="govuk-body">@if(clientCount == 1) { @msgs("clientRelationshipsFound.single.p2")} else {@msgs("clientRelationshipsFound.multi.p2")}</p>
 
     @govukInsetText(InsetText(
         content = Text(msgs("clientRelationshipsFound.inset"))

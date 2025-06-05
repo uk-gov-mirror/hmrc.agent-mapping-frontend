@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
@@ -25,7 +24,7 @@
 id: Option[MappingArnResultId] = None,
 taskList: Boolean = false,
 hasTimeout: Boolean = false
-)(implicit request: Request[_], appConfig: AppConfig, msgs: Messages)
+)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(
 title = msgs("start.not-signed-in.title"),
@@ -35,7 +34,7 @@ hasTimeout = hasTimeout
 
  <h1 class="govuk-heading-xl">@msgs("start.not-signed-in.title")</h1>
 
- <p>@msgs("start.not-signed-in.p1")</p>
+ <p class="govuk-body">@msgs("start.not-signed-in.p1")</p>
 
  @if(taskList) {
   <a class="govuk-button" href="@routes.SignedOutController.taskListSignOutAndRedirect(id.getOrElse("unknown"))" role="button">@msgs("button.signIn")</a>

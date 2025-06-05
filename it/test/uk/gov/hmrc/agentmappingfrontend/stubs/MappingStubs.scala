@@ -74,6 +74,12 @@ object MappingStubs {
         .willReturn(aResponse().withStatus(404))
     )
 
+  def mappingsError(arn: Arn, regime: String): StubMapping =
+    stubFor(
+      get(urlPathEqualTo(s"/agent-mapping/mappings/$regime/${arn.value}"))
+        .willReturn(aResponse().withStatus(500))
+    )
+
   def mappingsDelete(arn: Arn): StubMapping =
     stubFor(
       delete(urlPathEqualTo(s"/agent-mapping/test-only/mappings/${arn.value}"))
@@ -99,11 +105,11 @@ object MappingStubs {
         .willReturn(aResponse().withStatus(Status.CREATED))
     )
 
-  def mappingDetailsCreationFails(arn: Arn, mappingDetailsRequest: MappingDetailsRequest): StubMapping =
+  def mappingDetailsCreationFails(arn: Arn, mappingDetailsRequest: MappingDetailsRequest, status: Int): StubMapping =
     stubFor(
       post(urlPathEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
         .withRequestBody(equalToJson(Json.toJson(mappingDetailsRequest).toString()))
-        .willReturn(aResponse().withStatus(Status.CONFLICT))
+        .willReturn(aResponse().withStatus(status))
     )
 
   def givenMappingDetailsExistFor(

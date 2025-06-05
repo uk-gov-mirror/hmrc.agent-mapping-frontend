@@ -14,18 +14,17 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 
 @this(mainTemplate: MainTemplate)
 
-@(hasTimeout: Boolean = false)(implicit request: Request[_], msgs: Messages, appConfig: AppConfig)
+@(hasTimeout: Boolean = false)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(title = msgs("page-not-found.title"), hasTimeout = hasTimeout) {
     <h1 class="govuk-heading-xl">@msgs("page-not-found.h1")</h1>
 
-    <p>@msgs("page-not-found.p1")</p>
+    <p class="govuk-body">@msgs("page-not-found.p1")</p>
 
     <a class="govuk-button" role="button" name="continue" id="continue" href="@routes.SignedOutController.reLogForMappingStart" draggable="false">@msgs("button.continue")</a>
 }

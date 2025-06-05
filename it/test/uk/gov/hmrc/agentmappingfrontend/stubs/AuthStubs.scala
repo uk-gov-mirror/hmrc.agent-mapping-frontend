@@ -18,10 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status.{NO_CONTENT, OK}
-import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.support.{SampleUser, WireMockSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 
 trait AuthStubs {
   me: WireMockSupport =>

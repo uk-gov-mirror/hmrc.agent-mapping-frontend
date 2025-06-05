@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logging}
@@ -31,9 +30,9 @@ import uk.gov.hmrc.agentmappingfrontend.services.AgentSubscriptionService
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -143,7 +142,8 @@ class TaskListMappingController @Inject() (
             repository.findRecord(id).flatMap {
               case Some(record) =>
                 agentSubscriptionConnector.getSubscriptionJourneyRecord(record.continueId).flatMap {
-                  case Some(sjr) => // TODO use the sjr to determine if record already mapped (to handle case for going back from /existing-client-relationships)
+                  case Some(sjr) => // TODO use the sjr to determine if record already mapped (to handle case for
+                    // going back from /existing-client-relationships)
                     val userMapping = UserMapping(
                       authProviderId = agent.authProviderId,
                       agentCode = agent.agentCodeOpt,
@@ -255,7 +255,6 @@ class TaskListMappingController @Inject() (
   }
 
   private def nextPage(id: MappingArnResultId, continueId: Option[String] = None)(implicit
-    hc: HeaderCarrier,
     request: Request[AnyContent]
   ): Future[Result] =
     withSubscribingAgent(id) { agent =>

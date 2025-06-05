@@ -17,76 +17,70 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import play.api.libs.json.Json
+import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
 import uk.gov.hmrc.agentmappingfrontend.util.HttpAPIMonitor
+import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
-import uk.gov.hmrc.play.encoding.UriPathEncoding.encodePathSegment
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentSubscriptionConnector @Inject() (
-  http: HttpClient,
+  http: HttpClientV2,
   val metrics: Metrics,
   appConfig: AppConfig
 )(implicit val ec: ExecutionContext)
     extends HttpAPIMonitor {
 
+  private lazy val baseUrl: String = appConfig.agentSubscriptionBaseUrl
+
+  private def mapGetJourneySuccess(response: HttpResponse): Option[SubscriptionJourneyRecord] =
+    response.status match {
+      case 200 => Some(Json.parse(response.body).as[SubscriptionJourneyRecord])
+      case 204 => None
+    }
+
   def getSubscriptionJourneyRecord(
     authProviderId: AuthProviderId
-  )(implicit hc: HeaderCarrier): Future[Option[SubscriptionJourneyRecord]] = {
-    val url =
-      s"${appConfig.agentSubscriptionBaseUrl}/agent-subscription/subscription/journey/id/${encodePathSegment(authProviderId.id)}"
+  )(implicit rh: RequestHeader): Future[Option[SubscriptionJourneyRecord]] =
     monitor("ConsumedAPI-Agent-Subscription-getSubscriptionJourneyRecord-GET") {
       http
-        .GET[HttpResponse](url)
-        .map { response =>
-          response.status match {
-            case 200 => Some(Json.parse(response.body).as[SubscriptionJourneyRecord])
-            case 204 => None
-          }
-        }
+        .get(url"$baseUrl/agent-subscription/subscription/journey/id/${authProviderId.id}")
+        .execute[HttpResponse]
+        .map(mapGetJourneySuccess)
     }
-  }
 
   def getSubscriptionJourneyRecord(
     continueId: String
-  )(implicit hc: HeaderCarrier): Future[Option[SubscriptionJourneyRecord]] = {
-    val url =
-      s"${appConfig.agentSubscriptionBaseUrl}/agent-subscription/subscription/journey/continueId/${encodePathSegment(continueId)}"
+  )(implicit rh: RequestHeader): Future[Option[SubscriptionJourneyRecord]] =
     monitor("ConsumedAPI-Agent-Subscription-findByContinueId-GET") {
       http
-        .GET[HttpResponse](url)
-        .map { response =>
-          response.status match {
-            case 200 => Some(Json.parse(response.body).as[SubscriptionJourneyRecord])
-            case 204 => None
-          }
-        }
+        .get(url"$baseUrl/agent-subscription/subscription/journey/continueId/$continueId")
+        .execute[HttpResponse]
+        .map(mapGetJourneySuccess)
     }
-  }
 
   def createOrUpdateJourney(
     subscriptionJourneyRecord: SubscriptionJourneyRecord
-  )(implicit hc: HeaderCarrier): Future[Either[String, Unit]] = {
-    val url =
-      s"${appConfig.agentSubscriptionBaseUrl}/agent-subscription/subscription/journey/primaryId/${encodePathSegment(subscriptionJourneyRecord.authProviderId.id)}"
+  )(implicit rh: RequestHeader): Future[Either[String, Unit]] =
     monitor("ConsumedAPI-Agent-Subscription-createOrUpdate-POST") {
       http
-        .POST[SubscriptionJourneyRecord, HttpResponse](url, subscriptionJourneyRecord)
+        .post(
+          url"$baseUrl/agent-subscription/subscription/journey/primaryId/${subscriptionJourneyRecord.authProviderId.id}"
+        )
+        .withBody(Json.toJson(subscriptionJourneyRecord))
+        .execute[HttpResponse]
         .map { response =>
           response.status match {
             case 204    => Right(())
-            case status => Left(s"POST to $url returned $status")
+            case status => Left(s"POST to createOrUpdateJourney returned $status")
           }
         }
-        .recover { case ex: Throwable =>
-          Left(s"unexpected response ${ex.getMessage}")
-        }
     }
-  }
 }

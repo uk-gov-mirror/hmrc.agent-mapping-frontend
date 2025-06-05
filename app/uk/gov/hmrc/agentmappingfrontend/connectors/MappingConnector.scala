@@ -18,75 +18,90 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import play.api.Logging
 import play.api.http.Status._
+import play.api.libs.json.Json
+import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.model.{MappingDetailsRepositoryRecord, MappingDetailsRequest, SaMapping, VatMapping}
 import uk.gov.hmrc.agentmappingfrontend.util.HttpAPIMonitor
+import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.HttpErrorFunctions._
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HttpClient, _}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MappingConnector @Inject() (http: HttpClient, val metrics: Metrics, appConfig: AppConfig)(implicit
+class MappingConnector @Inject() (http: HttpClientV2, val metrics: Metrics, appConfig: AppConfig)(implicit
   val ec: ExecutionContext
 ) extends HttpAPIMonitor with Logging {
 
-  def createMapping(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def createMapping(arn: Arn)(implicit rh: RequestHeader): Future[Int] =
     monitor("ConsumedAPI-Mapping-CreateMapping-PUT") {
       http
-        .PUT[String, HttpResponse](createUrl(arn), "")
+        .put(url"$baseUrl/agent-mapping/mappings/arn/${arn.value}")
+        .execute[HttpResponse]
         .map(_.status)
     }
 
-  def getClientCount(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def getClientCount(implicit rh: RequestHeader): Future[Int] =
     monitor("ConsumedAPI-Mapping-ClientCount-GET") {
       http
-        .GET[HttpResponse](createUrlClientCount)
+        .get(url"$baseUrl/agent-mapping/client-count")
+        .execute[HttpResponse]
         .map { response =>
           (response.json \ "clientCount").as[Int]
         }
     }
 
-  def findSaMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[SaMapping]] =
+  def findSaMappingsFor(arn: Arn)(implicit rh: RequestHeader): Future[Seq[SaMapping]] =
     monitor("ConsumedAPI-Mapping-FindSaMappingsForArn-GET") {
-      val url = findSaUrl(arn)
-      http.GET[HttpResponse](url).flatMap { response =>
-        response.status match {
-          case OK        => Future((response.json \ "mappings").as[Seq[SaMapping]])
-          case NOT_FOUND => Future(Seq.empty)
-          case s         => Future.failed(new RuntimeException(s"unexpected error when calling $url, status: $s"))
+      http
+        .get(url"$baseUrl/agent-mapping/mappings/sa/${arn.value}")
+        .execute[HttpResponse]
+        .flatMap { response =>
+          response.status match {
+            case OK        => Future((response.json \ "mappings").as[Seq[SaMapping]])
+            case NOT_FOUND => Future(Seq.empty)
+            case s =>
+              Future.failed(new RuntimeException(s"unexpected error when calling findSaMappingsFor, status: $s"))
+          }
         }
-      }
     }
 
-  def findVatMappingsFor(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatMapping]] =
+  def findVatMappingsFor(arn: Arn)(implicit rh: RequestHeader): Future[Seq[VatMapping]] =
     monitor("ConsumedAPI-Mapping-FindVatMappingsForArn-GET") {
-      val url = findVatUrl(arn)
-      http.GET[HttpResponse](url).map { response =>
-        response.status match {
-          case OK        => (response.json \ "mappings").as[Seq[VatMapping]]
-          case NOT_FOUND => Seq.empty
-          case s         => throw new RuntimeException(s"unexpected error when calling $url, status: $s")
+      http
+        .get(url"$baseUrl/agent-mapping/mappings/vat/${arn.value}")
+        .execute[HttpResponse]
+        .map { response =>
+          response.status match {
+            case OK        => (response.json \ "mappings").as[Seq[VatMapping]]
+            case NOT_FOUND => Seq.empty
+            case s => throw new RuntimeException(s"unexpected error when calling findVatMappingsFor, status: $s")
+          }
         }
-      }
     }
 
-  def deleteAllMappingsBy(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
+  def deleteAllMappingsBy(arn: Arn)(implicit rh: RequestHeader): Future[Int] =
     monitor("ConsumedAPI-Mapping-DeleteAllMappingsByArn-DELETE") {
-      http.DELETE[HttpResponse](deleteUrl(arn)).map(_.status)
+      http
+        .delete(url"$baseUrl/agent-mapping/test-only/mappings/${arn.value}")
+        .execute[HttpResponse]
+        .map(_.status)
     }
 
   def createOrUpdateMappingDetails(arn: Arn, mappingDetailsRequest: MappingDetailsRequest)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    rh: RequestHeader
   ): Future[Unit] =
     monitor("ConsumedAPI-Mapping-createOrUpdateMappingDetails-POST") {
       http
-        .POST[MappingDetailsRequest, HttpResponse](detailsUrl(arn), mappingDetailsRequest)
+        .post(url"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}")
+        .withBody(Json.toJson(mappingDetailsRequest))
+        .execute[HttpResponse]
         .map { r =>
           r.status match {
             case status if is2xx(status) => ()
@@ -101,9 +116,11 @@ class MappingConnector @Inject() (http: HttpClient, val metrics: Metrics, appCon
 
   def getMappingDetails(
     arn: Arn
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MappingDetailsRepositoryRecord]] =
+  )(implicit rh: RequestHeader): Future[Option[MappingDetailsRepositoryRecord]] =
     monitor("ConsumedAPI-Mapping-getMappingDetails-GET") {
-      http.GET[Option[MappingDetailsRepositoryRecord]](detailsUrl(arn))
+      http
+        .get(url"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}")
+        .execute[Option[MappingDetailsRepositoryRecord]]
     }.recover {
       case _: NotFoundException =>
         logger.warn(s"no mapping details found for this arn: $arn")
@@ -114,17 +131,5 @@ class MappingConnector @Inject() (http: HttpClient, val metrics: Metrics, appCon
     }
 
   private lazy val baseUrl = appConfig.agentMappingBaseUrl
-
-  private def createUrlClientCount: String = s"$baseUrl/agent-mapping/client-count"
-
-  private def createUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/arn/${arn.value}"
-
-  private def deleteUrl(arn: Arn): String = s"$baseUrl/agent-mapping/test-only/mappings/${arn.value}"
-
-  private def findSaUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/sa/${arn.value}"
-
-  private def findVatUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/vat/${arn.value}"
-
-  private def detailsUrl(arn: Arn): String = s"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}"
 
 }

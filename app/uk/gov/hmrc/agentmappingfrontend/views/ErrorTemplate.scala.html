@@ -14,16 +14,16 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 
 @this(
-mainTemplate: MainTemplate
+        mainTemplate: MainTemplate,
+        appConfig: AppConfig
 )
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], msgs: Messages, appConfig: AppConfig)
+@(pageTitle: String, heading: String, message: String)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(title = pageTitle) {
  <h1 class="govuk-heading-xl">@heading</h1>
- <p>@message</p>
+ <p class="govuk-body">@message</p>
 }

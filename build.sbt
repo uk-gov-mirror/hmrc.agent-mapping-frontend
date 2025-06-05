@@ -4,7 +4,7 @@ import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 val appName = "agent-mapping-frontend"
 
 ThisBuild / majorVersion := 1
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.16"
 
 val scalaCOptions = Seq(
   "-Werror",
@@ -25,6 +25,7 @@ lazy val root = (project in file("."))
     organization := "uk.gov.hmrc",
     PlayKeys.playDefaultPort := 9438,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
+    TwirlKeys.templateImports ++= twirlImports,
     resolvers ++= Seq(Resolver.typesafeRepo("releases")),
     routesImport ++= Seq("uk.gov.hmrc.agentmappingfrontend.controllers.UrlBinders._"),
     scalacOptions ++= scalaCOptions,
@@ -38,6 +39,14 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
+
+lazy val twirlImports: Seq[String] = Seq(
+  "uk.gov.hmrc.agentmappingfrontend.config.AppConfig",
+  "play.api.mvc.RequestHeader",
+  "uk.gov.hmrc.govukfrontend.views.html.components._",
+  "uk.gov.hmrc.hmrcfrontend.views.html.components._",
+  "uk.gov.hmrc.hmrcfrontend.views.html.helpers._"
+)
 
 
 lazy val it = project

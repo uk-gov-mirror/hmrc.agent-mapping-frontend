@@ -14,18 +14,17 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 @this(mainTemplate: MainTemplate)
 
-@(arn: Arn)(implicit request: Request[_], msgs: Messages, appConfig: AppConfig)
+@(arn: Arn)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(title = msgs("no.mappings.title")) {
 
 <h1 class="govuk-heading-xl">@msgs("no.mappings.title")</h1>
 
-<p>No mappings found for @arn.value</p>
+<p class="govuk-body">No mappings found for @arn.value</p>
 
 }

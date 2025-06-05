@@ -14,18 +14,17 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 
 @this(mainTemplate: MainTemplate)
 
-@()(implicit request: Request[_],msgs: Messages, appConfig: AppConfig)
+@()(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(title = msgs("global.error.500.title")) {
     <h1 class="govuk-heading-xl">@msgs("global.error.500.heading")</h1>
-    <p>@msgs("global.error.500.message")</p>
-    <p>@msgs("global.error.500.p2")</p>
-    <p>
+    <p class="govuk-body">@msgs("global.error.500.message")</p>
+    <p class="govuk-body">@msgs("global.error.500.p2")</p>
+    <p class="govuk-body">
         <a class="govuk-link" href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk">
         @msgs("global.error.500.sa_helpline.link")
         </a>

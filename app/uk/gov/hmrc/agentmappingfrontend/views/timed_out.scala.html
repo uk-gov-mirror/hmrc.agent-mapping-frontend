@@ -15,13 +15,14 @@
  *@
 
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-@import play.api.Configuration
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 
-@this(mainTemplate: MainTemplate)
+@this(
+        appConfig: AppConfig,
+        mainTemplate: MainTemplate
+)
 
-@()(implicit request: Request[_], msgs: Messages, appConfig: AppConfig)
+@()(implicit request: RequestHeader, msgs: Messages)
 
 @timeString=@{
     val timeout = appConfig.timeout
@@ -31,7 +32,7 @@
 @mainTemplate(title = msgs("timed-out.header"), hasTimeout = false) {
 
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">@msgs("timed-out.header")</h1>
-    <p>@msgs("timed-out.p1", timeString)</p>
+    <p class="govuk-body">@msgs("timed-out.p1", timeString)</p>
 
-    <p><a href='@routes.SignedOutController.signOut'>@msgs("timed-out.p2.link")&nbsp;</a>@Html(msgs("timed-out.p2"))</p>
+    <p class="govuk-body"><a class="govuk-link" href='@routes.SignedOutController.signOut'>@msgs("timed-out.p2.link")&nbsp;</a>@Html(msgs("timed-out.p2"))</p>
 }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.Application
 import play.api.http.Writeable
-import play.api.mvc.{AnyContentAsEmpty, Request, Result}
+import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
@@ -300,7 +300,7 @@ class TaskListMappingControllerISpec
       val id = await(repo.create("continue-id"))
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
-      givenUpdateSubscriptionJourneyRecordSucceeds(
+      givenUpdateSubscriptionJourneyRecordFails(
         sjrWithNoUserMappings
           .copy(
             userMappings = UserMapping(
@@ -335,6 +335,24 @@ class TaskListMappingControllerISpec
       intercept[RuntimeException] {
         callEndpointWith(request)
       }.getMessage shouldBe "no task-list mapping record found for agent code HZ1234"
+    }
+
+    "throw a runtime exception when an unexplained error occurs" in {
+      givenUserIsAuthenticated(vatEnrolledAgent)
+      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
+      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping)
+      givenUpdateSubscriptionJourneyRecordFails(sjrWithMapping)
+      val id = await(repo.create("continue-id"))
+      val record = await(repo.findRecord(id)).get
+      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
+        "ggTag"  -> "1234",
+        "submit" -> "continue"
+      )
+
+      intercept[RuntimeException] {
+        callEndpointWith(request)
+      }.getMessage shouldBe "update subscriptionJourneyRecord call failed POST to createOrUpdateJourney returned 500 for agentCode HZ1234"
     }
   }
 
@@ -566,10 +584,9 @@ class TaskListMappingControllerISpec
 
       val request = fakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
       val result = callEndpointWith(request)
-      val newId = await(repo.findByContinueId("continue-id")).get.id
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.notEnrolled(newId).url)
+      redirectLocation(result) shouldBe Some(routes.TaskListMappingController.notEnrolled(id).url)
     }
   }
 

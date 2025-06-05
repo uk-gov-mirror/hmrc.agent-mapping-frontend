@@ -16,20 +16,20 @@
 
 package uk.gov.hmrc.agentmappingfrontend.services
 
-import javax.inject.Inject
-import play.api.mvc.Result
+import play.api.mvc.{RequestHeader, Result}
 import uk.gov.hmrc.agentmappingfrontend.auth.Agent
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.model.SubscriptionJourneyRecord
-import uk.gov.hmrc.http.HeaderCarrier
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AgentSubscriptionService @Inject() (agentSubscriptionConnector: AgentSubscriptionConnector) {
+class AgentSubscriptionService @Inject() (
+  agentSubscriptionConnector: AgentSubscriptionConnector
+)(implicit ec: ExecutionContext) {
 
   def createOrUpdateRecordOrFail(agent: Agent, newSjr: SubscriptionJourneyRecord, onSuccess: => Future[Result])(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    rh: RequestHeader
   ): Future[Result] =
     agentSubscriptionConnector.createOrUpdateJourney(newSjr).flatMap {
       case Right(_) => onSuccess

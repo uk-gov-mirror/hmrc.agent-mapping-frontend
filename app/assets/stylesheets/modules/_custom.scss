@@ -1,16 +1,3 @@
-// overrides hmrc-header css language toggle focus styles
-.hmrc-language-select {
-  .govuk-list {
-    a {
-      &:focus {
-            color: govuk-colour("black") !important;
-            background-color: govuk-colour("yellow")
-      }
-    }
-  }
-  text-decoration: none;
-}
-
 // Custom summary list widths for Agents
 .agent-summary-list__key--long {
     @include govuk-media-query($from: tablet) {

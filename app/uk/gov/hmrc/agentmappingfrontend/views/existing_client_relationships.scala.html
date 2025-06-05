@@ -14,17 +14,17 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer
 @import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 @import uk.gov.hmrc.agentmappingfrontend.views.html.helpers.error_prefix
+@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, Fieldset, FormWithCSRF, GovukErrorSummary, GovukRadios, Legend, RadioItem, Radios, Text}
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
+        appConfig: AppConfig,
         mainTemplate: MainTemplate,
         formHelper: FormWithCSRF,
         govukRadios: GovukRadios,
@@ -38,7 +38,7 @@
         clientCountAndGGTags: Seq[ClientCountAndGGTag],
         backUrl: String,
         taskList: Boolean = false
-)(implicit request: Request[_], msgs: Messages, appConfig: AppConfig)
+)(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(
     title = errorPrefix(addClientsForm) + msgs("existingClientRelationships.title"),
@@ -53,24 +53,24 @@
     <h1 class="govuk-heading-xl">@msgs("existingClientRelationships.title")</h1>
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
-    @for(clientCountAndGGTag <- clientCountAndGGTags) {
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-            @msgs("copied.table.ggTag", clientCountAndGGTag.ggTag)
-            </dt>
-            <dd class="govuk-summary-list__value">
-            @if(clientCountAndGGTag.clientCount == 1) {
-                @msgs("copied.table.single.dd", clientCountAndGGTag.clientCount)
-            } else {
-                @if(clientCountAndGGTag.clientCount < appConfig.clientCountMaxRecords) {
-                    @msgs("copied.table.multi.dd", clientCountAndGGTag.clientCount)
+        @for(clientCountAndGGTag <- clientCountAndGGTags) {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    @msgs("copied.table.ggTag", clientCountAndGGTag.ggTag)
+                </dt>
+                <dd class="govuk-summary-list__value">
+                @if(clientCountAndGGTag.clientCount == 1) {
+                    @msgs("copied.table.single.dd", clientCountAndGGTag.clientCount)
                 } else {
-                    @msgs("copied.table.max.dd", appConfig.clientCountMaxRecords)
+                    @if(clientCountAndGGTag.clientCount < appConfig.clientCountMaxRecords) {
+                        @msgs("copied.table.multi.dd", clientCountAndGGTag.clientCount)
+                    } else {
+                        @msgs("copied.table.max.dd", appConfig.clientCountMaxRecords)
+                    }
                 }
-            }
-            </dd>
-        </div>
-    }
+                </dd>
+            </div>
+        }
     </dl>
 
     @formHelper(

@@ -68,10 +68,6 @@ class SignedOutController @Inject() (timedOutTemplate: timed_out, cc: MessagesCo
   private def startNewSession: Result =
     Redirect(routes.MappingController.root).withNewSession
 
-  def keepAlive: Action[AnyContent] = Action.async {
-    Future successful Ok("OK")
-  }
-
   def timedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(timedOutTemplate())
   }

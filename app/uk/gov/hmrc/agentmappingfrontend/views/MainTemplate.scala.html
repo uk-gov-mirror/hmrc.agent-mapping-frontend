@@ -14,16 +14,14 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-@import uk.gov.hmrc.agentmappingfrontend.views.html.components.head
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcStandardPage, HmrcReportTechnicalIssueHelper}
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage._
-@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 
 @this(
-        head: head,
+        hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
         hmrcStandardPage: HmrcStandardPage,
-        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper
+        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+        appConfig: AppConfig
 )
 
 @(
@@ -31,9 +29,20 @@
     taskList: Boolean = false,
     hasTimeout: Boolean = true,
     backLinkHref: Option[String] = None
-)(mainContent: Html)(implicit request : Request[_], msgs: Messages, appConfig: AppConfig)
+)(mainContent: Html)(implicit request : RequestHeader, msgs: Messages)
 
 @serviceName = @{ if(taskList) msgs("app.name")else msgs("app.name-alreadySubscribed")}
+
+@head = {
+    @if(hasTimeout) {
+        @hmrcTimeoutDialogHelper(
+            signOutUrl = routes.SignedOutController.signOut.url,
+            timeout = Some(appConfig.timeout),
+            countdown = Some(appConfig.timeoutCountdown)
+        )
+    }
+    <link rel="stylesheet" media="all" href='@controllers.routes.Assets.versioned("stylesheets/application.css")'>
+}
 
 @mainContentWithHelpLink = {
     @mainContent
@@ -47,11 +56,11 @@
     serviceName = Some(serviceName),
     serviceURLs = ServiceURLs(
         serviceUrl = None,
-        signOutUrl = None
+        signOutUrl = Some(routes.SignedOutController.signOut.url)
     ),
     banners = Banners(displayHmrcBanner = true),
     templateOverrides = TemplateOverrides(
-        additionalHeadBlock = Some(head(hasTimeout))
+        additionalHeadBlock = Some(head)
     ),
     isWelshTranslationAvailable = true,
     backLink = if(backLinkHref.isDefined) Some(BackLink.withDefaultText(href = backLinkHref.get)) else None

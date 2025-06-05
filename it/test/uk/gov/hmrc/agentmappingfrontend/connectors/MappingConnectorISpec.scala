@@ -16,23 +16,26 @@
 
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
+import play.api.http.Status
+import play.api.mvc.RequestHeader
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
+
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.{ConflictException, HeaderCarrier}
+import uk.gov.hmrc.http.ConflictException
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
   private val arn = Arn("ARN0001")
 
   private def connector = app.injector.instanceOf[MappingConnector]
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private implicit val rh: RequestHeader = FakeRequest()
 
   "createMapping" should {
     "create a mapping" in {
@@ -89,6 +92,26 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
       val mappings = await(connector.findVatMappingsFor(arn))
       mappings.size shouldBe 0
     }
+
+    "throw a runtime exception when sa mappings call returns an error" in {
+      mappingsError(
+        arn = arn,
+        regime = "sa"
+      )
+      intercept[RuntimeException] {
+        await(connector.findSaMappingsFor(arn))
+      }
+    }
+
+    "throw a runtime exception when vat mappings call returns an error" in {
+      mappingsError(
+        arn = arn,
+        regime = "vat"
+      )
+      intercept[RuntimeException] {
+        await(connector.findVatMappingsFor(arn))
+      }
+    }
   }
 
   "delete" should {
@@ -104,10 +127,24 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
       mappingDetailsAreCreated(arn, mappingDetailsRequest)
       await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest)) shouldBe (())
     }
-    "creation of mapping fails throw a RuntimeException" in {
+    "creation of mapping fails with a not found throwing a RuntimeException" in {
       val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
-      mappingDetailsCreationFails(arn, mappingDetailsRequest)
+      mappingDetailsCreationFails(arn, mappingDetailsRequest, Status.NOT_FOUND)
+      intercept[RuntimeException] {
+        await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
+      }
+    }
+    "creation of mapping fails with a conflict throw a RuntimeException" in {
+      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
+      mappingDetailsCreationFails(arn, mappingDetailsRequest, Status.CONFLICT)
       intercept[ConflictException] {
+        await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
+      }
+    }
+    "creation of mapping fails with a server error throw a RuntimeException" in {
+      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
+      mappingDetailsCreationFails(arn, mappingDetailsRequest, Status.INTERNAL_SERVER_ERROR)
+      intercept[RuntimeException] {
         await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
       }
     }
@@ -130,8 +167,9 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
     }
 
     "return None when there is some exception" in {
-      givenGetMappingDetailsFailsForReason(arn, 404)
+      givenGetMappingDetailsFailsForReason(arn, 500)
       await(connector.getMappingDetails(arn)) shouldBe None
     }
+
   }
 }
