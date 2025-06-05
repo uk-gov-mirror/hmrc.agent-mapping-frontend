@@ -17,7 +17,8 @@
 package uk.gov.hmrc.agentmappingfrontend.model
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, _}
+import play.api.data.Forms.mapping
+import play.api.data.Forms._
 
 case class GGTag(value: String)
 
@@ -25,11 +26,11 @@ object GGTagForm {
 
   val ggTagRegex = "^[a-zA-Z0-9]{4}$"
 
-  val form: Form[GGTag] =
-    Form[GGTag](
-      mapping(
-        "ggTag" -> text
-          .verifying("error.gg-tag.invalid", v => v.matches(ggTagRegex))
-      )(a => GGTag(a))(g => Some(g.value))
-    )
+  val form: Form[GGTag] = Form[GGTag](
+    mapping(
+      "ggTag" -> text
+        .verifying("error.gg-tag.invalid", v => v.matches(ggTagRegex))
+    )(a => GGTag(a))(g => Some(g.value))
+  )
+
 }

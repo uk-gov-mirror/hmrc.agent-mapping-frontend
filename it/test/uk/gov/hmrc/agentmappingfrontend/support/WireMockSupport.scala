@@ -16,12 +16,16 @@
 
 package uk.gov.hmrc.agentmappingfrontend.support
 
-import java.net.{ServerSocket, URL}
+import java.net.ServerSocket
+import java.net.URL
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.{configureFor, reset}
+import com.github.tomakehurst.wiremock.client.WireMock.configureFor
+import com.github.tomakehurst.wiremock.client.WireMock.reset
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.Suite
 import play.Logger
 
 import scala.annotation.tailrec
@@ -35,7 +39,9 @@ object WireMockSupport {
   private lazy val wireMockPort = Port.randomAvailable
 }
 
-trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
+trait WireMockSupport
+extends BeforeAndAfterAll
+with BeforeAndAfterEach {
   me: Suite =>
 
   val wireMockPort: Int = WireMockSupport.wireMockPort
@@ -63,10 +69,12 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
     super.beforeEach()
     reset()
   }
+
 }
 
 // This class was copy-pasted from the hmrctest project, which is now deprecated.
 object Port {
+
   val rnd = new scala.util.Random
   val range = 8000 to 39999
   val usedPorts = List[Int]()
@@ -95,12 +103,16 @@ object Port {
         socket = new ServerSocket(p)
         socket.setReuseAddress(true)
         true
-      } else {
+      }
+      else {
         false
       }
     catch {
       case _: Throwable => false
-    } finally
-      if (socket != null) socket.close()
+    }
+    finally
+      if (socket != null)
+        socket.close()
   }
+
 }

@@ -17,11 +17,14 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import play.api.http.Writeable
-import play.api.mvc.{Request, Result}
+import play.api.mvc.Request
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-class SignOutControllerISpec extends BaseControllerISpec {
+class SignOutControllerISpec
+extends BaseControllerISpec {
+
   private lazy val controller: SignedOutController = app.injector.instanceOf[SignedOutController]
 
   private val fakeRequest = FakeRequest()
@@ -89,7 +92,12 @@ class SignOutControllerISpec extends BaseControllerISpec {
       val result = await(controller.timedOut()(fakeRequest))
 
       status(result) shouldBe 403
-      checkHtmlResultContainsEscapedMsgs(result, "timed-out.header", "timed-out.p2.link", "timed-out.p2")
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "timed-out.header",
+        "timed-out.p2.link",
+        "timed-out.p2"
+      )
     }
   }
 

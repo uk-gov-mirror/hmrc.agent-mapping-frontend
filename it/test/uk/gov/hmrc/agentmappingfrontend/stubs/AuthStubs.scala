@@ -18,7 +18,8 @@ package uk.gov.hmrc.agentmappingfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import uk.gov.hmrc.agentmappingfrontend.support.{SampleUser, WireMockSupport}
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUser
+import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
 
 trait AuthStubs {
   me: WireMockSupport =>
@@ -30,49 +31,52 @@ trait AuthStubs {
       givenUnauthorisedWith(e.getClass.getSimpleName)
     }
 
-  def givenUserIsNotAuthenticated(): StubMapping =
-    givenUnauthorisedWith("MissingBearerToken")
+  def givenUserIsNotAuthenticated(): StubMapping = givenUnauthorisedWith("MissingBearerToken")
 
-  def givenAuthorisedFor(enrolmentKey: String): StubMapping =
-    givenAuthorisedFor(
-      "{}",
-      s"""{
-         |  "allEnrolments": [
-         |   { "key":"$enrolmentKey", "identifiers": [
-         |      { "key":"foo", "value": "foo" }
-         |    ]}
-         |  ],
-         |  "optionalCredentials": {
-         |    "providerId": "12345-credId",
-         |    "providerType": "GovernmentGateway"
-         |  }
-         |}""".stripMargin
-    )
+  def givenAuthorisedFor(enrolmentKey: String): StubMapping = givenAuthorisedFor(
+    "{}",
+    s"""{
+       |  "allEnrolments": [
+       |   { "key":"$enrolmentKey", "identifiers": [
+       |      { "key":"foo", "value": "foo" }
+       |    ]}
+       |  ],
+       |  "optionalCredentials": {
+       |    "providerId": "12345-credId",
+       |    "providerType": "GovernmentGateway"
+       |  }
+       |}""".stripMargin
+  )
 
-  def givenUnauthorisedWith(mdtpDetail: String): StubMapping =
-    stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .willReturn(
-          aResponse()
-            .withStatus(401)
-            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")
-        )
-    )
+  def givenUnauthorisedWith(mdtpDetail: String): StubMapping = stubFor(
+    post(urlEqualTo("/auth/authorise"))
+      .willReturn(
+        aResponse()
+          .withStatus(401)
+          .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")
+      )
+  )
 
-  def givenAuthorisationFailsWith5xx(): StubMapping =
-    stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .willReturn(
-          aResponse()
-            .withStatus(500)
-        )
-    )
+  def givenAuthorisationFailsWith5xx(): StubMapping = stubFor(
+    post(urlEqualTo("/auth/authorise"))
+      .willReturn(
+        aResponse()
+          .withStatus(500)
+      )
+  )
 
-  def givenAuthorisedFor(payload: String, responseBody: String): StubMapping = {
+  def givenAuthorisedFor(
+    payload: String,
+    responseBody: String
+  ): StubMapping = {
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
-        .withRequestBody(equalToJson(payload, true, true))
+        .withRequestBody(equalToJson(
+          payload,
+          true,
+          true
+        ))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -92,27 +96,24 @@ trait AuthStubs {
     )
   }
 
-  def givenuserHasUnsupportedAffinityGroup(): StubMapping =
-    stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .willReturn(
-          aResponse()
-            .withStatus(401)
-            .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")
-        )
-    )
+  def givenuserHasUnsupportedAffinityGroup(): StubMapping = stubFor(
+    post(urlEqualTo("/auth/authorise"))
+      .willReturn(
+        aResponse()
+          .withStatus(401)
+          .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAffinityGroup\"")
+      )
+  )
 
-  def givenUserHasUnsupportedAuthProvider(): StubMapping =
-    stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .willReturn(
-          aResponse()
-            .withStatus(401)
-            .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAuthProvider\"")
-        )
-    )
+  def givenUserHasUnsupportedAuthProvider(): StubMapping = stubFor(
+    post(urlEqualTo("/auth/authorise"))
+      .willReturn(
+        aResponse()
+          .withStatus(401)
+          .withHeader("WWW-Authenticate", "MDTP detail=\"UnsupportedAuthProvider\"")
+      )
+  )
 
-  def verifyAuthoriseAttempt(): Unit =
-    verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
+  def verifyAuthoriseAttempt(): Unit = verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
 
 }

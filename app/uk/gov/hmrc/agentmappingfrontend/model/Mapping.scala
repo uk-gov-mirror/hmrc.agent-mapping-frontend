@@ -25,7 +25,10 @@ object SaMappings {
   implicit val formats: Format[SaMappings] = format[SaMappings]
 }
 
-case class SaMapping(arn: String, saAgentReference: String)
+case class SaMapping(
+  arn: String,
+  saAgentReference: String
+)
 
 object SaMapping {
   implicit val formats: Format[SaMapping] = format[SaMapping]
@@ -37,7 +40,10 @@ object VatMappings {
   implicit val formats: Format[VatMappings] = format[VatMappings]
 }
 
-case class VatMapping(arn: String, vrn: String)
+case class VatMapping(
+  arn: String,
+  vrn: String
+)
 
 object VatMapping {
   implicit val formats: Format[VatMapping] = format[VatMapping]

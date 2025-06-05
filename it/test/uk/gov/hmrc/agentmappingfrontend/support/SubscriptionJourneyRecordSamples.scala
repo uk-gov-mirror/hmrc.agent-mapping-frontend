@@ -16,14 +16,26 @@
 
 package uk.gov.hmrc.agentmappingfrontend.support
 
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, BusinessDetails, BusinessType, Postcode, SubscriptionJourneyRecord, UserMapping}
+import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
+import uk.gov.hmrc.agentmappingfrontend.model.BusinessDetails
+import uk.gov.hmrc.agentmappingfrontend.model.BusinessType
+import uk.gov.hmrc.agentmappingfrontend.model.Postcode
+import uk.gov.hmrc.agentmappingfrontend.model.SubscriptionJourneyRecord
+import uk.gov.hmrc.agentmappingfrontend.model.UserMapping
 import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 import uk.gov.hmrc.domain.AgentCode
 
 trait SubscriptionJourneyRecordSamples {
 
-  val businessDetails =
-    BusinessDetails(BusinessType.LimitedCompany, Utr("2000000000"), Postcode("AA11AA"), None, None, None, None)
+  val businessDetails = BusinessDetails(
+    BusinessType.LimitedCompany,
+    Utr("2000000000"),
+    Postcode("AA11AA"),
+    None,
+    None,
+    None,
+    None
+  )
 
   def sjrBuilder(
     authProviderId: String,
@@ -68,4 +80,5 @@ trait SubscriptionJourneyRecordSamples {
       )
     )
   )
+
 }

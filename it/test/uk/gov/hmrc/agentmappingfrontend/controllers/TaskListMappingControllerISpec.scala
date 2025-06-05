@@ -19,31 +19,39 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import com.google.inject.AbstractModule
 import play.api.Application
 import play.api.http.Writeable
-import play.api.mvc.{Request, Result}
+import play.api.mvc.Request
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.TaskListMappingRepository
-import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs, MappingStubs}
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.{agentNotEnrolled, mtdAsAgent, vatEnrolledAgent}
+import uk.gov.hmrc.agentmappingfrontend.stubs.AgentSubscriptionStubs
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.agentNotEnrolled
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.mtdAsAgent
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.vatEnrolledAgent
 import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.domain.AgentCode
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.test.MongoSupport
 
 class TaskListMappingControllerISpec
-    extends BaseControllerISpec with AuthStubs with AgentSubscriptionStubs with SubscriptionJourneyRecordSamples
-    with MongoSupport {
+extends BaseControllerISpec
+with AuthStubs
+with AgentSubscriptionStubs
+with SubscriptionJourneyRecordSamples
+with MongoSupport {
 
   val repo = app.injector.instanceOf[TaskListMappingRepository]
 
   override def additionalConfig: Map[String, String] = Map("mongodb.uri" -> mongoUri)
 
-  override def moduleWithOverrides: AbstractModule = new AbstractModule {
-    override def configure(): Unit =
-      bind(classOf[MongoComponent]).toInstance(mongoComponent)
-  }
+  override def moduleWithOverrides: AbstractModule =
+    new AbstractModule {
+      override def configure(): Unit = bind(classOf[MongoComponent]).toInstance(mongoComponent)
+    }
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -243,7 +251,13 @@ class TaskListMappingControllerISpec
       val request = fakeRequest(GET, s"/agent-mapping/task-list/tag-gg/?id=$id")
       val result = callEndpointWith(request)
 
-      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "gg-tag.p1", "gg-tag.form.hint", "gg-tag.xs")
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "gg-tag.title",
+        "gg-tag.p1",
+        "gg-tag.form.hint",
+        "gg-tag.xs"
+      )
     }
   }
 
@@ -258,18 +272,19 @@ class TaskListMappingControllerISpec
       givenUpdateSubscriptionJourneyRecordSucceeds(
         sjrWithNoUserMappings
           .copy(
-            userMappings = UserMapping(
-              AuthProviderId("12345-credId"),
-              agentCode = Some(AgentCode("HZ1234")),
-              count = 12,
-              legacyEnrolments = Seq(AgentEnrolment(AgentRefNo, IdentifierValue("HZ1234"))),
-              ggTag = "1234"
-            ) :: sjrWithNoUserMappings.userMappings
+            userMappings =
+              UserMapping(
+                AuthProviderId("12345-credId"),
+                agentCode = Some(AgentCode("HZ1234")),
+                count = 12,
+                legacyEnrolments = Seq(AgentEnrolment(AgentRefNo, IdentifierValue("HZ1234"))),
+                ggTag = "1234"
+              ) :: sjrWithNoUserMappings.userMappings
           )
       )
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag"  -> "1234",
+        "ggTag" -> "1234",
         "submit" -> "continue"
       )
       val result = callEndpointWith(request)
@@ -284,13 +299,17 @@ class TaskListMappingControllerISpec
       val id = await(repo.create("continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag"  -> "ab!7",
+        "ggTag" -> "ab!7",
         "submit" -> "continue"
       )
       val result = callEndpointWith(request)
 
       status(result) shouldBe 200
-      checkHtmlResultContainsEscapedMsgs(result, "gg-tag.title", "error.gg-tag.invalid")
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "gg-tag.title",
+        "error.gg-tag.invalid"
+      )
     }
 
     "throw a runtime exception when there is no journey record found for continueId" in {
@@ -303,18 +322,19 @@ class TaskListMappingControllerISpec
       givenUpdateSubscriptionJourneyRecordFails(
         sjrWithNoUserMappings
           .copy(
-            userMappings = UserMapping(
-              AuthProviderId("12345-credId"),
-              agentCode = Some(AgentCode("HZ1234")),
-              count = 12,
-              legacyEnrolments = Seq(AgentEnrolment(AgentRefNo, IdentifierValue("HZ1234"))),
-              ggTag = "1234"
-            ) :: sjrWithNoUserMappings.userMappings
+            userMappings =
+              UserMapping(
+                AuthProviderId("12345-credId"),
+                agentCode = Some(AgentCode("HZ1234")),
+                count = 12,
+                legacyEnrolments = Seq(AgentEnrolment(AgentRefNo, IdentifierValue("HZ1234"))),
+                ggTag = "1234"
+              ) :: sjrWithNoUserMappings.userMappings
           )
       )
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag"  -> "1234",
+        "ggTag" -> "1234",
         "submit" -> "continue"
       )
       intercept[RuntimeException] {
@@ -328,7 +348,7 @@ class TaskListMappingControllerISpec
       givenSubscriptionJourneyRecordNotFoundForContinueId("continue-id")
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=foo").withFormUrlEncodedBody(
-        "ggTag"  -> "1234",
+        "ggTag" -> "1234",
         "submit" -> "continue"
       )
 
@@ -346,7 +366,7 @@ class TaskListMappingControllerISpec
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
-        "ggTag"  -> "1234",
+        "ggTag" -> "1234",
         "submit" -> "continue"
       )
 
@@ -408,11 +428,10 @@ class TaskListMappingControllerISpec
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
-      val request =
-        fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-          "additional-clients" -> "no",
-          "submit"             -> "continue"
-        )
+      val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
+        "additional-clients" -> "no",
+        "submit" -> "continue"
+      )
 
       val result = callEndpointWith(request)
 
@@ -428,11 +447,10 @@ class TaskListMappingControllerISpec
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
-      val request =
-        fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-          "additional-clients" -> "yes",
-          "submit"             -> "continue"
-        )
+      val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
+        "additional-clients" -> "yes",
+        "submit" -> "continue"
+      )
 
       val result = callEndpointWith(request)
 
@@ -448,11 +466,10 @@ class TaskListMappingControllerISpec
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
-      val request =
-        fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-          "additional-clients" -> "yes",
-          "submit"             -> "save"
-        )
+      val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
+        "additional-clients" -> "yes",
+        "submit" -> "save"
+      )
 
       val result = callEndpointWith(request)
 
@@ -470,11 +487,10 @@ class TaskListMappingControllerISpec
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
-      val request =
-        fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-          "additional-clients" -> "no",
-          "submit"             -> "save"
-        )
+      val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
+        "additional-clients" -> "no",
+        "submit" -> "save"
+      )
 
       val result = callEndpointWith(request)
 
@@ -492,11 +508,10 @@ class TaskListMappingControllerISpec
       val record = await(repo.findRecord(id)).get
       await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
-      val request =
-        fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
-          "additional-clients" -> "foo",
-          "submit"             -> "save"
-        )
+      val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
+        "additional-clients" -> "foo",
+        "submit" -> "save"
+      )
 
       val result = callEndpointWith(request)
       status(result) shouldBe 200
@@ -598,7 +613,11 @@ class TaskListMappingControllerISpec
 
       status(result) shouldBe 200
 
-      checkHtmlResultContainsEscapedMsgs(result, "incorrectAccount.h1", "incorrectAccount.p1")
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "incorrectAccount.h1",
+        "incorrectAccount.p1"
+      )
 
     }
   }
@@ -611,7 +630,11 @@ class TaskListMappingControllerISpec
 
       status(result) shouldBe 200
 
-      checkHtmlResultContainsEscapedMsgs(result, "alreadyMapped.h1", "alreadyMapped.p1")
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "alreadyMapped.h1",
+        "alreadyMapped.p1"
+      )
     }
   }
 
@@ -623,7 +646,13 @@ class TaskListMappingControllerISpec
 
       status(result) shouldBe 200
 
-      checkHtmlResultContainsEscapedMsgs(result, "notEnrolled.h1", "notEnrolled.p1", "notEnrolled.p2")
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "notEnrolled.h1",
+        "notEnrolled.p1",
+        "notEnrolled.p2"
+      )
     }
   }
+
 }

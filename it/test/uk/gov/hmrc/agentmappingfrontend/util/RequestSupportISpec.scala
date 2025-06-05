@@ -26,7 +26,8 @@ import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 
-class RequestSupportISpec extends BaseControllerISpec {
+class RequestSupportISpec
+extends BaseControllerISpec {
 
   "RequestSupport.hc" should {
     "produce a HeaderCarrier from a RequestHeader" in {

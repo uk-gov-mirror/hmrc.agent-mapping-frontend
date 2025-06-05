@@ -22,7 +22,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, MappingDetails, MappingDetailsRepositoryRecord, MappingDetailsRequest}
+import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
+import uk.gov.hmrc.agentmappingfrontend.model.MappingDetails
+import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRepositoryRecord
+import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRequest
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -31,7 +34,10 @@ import uk.gov.hmrc.http.ConflictException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
+class MappingConnectorISpec
+extends BaseControllerISpec
+with MetricTestSupport {
+
   private val arn = Arn("ARN0001")
 
   private def connector = app.injector.instanceOf[MappingConnector]
@@ -123,27 +129,55 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
 
   "createOrUpdateMappingDetails" should {
     "create mapping details successfully" in {
-      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
+      val mappingDetailsRequest = MappingDetailsRequest(
+        AuthProviderId("cred-1234"),
+        "1234",
+        5
+      )
       mappingDetailsAreCreated(arn, mappingDetailsRequest)
       await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest)) shouldBe (())
     }
     "creation of mapping fails with a not found throwing a RuntimeException" in {
-      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
-      mappingDetailsCreationFails(arn, mappingDetailsRequest, Status.NOT_FOUND)
+      val mappingDetailsRequest = MappingDetailsRequest(
+        AuthProviderId("cred-1234"),
+        "1234",
+        5
+      )
+      mappingDetailsCreationFails(
+        arn,
+        mappingDetailsRequest,
+        Status.NOT_FOUND
+      )
       intercept[RuntimeException] {
         await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
       }
     }
     "creation of mapping fails with a conflict throw a RuntimeException" in {
-      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
-      mappingDetailsCreationFails(arn, mappingDetailsRequest, Status.CONFLICT)
+      val mappingDetailsRequest = MappingDetailsRequest(
+        AuthProviderId("cred-1234"),
+        "1234",
+        5
+      )
+      mappingDetailsCreationFails(
+        arn,
+        mappingDetailsRequest,
+        Status.CONFLICT
+      )
       intercept[ConflictException] {
         await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
       }
     }
     "creation of mapping fails with a server error throw a RuntimeException" in {
-      val mappingDetailsRequest = MappingDetailsRequest(AuthProviderId("cred-1234"), "1234", 5)
-      mappingDetailsCreationFails(arn, mappingDetailsRequest, Status.INTERNAL_SERVER_ERROR)
+      val mappingDetailsRequest = MappingDetailsRequest(
+        AuthProviderId("cred-1234"),
+        "1234",
+        5
+      )
+      mappingDetailsCreationFails(
+        arn,
+        mappingDetailsRequest,
+        Status.INTERNAL_SERVER_ERROR
+      )
       intercept[RuntimeException] {
         await(connector.createOrUpdateMappingDetails(arn, mappingDetailsRequest))
       }
@@ -154,7 +188,12 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
     val dateTime = LocalDateTime.parse("2019-01-01 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     val mappingDetailsRepositoryRecord = MappingDetailsRepositoryRecord(
       Arn("TARN0000001"),
-      Seq(MappingDetails(AuthProviderId("cred-1234"), "1234", 5, dateTime))
+      Seq(MappingDetails(
+        AuthProviderId("cred-1234"),
+        "1234",
+        5,
+        dateTime
+      ))
     )
     "retrieve the mapping details" in {
       givenMappingDetailsExistFor(arn, mappingDetailsRepositoryRecord)
@@ -172,4 +211,5 @@ class MappingConnectorISpec extends BaseControllerISpec with MetricTestSupport {
     }
 
   }
+
 }

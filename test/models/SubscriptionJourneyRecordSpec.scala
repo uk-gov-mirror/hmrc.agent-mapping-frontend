@@ -23,7 +23,8 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 
 import java.time.LocalDate
 
-class SubscriptionJourneyRecordSpec extends UnitSpec {
+class SubscriptionJourneyRecordSpec
+extends UnitSpec {
   // here mostly just to satisfy the coverage checks...
   "SubscriptionJourneyRecord" should {
     "serialize and deserialise correctly" in {
@@ -39,7 +40,14 @@ class SubscriptionJourneyRecordSpec extends UnitSpec {
               Some("taxpayer"),
               false,
               false,
-              BusinessAddress("1 Any st", None, None, None, Some("W1N2 2TD"), "GB"),
+              BusinessAddress(
+                "1 Any st",
+                None,
+                None,
+                None,
+                Some("W1N2 2TD"),
+                "GB"
+              ),
               Some("email@email.com"),
               Some("01273111111")
             )
@@ -50,7 +58,18 @@ class SubscriptionJourneyRecordSpec extends UnitSpec {
           None
         ),
         amlsData = Some(
-          AmlsData(true, Some(false), Some(AmlsDetails("body", Some("foo"), None, None, None, Some(LocalDate.now()))))
+          AmlsData(
+            true,
+            Some(false),
+            Some(AmlsDetails(
+              "body",
+              Some("foo"),
+              None,
+              None,
+              None,
+              Some(LocalDate.now())
+            ))
+          )
         )
       )
       Json.toJson(sjr).as[SubscriptionJourneyRecord] shouldBe sjr

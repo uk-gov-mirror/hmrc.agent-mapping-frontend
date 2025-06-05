@@ -19,52 +19,66 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import org.apache.pekko.stream.Materializer
 import com.google.inject.AbstractModule
 import org.jsoup.Jsoup
-import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.matchers.MatchResult
+import org.scalatest.matchers.Matcher
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.i18n.{Lang, Messages, MessagesApi}
+import play.api.i18n.Lang
+import play.api.i18n.Messages
+import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.GET
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.agentmappingfrontend.support.{EndpointBehaviours, UnitSpec, WireMockSupport}
+import uk.gov.hmrc.agentmappingfrontend.support.EndpointBehaviours
+import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
+import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
 import uk.gov.hmrc.http.SessionKeys
 
 abstract class BaseControllerISpec
-    extends UnitSpec with GuiceOneAppPerSuite with WireMockSupport with EndpointBehaviours {
+extends UnitSpec
+with GuiceOneAppPerSuite
+with WireMockSupport
+with EndpointBehaviours {
 
   override implicit lazy val app: Application = appBuilder.build()
 
   def additionalConfig: Map[String, String] = Map.empty
   def moduleWithOverrides: AbstractModule = new AbstractModule {}
 
-  protected def appBuilder: GuiceApplicationBuilder =
-    new GuiceApplicationBuilder()
-      .configure(
-        "microservice.services.auth.port"                       -> wireMockPort,
-        "microservice.services.agent-mapping.port"              -> wireMockPort,
-        "microservice.services.agent-subscription.port"         -> wireMockPort,
-        "microservice.services.agent-client-authorisation.port" -> wireMockPort,
-        "application.router"                                    -> "testOnlyDoNotUseInAppConf.Routes",
-        "clientCount.maxRecords"                                -> 15
-      )
-      .configure(additionalConfig)
-      .overrides(moduleWithOverrides)
+  protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()
+    .configure(
+      "microservice.services.auth.port" -> wireMockPort,
+      "microservice.services.agent-mapping.port" -> wireMockPort,
+      "microservice.services.agent-subscription.port" -> wireMockPort,
+      "microservice.services.agent-client-authorisation.port" -> wireMockPort,
+      "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
+      "clientCount.maxRecords" -> 15
+    )
+    .configure(additionalConfig)
+    .overrides(moduleWithOverrides)
 
   protected implicit val materializer: Materializer = app.materializer
 
-  protected def fakeRequest(endpointMethod: String = GET, endpointPath: String = "") =
-    FakeRequest(endpointMethod, endpointPath)
-      .withSession(SessionKeys.authToken -> "Bearer XYZ", "OriginForMapping" -> "/invitations/foo")
+  protected def fakeRequest(
+    endpointMethod: String = GET,
+    endpointPath: String = ""
+  ) = FakeRequest(endpointMethod, endpointPath)
+    .withSession(SessionKeys.authToken -> "Bearer XYZ", "OriginForMapping" -> "/invitations/foo")
 
   private val messagesApi = app.injector.instanceOf[MessagesApi]
   private implicit val messages: Messages = messagesApi.preferred(Seq.empty[Lang])
   protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
-  protected def htmlEscapedMessage(key: String, args: Any*): String =
-    HtmlFormat.escape(Messages(key, args: _*)).toString
+  protected def htmlEscapedMessage(
+    key: String,
+    args: Any*
+  ): String = HtmlFormat.escape(Messages(key, args: _*)).toString
 
-  protected def checkHtmlResultContainsEscapedMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+  protected def checkHtmlResultContainsEscapedMsgs(
+    result: Result,
+    expectedMessageKeys: String*
+  ): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
 
@@ -80,7 +94,10 @@ abstract class BaseControllerISpec
     }
   }
 
-  protected def checkHtmlResultContainsMsgsWithArgs(result: Result, expectedMessageKeys: Map[String, String]): Unit = {
+  protected def checkHtmlResultContainsMsgsWithArgs(
+    result: Result,
+    expectedMessageKeys: Map[String, String]
+  ): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
 
@@ -97,7 +114,10 @@ abstract class BaseControllerISpec
     }
   }
 
-  protected def checkHtmlResultContainsMsgs(result: Result, expectedMessageKeys: String*): Unit = {
+  protected def checkHtmlResultContainsMsgs(
+    result: Result,
+    expectedMessageKeys: String*
+  ): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
 
@@ -132,8 +152,16 @@ abstract class BaseControllerISpec
 
         MatchResult(
           strsMissing.isEmpty,
-          s"Expected substrings are missing in the response: ${strsMissing.mkString("\"", "\", \"", "\"")}",
-          s"Expected substrings are present in the response : ${strsPresent.mkString("\"", "\", \"", "\"")}"
+          s"Expected substrings are missing in the response: ${strsMissing.mkString(
+              "\"",
+              "\", \"",
+              "\""
+            )}",
+          s"Expected substrings are present in the response : ${strsPresent.mkString(
+              "\"",
+              "\", \"",
+              "\""
+            )}"
         )
       }
     }
@@ -156,13 +184,14 @@ abstract class BaseControllerISpec
 
         val foundElement = doc.getElementById(expectedElementId)
 
-        val isAsExpected = Option(foundElement) match {
-          case None => false
-          case Some(elAmls) =>
-            val isExpectedTag = elAmls.tagName() == expectedTagName
-            val hasExpectedMsg = elAmls.text() == htmlEscapedMessage(expectedMessageKey)
-            isExpectedTag && hasExpectedMsg
-        }
+        val isAsExpected =
+          Option(foundElement) match {
+            case None => false
+            case Some(elAmls) =>
+              val isExpectedTag = elAmls.tagName() == expectedTagName
+              val hasExpectedMsg = elAmls.text() == htmlEscapedMessage(expectedMessageKey)
+              isExpectedTag && hasExpectedMsg
+          }
 
         MatchResult(
           isAsExpected,
@@ -172,16 +201,20 @@ abstract class BaseControllerISpec
       }
     }
 
-  protected def containLink(expectedMessageKey: String, expectedHref: String): Matcher[Result] =
+  protected def containLink(
+    expectedMessageKey: String,
+    expectedHref: String
+  ): Matcher[Result] =
     new Matcher[Result] {
       override def apply(result: Result): MatchResult = {
         val doc = Jsoup.parse(bodyOf(result))
         checkMessageIsDefined(expectedMessageKey)
         val foundElement = doc.select(s"a[href=$expectedHref]").first()
-        val wasFoundWithCorrectMessage = Option(foundElement) match {
-          case None          => false
-          case Some(element) => element.text() == htmlEscapedMessage(expectedMessageKey)
-        }
+        val wasFoundWithCorrectMessage =
+          Option(foundElement) match {
+            case None => false
+            case Some(element) => element.text() == htmlEscapedMessage(expectedMessageKey)
+          }
         MatchResult(
           wasFoundWithCorrectMessage,
           s"""Response does not contain a link to "$expectedHref" with content for message key "$expectedMessageKey" """,
@@ -189,4 +222,5 @@ abstract class BaseControllerISpec
         )
       }
     }
+
 }

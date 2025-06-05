@@ -17,7 +17,10 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.Inject
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc.Action
+import play.api.mvc.AnyContent
+import play.api.mvc.MessagesControllerComponents
+import play.api.mvc.Result
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.views.html.timed_out
@@ -26,14 +29,17 @@ import views.html.helper.urlEncode
 
 import scala.concurrent.Future
 
-class SignedOutController @Inject() (timedOutTemplate: timed_out, cc: MessagesControllerComponents)(implicit
+class SignedOutController @Inject() (
+  timedOutTemplate: timed_out,
+  cc: MessagesControllerComponents
+)(implicit
   appConfig: AppConfig
-) extends FrontendController(cc) {
+)
+extends FrontendController(cc) {
 
   def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
     val url = s"${appConfig.signOutRedirectUrl}?id=$id"
-    val signOutAndRedirectUrl: String =
-      s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(url)}"
+    val signOutAndRedirectUrl: String = s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(url)}"
 
     Redirect(signOutAndRedirectUrl)
   }
@@ -43,8 +49,7 @@ class SignedOutController @Inject() (timedOutTemplate: timed_out, cc: MessagesCo
     Redirect(constructRedirectUrl(url))
   }
 
-  private def constructRedirectUrl(continue: String): String =
-    s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(continue)}"
+  private def constructRedirectUrl(continue: String): String = s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(continue)}"
 
   def reLogForMappingStart: Action[AnyContent] = Action {
     Redirect(appConfig.signInAndContinue).withNewSession
@@ -56,8 +61,7 @@ class SignedOutController @Inject() (timedOutTemplate: timed_out, cc: MessagesCo
   }
 
   def returnAfterMapping(): Action[AnyContent] = Action.async {
-    val url =
-      s"${appConfig.agentSubscriptionFrontendBaseUrl}/return-after-mapping"
+    val url = s"${appConfig.agentSubscriptionFrontendBaseUrl}/return-after-mapping"
     Future.successful(Redirect(url))
   }
 
@@ -65,10 +69,10 @@ class SignedOutController @Inject() (timedOutTemplate: timed_out, cc: MessagesCo
     startNewSession
   }
 
-  private def startNewSession: Result =
-    Redirect(routes.MappingController.root).withNewSession
+  private def startNewSession: Result = Redirect(routes.MappingController.root).withNewSession
 
   def timedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(timedOutTemplate())
   }
+
 }

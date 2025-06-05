@@ -23,21 +23,29 @@ import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
 import uk.gov.hmrc.agentmappingfrontend.stubs.AgentSubscriptionStubs
-import uk.gov.hmrc.agentmappingfrontend.support.{MetricTestSupport, SubscriptionJourneyRecordSamples}
+import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
+import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class AgentSubscriptionConnectorISpec
-    extends BaseControllerISpec with MetricTestSupport with AgentSubscriptionStubs
-    with SubscriptionJourneyRecordSamples {
+extends BaseControllerISpec
+with MetricTestSupport
+with AgentSubscriptionStubs
+with SubscriptionJourneyRecordSamples {
 
-  private lazy implicit val metrics: Metrics = app.injector.instanceOf[Metrics]
+  private implicit lazy val metrics: Metrics = app.injector.instanceOf[Metrics]
   private lazy val http = app.injector.instanceOf[HttpClientV2]
   private lazy val appConfig = app.injector.instanceOf[AppConfig]
 
-  private lazy val connector: AgentSubscriptionConnector = new AgentSubscriptionConnector(http, metrics, appConfig)
+  private lazy val connector: AgentSubscriptionConnector =
+    new AgentSubscriptionConnector(
+      http,
+      metrics,
+      appConfig
+    )
   private implicit val rh: RequestHeader = FakeRequest()
 
   private val authProviderId = AuthProviderId("12345-credId")

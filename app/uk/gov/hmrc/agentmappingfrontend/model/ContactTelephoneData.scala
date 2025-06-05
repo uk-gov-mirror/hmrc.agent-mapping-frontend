@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
+import play.api.libs.json.OFormat
 
-case class ContactTelephoneData(useBusinessTelephone: Boolean, telephoneNumber: Option[String])
+case class ContactTelephoneData(
+  useBusinessTelephone: Boolean,
+  telephoneNumber: Option[String]
+)
 
 object ContactTelephoneData {
 

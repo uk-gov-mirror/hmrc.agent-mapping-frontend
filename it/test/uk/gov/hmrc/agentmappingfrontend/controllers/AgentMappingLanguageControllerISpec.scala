@@ -22,11 +22,12 @@ import play.api.test.Helpers
 
 import scala.concurrent.duration._
 
-class AgentMappingLanguageControllerISpec extends BaseControllerISpec {
+class AgentMappingLanguageControllerISpec
+extends BaseControllerISpec {
 
   implicit val timeout: FiniteDuration = 2.second
 
-  lazy private val controller: AgentMappingLanguageController = app.injector.instanceOf[AgentMappingLanguageController]
+  private lazy val controller: AgentMappingLanguageController = app.injector.instanceOf[AgentMappingLanguageController]
 
   "GET /language/:lang" should {
 

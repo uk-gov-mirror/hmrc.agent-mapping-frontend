@@ -17,16 +17,16 @@
 package uk.gov.hmrc.agentmappingfrontend.model
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, _}
+import play.api.data.Forms.mapping
+import play.api.data.Forms._
 
 object ExistingClientRelationshipsForm {
 
-  val form: Form[RadioInputAnswer] =
-    Form[RadioInputAnswer](
-      mapping(
-        "additional-clients" -> optional(text)
-          .verifying("error.existingClientRelationships.choice.invalid", a => a.contains("yes") || a.contains("no"))
-      )(a => RadioInputAnswer.apply(a.getOrElse("")))(a => Some(RadioInputAnswer.unapply(a)))
-    )
+  val form: Form[RadioInputAnswer] = Form[RadioInputAnswer](
+    mapping(
+      "additional-clients" -> optional(text)
+        .verifying("error.existingClientRelationships.choice.invalid", a => a.contains("yes") || a.contains("no"))
+    )(a => RadioInputAnswer.apply(a.getOrElse("")))(a => Some(RadioInputAnswer.unapply(a)))
+  )
 
 }

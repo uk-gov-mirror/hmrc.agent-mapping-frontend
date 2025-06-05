@@ -19,22 +19,29 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.data._
-import play.api.{Configuration, Environment, Logging}
+import play.api.Configuration
+import play.api.Environment
+import play.api.Logging
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.connectors.{AgentSubscriptionConnector, MappingConnector}
-import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
+import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
+import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
+import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.No
+import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.Yes
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-import uk.gov.hmrc.agentmappingfrontend.repository.{ClientCountAndGGTag, MappingArnRepository}
+import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.ConflictException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 @Singleton
 class MappingController @Inject() (
@@ -55,32 +62,48 @@ class MappingController @Inject() (
   incorrectAccountTemplate: incorrect_account,
   ggTagTemplate: gg_tag,
   mcc: MessagesControllerComponents
-)(implicit val ec: ExecutionContext, val appConfig: AppConfig)
-    extends FrontendController(mcc) with I18nSupport with AuthActions with Logging {
+)(implicit
+  val ec: ExecutionContext,
+  val appConfig: AppConfig
+)
+extends FrontendController(mcc)
+with I18nSupport
+with AuthActions
+with Logging {
 
   val root: Action[AnyContent] = Action {
     Redirect(routes.MappingController.start)
   }
 
-  private def getBackLinkForStart(implicit request: Request[_]): String =
-    request.session
-      .get("OriginForMapping") // set in AIF (agent journey & fastTrack) and the dashboard
-      .getOrElse(appConfig.agentServicesFrontendBaseUrl)
+  private def getBackLinkForStart(implicit request: Request[_]): String = request.session
+    .get("OriginForMapping") // set in AIF (agent journey & fastTrack) and the dashboard
+    .getOrElse(appConfig.agentServicesFrontendBaseUrl)
 
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
       case Some(arn) =>
-        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] = for {
-          mdOpt   <- mappingConnector.getMappingDetails(arn)
-          details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
-        } yield ClientCountAndGGTag(details.count, details.ggTag)
+        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] =
+          for {
+            mdOpt <- mappingConnector.getMappingDetails(arn)
+            details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
+          } yield ClientCountAndGGTag(details.count, details.ggTag)
 
         clientCountsAndGGTags.flatMap { countsAndTags =>
           val activeForm: Form[RadioInputAnswer] =
-            if (countsAndTags.isEmpty) StartMappingForm.form else ExistingClientRelationshipsForm.form
+            if (countsAndTags.isEmpty)
+              StartMappingForm.form
+            else
+              ExistingClientRelationshipsForm.form
           repository
             .create(arn)
-            .map(id => Ok(startTemplate(id, countsAndTags, getBackLinkForStart, activeForm)))
+            .map(id =>
+              Ok(startTemplate(
+                id,
+                countsAndTags,
+                getBackLinkForStart,
+                activeForm
+              ))
+            )
         }
 
       case None => Future.successful(Redirect(routes.MappingController.needAgentServicesAccount))
@@ -90,14 +113,18 @@ class MappingController @Inject() (
   def submitStart(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
       case Some(arn) =>
-        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] = for {
-          mdOpt   <- mappingConnector.getMappingDetails(arn)
-          details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
-        } yield ClientCountAndGGTag(details.count, details.ggTag)
+        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] =
+          for {
+            mdOpt <- mappingConnector.getMappingDetails(arn)
+            details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
+          } yield ClientCountAndGGTag(details.count, details.ggTag)
 
         clientCountsAndGGTags.flatMap { countsAndTags =>
           val activeForm: Form[RadioInputAnswer] =
-            if (countsAndTags.isEmpty) StartMappingForm.form else ExistingClientRelationshipsForm.form
+            if (countsAndTags.isEmpty)
+              StartMappingForm.form
+            else
+              ExistingClientRelationshipsForm.form
           activeForm
             .bindFromRequest()
             .fold(
@@ -111,10 +138,8 @@ class MappingController @Inject() (
                   )
                 ),
               {
-                case Yes =>
-                  Redirect(routes.SignedOutController.signOutAndRedirect(id))
-                case No =>
-                  Redirect(appConfig.agentServicesFrontendBaseUrl)
+                case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))
+                case No => Redirect(appConfig.agentServicesFrontendBaseUrl)
               }
             )
         }
@@ -126,7 +151,7 @@ class MappingController @Inject() (
   def needAgentServicesAccount: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
       case Some(_) => Future.successful(Redirect(routes.MappingController.start))
-      case None    => Future.successful(Ok(signInTemplate()))
+      case None => Future.successful(Ok(signInTemplate()))
     }
   }
 
@@ -136,9 +161,12 @@ class MappingController @Inject() (
         case Some(record) =>
           for {
             clientCount <- mappingConnector.getClientCount
-            newRef <-
-              repository
-                .create(record.arn, currentCount = clientCount, clientCountAndGGTags = record.clientCountAndGGTags)
+            newRef <- repository
+              .create(
+                record.arn,
+                currentCount = clientCount,
+                clientCountAndGGTags = record.clientCountAndGGTags
+              )
             _ <- repository.delete(id)
           } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
 
@@ -152,8 +180,7 @@ class MappingController @Inject() (
   def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
-        case Some(record) =>
-          Ok(clientRelationShipsFoundTemplate(record.currentCount, id))
+        case Some(record) => Ok(clientRelationShipsFoundTemplate(record.currentCount, id))
 
         case None => Ok(pageNotFoundTemplate())
       }
@@ -178,16 +205,18 @@ class MappingController @Inject() (
                 if (!record.alreadyMapped) {
                   mappingConnector.createMapping(record.arn).flatMap {
                     case CREATED =>
-                      val clientCountAndGGTags =
-                        ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags
-                      val newRecord =
-                        record.copy(clientCountAndGGTags = clientCountAndGGTags, currentGGTag = ggTag.value)
+                      val clientCountAndGGTags = ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags
+                      val newRecord = record.copy(clientCountAndGGTags = clientCountAndGGTags, currentGGTag = ggTag.value)
                       for {
                         _ <- mappingConnector
-                               .createOrUpdateMappingDetails(
-                                 record.arn,
-                                 MappingDetailsRequest(AuthProviderId(providerId), ggTag.value, record.currentCount)
-                               )
+                          .createOrUpdateMappingDetails(
+                            record.arn,
+                            MappingDetailsRequest(
+                              AuthProviderId(providerId),
+                              ggTag.value,
+                              record.currentCount
+                            )
+                          )
                         _ <- repository.updateMappingCompleteStatus(id)
                         _ <- repository.upsert(newRecord, id)
                       } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
@@ -196,13 +225,13 @@ class MappingController @Inject() (
                       logger.warn(s"unexpected response from server $e")
                       InternalServerError
                   }
-                } else Redirect(routes.MappingController.showExistingClientRelationships(id))
+                }
+                else
+                  Redirect(routes.MappingController.showExistingClientRelationships(id))
             )
         case None => Ok(pageNotFoundTemplate())
       }
-    }.recover { case _: ConflictException =>
-      Redirect(routes.MappingController.alreadyMapped(id))
-    }
+    }.recover { case _: ConflictException => Redirect(routes.MappingController.alreadyMapped(id)) }
   }
 
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
@@ -248,7 +277,7 @@ class MappingController @Inject() (
             },
           {
             case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))
-            case No  => Redirect(routes.MappingController.complete(id))
+            case No => Redirect(routes.MappingController.complete(id))
           }
         )
     }
@@ -283,4 +312,5 @@ class MappingController @Inject() (
       Future.successful(Ok(incorrectAccountTemplate(id)))
     }
   }
+
 }

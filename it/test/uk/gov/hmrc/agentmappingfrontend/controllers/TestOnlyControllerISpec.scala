@@ -22,7 +22,8 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import play.api.test.Helpers._
 
-class TestOnlyControllerISpec extends BaseControllerISpec {
+class TestOnlyControllerISpec
+extends BaseControllerISpec {
 
   private lazy val controller: TestOnlyController = app.injector.instanceOf[TestOnlyController]
 
@@ -75,4 +76,5 @@ class TestOnlyControllerISpec extends BaseControllerISpec {
       html should include(arn.value)
     }
   }
+
 }

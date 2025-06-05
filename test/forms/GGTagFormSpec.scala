@@ -19,7 +19,8 @@ package forms
 import uk.gov.hmrc.agentmappingfrontend.model.GGTagForm
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 
-class GGTagFormSpec extends UnitSpec {
+class GGTagFormSpec
+extends UnitSpec {
 
   "ggtagForm" should {
 

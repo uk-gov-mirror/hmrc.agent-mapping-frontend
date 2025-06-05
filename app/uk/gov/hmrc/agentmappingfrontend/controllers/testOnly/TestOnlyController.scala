@@ -16,10 +16,15 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers.testOnly
 
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.i18n.I18nSupport
+import play.api.i18n.MessagesApi
+import play.api.mvc.Action
+import play.api.mvc.AnyContent
+import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.views.html.{no_mappings, view_sa_mappings, view_vat_mappings}
+import uk.gov.hmrc.agentmappingfrontend.views.html.no_mappings
+import uk.gov.hmrc.agentmappingfrontend.views.html.view_sa_mappings
+import uk.gov.hmrc.agentmappingfrontend.views.html.view_vat_mappings
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -32,8 +37,12 @@ class TestOnlyController @Inject() (
   viewSaMappingsTemplate: view_sa_mappings,
   noMappingsTemplate: no_mappings,
   viewVatMappingsTemplate: view_vat_mappings
-)(implicit val ec: ExecutionContext, cc: MessagesControllerComponents)
-    extends FrontendController(cc) with I18nSupport {
+)(implicit
+  val ec: ExecutionContext,
+  cc: MessagesControllerComponents
+)
+extends FrontendController(cc)
+with I18nSupport {
 
   def findSaMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
     mappingConnector.findSaMappingsFor(arn).map { mappings =>
@@ -58,4 +67,5 @@ class TestOnlyController @Inject() (
       Ok(noMappingsTemplate(arn))
     }
   }
+
 }

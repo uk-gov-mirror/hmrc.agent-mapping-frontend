@@ -16,17 +16,21 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.{Configuration, Environment}
+import play.api.Configuration
+import play.api.Environment
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, LegacyAgentEnrolmentType}
-import uk.gov.hmrc.agentmappingfrontend.stubs.{AgentSubscriptionStubs, AuthStubs}
+import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
+import uk.gov.hmrc.agentmappingfrontend.model.LegacyAgentEnrolmentType
+import uk.gov.hmrc.agentmappingfrontend.stubs.AgentSubscriptionStubs
+import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.SessionKeys
@@ -35,13 +39,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AuthActionsSpec
-    extends BaseControllerISpec with AuthStubs with AgentSubscriptionStubs with SubscriptionJourneyRecordSamples {
+extends BaseControllerISpec
+with AuthStubs
+with AgentSubscriptionStubs
+with SubscriptionJourneyRecordSamples {
 
-  object TestController extends AuthActions {
+  object TestController
+  extends AuthActions {
 
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
-    override def agentSubscriptionConnector: AgentSubscriptionConnector =
-      app.injector.instanceOf[AgentSubscriptionConnector]
+    override def agentSubscriptionConnector: AgentSubscriptionConnector = app.injector.instanceOf[AgentSubscriptionConnector]
 
     implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/foo")
       .withSession(SessionKeys.authToken -> "Bearer XYZ")
@@ -51,36 +58,34 @@ class AuthActionsSpec
 
     val appConfig = app.injector.instanceOf[AppConfig]
 
-    def testWithAuthorisedAgent =
-      await(withAuthorisedAgent("arnRefToTryAgain")(_ => Future.successful(Ok("Done."))))
+    def testWithAuthorisedAgent = await(withAuthorisedAgent("arnRefToTryAgain")(_ => Future.successful(Ok("Done."))))
 
-    def testWithBasicAuth =
-      await(withBasicAuth(Future.successful(Ok("Done."))))
+    def testWithBasicAuth = await(withBasicAuth(Future.successful(Ok("Done."))))
 
-    def testWithBasicAgentAuth =
-      await(withBasicAgentAuth(Future.successful(Ok("Done."))))
+    def testWithBasicAgentAuth = await(withBasicAgentAuth(Future.successful(Ok("Done."))))
 
-    def testWithCheckForArn =
-      await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
+    def testWithCheckForArn = await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
 
-    def testWithSubscribingAgent =
-      await(withSubscribingAgent("mappingArnResultId")(_ => Future.successful(Ok("Done."))))
+    def testWithSubscribingAgent = await(withSubscribingAgent("mappingArnResultId")(_ => Future.successful(Ok("Done."))))
 
   }
 
   private val eligibleEnrolments = Map(
-    "IR-SA-AGENT"     -> "IRAgentReference",
-    "HMCE-VAT-AGNT"   -> "AgentRefNo",
+    "IR-SA-AGENT" -> "IRAgentReference",
+    "HMCE-VAT-AGNT" -> "AgentRefNo",
     "HMRC-CHAR-AGENT" -> "AGENTCHARID",
-    "HMRC-GTS-AGNT"   -> "HMRCGTSAGENTREF",
-    "HMRC-MGD-AGNT"   -> "HMRCMGDAGENTREF",
+    "HMRC-GTS-AGNT" -> "HMRCGTSAGENTREF",
+    "HMRC-MGD-AGNT" -> "HMRCMGDAGENTREF",
     "HMRC-NOVRN-AGNT" -> "VATAgentRefNo",
-    "IR-CT-AGENT"     -> "IRAgentReference",
-    "IR-PAYE-AGENT"   -> "IRAgentReference",
-    "IR-SDLT-AGENT"   -> "STORN"
+    "IR-CT-AGENT" -> "IRAgentReference",
+    "IR-PAYE-AGENT" -> "IRAgentReference",
+    "IR-SDLT-AGENT" -> "STORN"
   )
 
-  def testAuthorisedAgentRedirectedTo(expectedLocation: String, enrolments: (String, String)*): Unit = {
+  def testAuthorisedAgentRedirectedTo(
+    expectedLocation: String,
+    enrolments: (String, String)*
+  ): Unit = {
 
     val enrolmentsArr = enrolments
       .map { case (key, identifier) =>
@@ -114,7 +119,10 @@ class AuthActionsSpec
     ()
   }
 
-  def testSubscribingAgentRedirectedTo(expectedLocation: String, enrolments: (String, String)*): Unit = {
+  def testSubscribingAgentRedirectedTo(
+    expectedLocation: String,
+    enrolments: (String, String)*
+  ): Unit = {
 
     val enrolmentsArr = enrolments
       .map { case (key, identifier) =>
@@ -397,4 +405,5 @@ class AuthActionsSpec
       bodyOf(result) should include("None")
     }
   }
+
 }

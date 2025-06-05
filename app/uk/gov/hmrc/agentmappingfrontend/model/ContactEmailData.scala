@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Format
+import play.api.libs.json.Json
 
-case class ContactEmailData(useBusinessEmail: Boolean, contactEmail: Option[String])
+case class ContactEmailData(
+  useBusinessEmail: Boolean,
+  contactEmail: Option[String]
+)
 
 object ContactEmailData {
   implicit val format: Format[ContactEmailData] = Json.format[ContactEmailData]

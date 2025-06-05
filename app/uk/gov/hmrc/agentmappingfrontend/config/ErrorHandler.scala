@@ -17,14 +17,17 @@
 package uk.gov.hmrc.agentmappingfrontend.config
 
 import play.Logger
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
+import play.api.i18n.MessagesApi
 import play.api.mvc.RequestHeader
 import play.twirl.api.Html
 import uk.gov.hmrc.agentmappingfrontend.views.html.ErrorTemplate
 import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 @Singleton
 class ErrorHandler @Inject() (
@@ -32,15 +35,24 @@ class ErrorHandler @Inject() (
   val messagesApi: MessagesApi,
   view: ErrorTemplate
 )(implicit val ec: ExecutionContext)
-    extends FrontendErrorHandler with I18nSupport {
+extends FrontendErrorHandler
+with I18nSupport {
 
   val appName: String = appConfig.appName
   val logger: Logger.ALogger = Logger.of(appName)
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit
+  override def standardErrorTemplate(
+    pageTitle: String,
+    heading: String,
+    message: String
+  )(implicit
     request: RequestHeader
   ): Future[Html] = Future.successful {
-    view(pageTitle, heading, message)
+    view(
+      pageTitle,
+      heading,
+      message
+    )
   }
 
 }

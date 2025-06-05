@@ -21,12 +21,11 @@ import play.api.data.Forms._
 
 object StartMappingForm {
 
-  val form: Form[RadioInputAnswer] =
-    Form[RadioInputAnswer](
-      mapping(
-        "additional-clients" -> optional(text)
-          .verifying("start.error.required", a => a.contains("yes") || a.contains("no"))
-      )(a => RadioInputAnswer.apply(a.getOrElse("")))(a => Some(RadioInputAnswer.unapply(a)))
-    )
+  val form: Form[RadioInputAnswer] = Form[RadioInputAnswer](
+    mapping(
+      "additional-clients" -> optional(text)
+        .verifying("start.error.required", a => a.contains("yes") || a.contains("no"))
+    )(a => RadioInputAnswer.apply(a.getOrElse("")))(a => Some(RadioInputAnswer.unapply(a)))
+  )
 
 }

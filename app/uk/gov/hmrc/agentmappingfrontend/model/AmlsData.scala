@@ -16,14 +16,28 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Format
+import play.api.libs.json.Json
 
-case class AmlsData(amlsRegistered: Boolean, amlsAppliedFor: Option[Boolean], amlsDetails: Option[AmlsDetails])
+case class AmlsData(
+  amlsRegistered: Boolean,
+  amlsAppliedFor: Option[Boolean],
+  amlsDetails: Option[AmlsDetails]
+)
 
 object AmlsData {
 
-  val registeredUserNoDataEntered = AmlsData(amlsRegistered = true, None, None)
-  val nonRegisteredUserNoDataEntered = AmlsData(amlsRegistered = false, None, None)
+  val registeredUserNoDataEntered = AmlsData(
+    amlsRegistered = true,
+    None,
+    None
+  )
+  val nonRegisteredUserNoDataEntered = AmlsData(
+    amlsRegistered = false,
+    None,
+    None
+  )
 
   implicit val format: Format[AmlsData] = Json.format[AmlsData]
+
 }

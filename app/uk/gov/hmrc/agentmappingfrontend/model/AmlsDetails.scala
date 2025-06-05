@@ -28,8 +28,10 @@ case class AmlsDetails(
   appliedOn: Option[LocalDate],
   membershipExpiresOn: Option[LocalDate]
 ) {
+
   val isPending: Boolean = membershipExpiresOn.isEmpty
   val isRegistered: Boolean = !isPending
+
 }
 
 object AmlsDetails {

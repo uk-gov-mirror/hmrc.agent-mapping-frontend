@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.agentmappingfrontend.util
 
-import play.api.mvc.{Request, RequestHeader}
+import play.api.mvc.Request
+import play.api.mvc.RequestHeader
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
@@ -30,7 +31,8 @@ object RequestSupport {
 
   implicit def hc(implicit request: RequestHeader): HeaderCarrier = HcProvider.headerCarrier
 
-  private object HcProvider extends FrontendHeaderCarrierProvider {
+  private object HcProvider
+  extends FrontendHeaderCarrierProvider {
     def headerCarrier(implicit request: RequestHeader): HeaderCarrier = hc(request)
   }
 

@@ -146,5 +146,10 @@ object SampleUsers {
     activeEnrolments = Set("FOO")
   )
 
-  val individual = SampleUser("", Set.empty, Some(InsufficientEnrolments()))
+  val individual = SampleUser(
+    "",
+    Set.empty,
+    Some(InsufficientEnrolments())
+  )
+
 }

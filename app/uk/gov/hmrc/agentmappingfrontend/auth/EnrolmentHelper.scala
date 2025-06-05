@@ -25,13 +25,13 @@ object EnrolmentHelper {
 
   val ArnEnrolmentKey = "AgentReferenceNumber"
 
-  def userHasAsAgentEnrolment(userEnrolments: Set[Enrolment]): Boolean =
-    containsKey(userEnrolments, AsAgentServiceKey)
+  def userHasAsAgentEnrolment(userEnrolments: Set[Enrolment]): Boolean = containsKey(userEnrolments, AsAgentServiceKey)
 
-  def userHasAtedAgentEnrolment(userEnrolments: Set[Enrolment]): Boolean =
-    containsKey(userEnrolments, AtedAgentServiceKey)
+  def userHasAtedAgentEnrolment(userEnrolments: Set[Enrolment]): Boolean = containsKey(userEnrolments, AtedAgentServiceKey)
 
-  private def containsKey(enrolments: Set[Enrolment], key: String): Boolean =
-    enrolments.map(_.key).contains(key)
+  private def containsKey(
+    enrolments: Set[Enrolment],
+    key: String
+  ): Boolean = enrolments.map(_.key).contains(key)
 
 }

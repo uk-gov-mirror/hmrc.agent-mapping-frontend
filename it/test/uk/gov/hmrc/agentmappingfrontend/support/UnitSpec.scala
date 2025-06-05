@@ -26,7 +26,12 @@ import play.api.test.Helpers.defaultAwaitTimeout
 
 import scala.concurrent.Future
 
-trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues with ScalaFutures {
+trait UnitSpec
+extends AnyWordSpecLike
+with Matchers
+with OptionValues
+with ScalaFutures {
+
   // the following is a collection of useful methods that should minimise
   // the changes required when migrating away from hmrctest, which is now deprecated.
   def status(result: Result): Int = result.header.status
@@ -34,12 +39,12 @@ trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues with Scal
   def bodyOf(result: Result): String = Helpers.contentAsString(Future.successful(result))
   def redirectLocation(result: Result) = Helpers.redirectLocation(Future.successful(result))
 
-  def contentType(result: Result): Option[String] =
-    result.body.contentType.map(_.split(";").take(1).mkString.trim)
+  def contentType(result: Result): Option[String] = result.body.contentType.map(_.split(";").take(1).mkString.trim)
 
   def charset(result: Result): Option[String] =
     result.body.contentType match {
       case Some(s) if s.contains("charset=") => Some(s.split("; *charset=").drop(1).mkString.trim)
-      case _                                 => None
+      case _ => None
     }
+
 }

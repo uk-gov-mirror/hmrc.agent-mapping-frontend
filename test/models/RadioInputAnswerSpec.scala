@@ -17,11 +17,13 @@
 package models
 
 import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer
-import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.{No, Yes}
+import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.No
+import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.Yes
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 import uk.gov.hmrc.http.BadRequestException
 
-class RadioInputAnswerSpec extends UnitSpec {
+class RadioInputAnswerSpec
+extends UnitSpec {
 
   "RadioInputAnswer" should {
     "return Yes when input is 'yes'" in {

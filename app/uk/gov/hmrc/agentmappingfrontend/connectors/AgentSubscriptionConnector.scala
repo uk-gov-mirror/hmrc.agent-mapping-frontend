@@ -19,16 +19,20 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.model.{AuthProviderId, SubscriptionJourneyRecord}
+import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
+import uk.gov.hmrc.agentmappingfrontend.model.SubscriptionJourneyRecord
 import uk.gov.hmrc.agentmappingfrontend.util.HttpAPIMonitor
 import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import javax.inject.Singleton
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 @Singleton
 class AgentSubscriptionConnector @Inject() (
@@ -36,7 +40,7 @@ class AgentSubscriptionConnector @Inject() (
   val metrics: Metrics,
   appConfig: AppConfig
 )(implicit val ec: ExecutionContext)
-    extends HttpAPIMonitor {
+extends HttpAPIMonitor {
 
   private lazy val baseUrl: String = appConfig.agentSubscriptionBaseUrl
 
@@ -78,9 +82,10 @@ class AgentSubscriptionConnector @Inject() (
         .execute[HttpResponse]
         .map { response =>
           response.status match {
-            case 204    => Right(())
+            case 204 => Right(())
             case status => Left(s"POST to createOrUpdateJourney returned $status")
           }
         }
     }
+
 }

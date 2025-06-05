@@ -26,7 +26,8 @@ import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 trait MetricTestSupport {
-  self: GuiceOneAppPerSuite with Matchers =>
+  self: GuiceOneAppPerSuite
+    with Matchers =>
 
   def app: Application
 
@@ -42,7 +43,9 @@ trait MetricTestSupport {
   def timerShouldExistsAndBeenUpdated(metric: String): Assertion = {
     val timers = metricsRegistry.getTimers
     val metrics = timers.get(s"Timer-$metric")
-    if (metrics == null) throw new Exception(s"Metric [$metric] not found, try one of ${timers.keySet()}")
+    if (metrics == null)
+      throw new Exception(s"Metric [$metric] not found, try one of ${timers.keySet()}")
     metrics.getCount should be >= 1L
   }
+
 }

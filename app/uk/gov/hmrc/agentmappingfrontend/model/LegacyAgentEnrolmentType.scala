@@ -16,46 +16,54 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+import play.api.libs.json.Format
+import play.api.libs.json.JsError
+import play.api.libs.json.JsResult
+import play.api.libs.json.JsString
+import play.api.libs.json.JsSuccess
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.auth.core.Enrolment
 
-/** A comprehensive list of all the old (pre-MTD) agent enrolment types IR-SA-AGENT is the only legacy code we actually
-  * use in authentication others are captured for future use
+/** A comprehensive list of all the old (pre-MTD) agent enrolment types IR-SA-AGENT is the only legacy code we actually use in authentication others are
+  * captured for future use
   */
 sealed abstract class LegacyAgentEnrolmentType {
 
   /** @return
     *   The service key for a legacy enrolment (1-1 for these old agent enrolments)
     */
-  def serviceKey: String = this match {
-    case IRAgentReference     => "IR-SA-AGENT"
-    case AgentRefNo           => "HMCE-VAT-AGNT"
-    case AgentCharId          => "HMRC-CHAR-AGENT"
-    case HmrcGtsAgentRef      => "HMRC-GTS-AGNT"
-    case HmrcMgdAgentRef      => "HMRC-MGD-AGNT"
-    case VATAgentRefNo        => "HMRC-NOVRN-AGNT"
-    case IRAgentReferenceCt   => "IR-CT-AGENT"
-    case IRAgentReferencePaye => "IR-PAYE-AGENT"
-    case SdltStorn            => "IR-SDLT-AGENT"
-  }
+  def serviceKey: String =
+    this match {
+      case IRAgentReference => "IR-SA-AGENT"
+      case AgentRefNo => "HMCE-VAT-AGNT"
+      case AgentCharId => "HMRC-CHAR-AGENT"
+      case HmrcGtsAgentRef => "HMRC-GTS-AGNT"
+      case HmrcMgdAgentRef => "HMRC-MGD-AGNT"
+      case VATAgentRefNo => "HMRC-NOVRN-AGNT"
+      case IRAgentReferenceCt => "IR-CT-AGENT"
+      case IRAgentReferencePaye => "IR-PAYE-AGENT"
+      case SdltStorn => "IR-SDLT-AGENT"
+    }
 
 }
 
 object LegacyAgentEnrolmentType {
 
-  implicit val format: Format[LegacyAgentEnrolmentType] = new Format[LegacyAgentEnrolmentType] {
+  implicit val format: Format[LegacyAgentEnrolmentType] =
+    new Format[LegacyAgentEnrolmentType] {
 
-    def reads(json: JsValue): JsResult[LegacyAgentEnrolmentType] = json match {
-      case JsString(s) =>
-        find(s) match {
-          case Some(x) => JsSuccess(x)
-          case None    => JsError(s"Unexpected enrolment type: ${json.toString}")
+      def reads(json: JsValue): JsResult[LegacyAgentEnrolmentType] =
+        json match {
+          case JsString(s) =>
+            find(s) match {
+              case Some(x) => JsSuccess(x)
+              case None => JsError(s"Unexpected enrolment type: ${json.toString}")
+            }
+          case _ => JsError(s"Enrolment type is not a string: $json")
         }
-      case _ => JsError(s"Enrolment type is not a string: $json")
-    }
 
-    def writes(o: LegacyAgentEnrolmentType): JsValue = JsString(o.serviceKey)
-  }
+      def writes(o: LegacyAgentEnrolmentType): JsValue = JsString(o.serviceKey)
+    }
 
   /** @param serviceKey
     *   the enrolment service key to find an enrolment type
@@ -64,16 +72,16 @@ object LegacyAgentEnrolmentType {
     */
   def find(serviceKey: String): Option[LegacyAgentEnrolmentType] =
     serviceKey match {
-      case "IR-SA-AGENT"     => Some(IRAgentReference)
-      case "HMCE-VAT-AGNT"   => Some(AgentRefNo)
+      case "IR-SA-AGENT" => Some(IRAgentReference)
+      case "HMCE-VAT-AGNT" => Some(AgentRefNo)
       case "HMRC-CHAR-AGENT" => Some(AgentCharId)
-      case "HMRC-GTS-AGNT"   => Some(HmrcGtsAgentRef)
-      case "HMRC-MGD-AGNT"   => Some(HmrcMgdAgentRef)
+      case "HMRC-GTS-AGNT" => Some(HmrcGtsAgentRef)
+      case "HMRC-MGD-AGNT" => Some(HmrcMgdAgentRef)
       case "HMRC-NOVRN-AGNT" => Some(VATAgentRefNo)
-      case "IR-CT-AGENT"     => Some(IRAgentReferenceCt)
-      case "IR-PAYE-AGENT"   => Some(IRAgentReferencePaye)
-      case "IR-SDLT-AGENT"   => Some(SdltStorn)
-      case _                 => None
+      case "IR-CT-AGENT" => Some(IRAgentReferenceCt)
+      case "IR-PAYE-AGENT" => Some(IRAgentReferencePaye)
+      case "IR-SDLT-AGENT" => Some(SdltStorn)
+      case _ => None
     }
 
   def exists(serviceKey: String): Boolean = find(serviceKey).isDefined
@@ -92,14 +100,24 @@ object LegacyAgentEnrolmentType {
     IRAgentReferencePaye,
     SdltStorn
   )
+
 }
 
-case object IRAgentReference extends LegacyAgentEnrolmentType
-case object AgentRefNo extends LegacyAgentEnrolmentType
-case object AgentCharId extends LegacyAgentEnrolmentType
-case object HmrcGtsAgentRef extends LegacyAgentEnrolmentType
-case object HmrcMgdAgentRef extends LegacyAgentEnrolmentType
-case object VATAgentRefNo extends LegacyAgentEnrolmentType
-case object IRAgentReferenceCt extends LegacyAgentEnrolmentType
-case object IRAgentReferencePaye extends LegacyAgentEnrolmentType
-case object SdltStorn extends LegacyAgentEnrolmentType
+case object IRAgentReference
+extends LegacyAgentEnrolmentType
+case object AgentRefNo
+extends LegacyAgentEnrolmentType
+case object AgentCharId
+extends LegacyAgentEnrolmentType
+case object HmrcGtsAgentRef
+extends LegacyAgentEnrolmentType
+case object HmrcMgdAgentRef
+extends LegacyAgentEnrolmentType
+case object VATAgentRefNo
+extends LegacyAgentEnrolmentType
+case object IRAgentReferenceCt
+extends LegacyAgentEnrolmentType
+case object IRAgentReferencePaye
+extends LegacyAgentEnrolmentType
+case object SdltStorn
+extends LegacyAgentEnrolmentType

@@ -17,17 +17,26 @@
 package uk.gov.hmrc.agentmappingfrontend.support
 
 import org.apache.pekko.stream.Materializer
-import play.api.mvc.{AnyContent, AnyContentAsEmpty, Request, Result}
+import play.api.mvc.AnyContent
+import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.Request
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
 
-trait EndpointBehaviours extends AuthStubs {
-  me: UnitSpec with WireMockSupport =>
+trait EndpointBehaviours
+extends AuthStubs {
+  me: UnitSpec
+    with WireMockSupport =>
+
   type PlayRequest = Request[AnyContent] => Result
 
-  protected def fakeRequest(endpointMethod: String, endpointPath: String): FakeRequest[AnyContentAsEmpty.type]
+  protected def fakeRequest(
+    endpointMethod: String,
+    endpointPath: String
+  ): FakeRequest[AnyContentAsEmpty.type]
   protected def materializer: Materializer
 
   implicit lazy val mat: Materializer = materializer
@@ -46,10 +55,17 @@ trait EndpointBehaviours extends AuthStubs {
       result.header.headers("Location") should include("/bas-gateway/sign-in")
     }
 
-  protected def anEndpointReachableIfSignedInWithEligibleEnrolment(endpointMethod: String, endpointPath: String)(
+  protected def anEndpointReachableIfSignedInWithEligibleEnrolment(
+    endpointMethod: String,
+    endpointPath: String
+  )(
     doRequest: Request[AnyContentAsEmpty.type] => Result
   ): Unit = {
-    behave like anAuthenticatedEndpoint(endpointMethod, endpointPath, doRequest)
+    behave like anAuthenticatedEndpoint(
+      endpointMethod,
+      endpointPath,
+      doRequest
+    )
 
     "redirect to /not-enrolled page if the current user has an ineligible enrolment" in {
       givenUserIsAuthenticated(notEligibleAgent)

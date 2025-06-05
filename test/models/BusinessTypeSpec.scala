@@ -16,12 +16,17 @@
 
 package models
 
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.JsString
+import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.model.BusinessType
-import uk.gov.hmrc.agentmappingfrontend.model.BusinessType.{LimitedCompany, Llp, Partnership, SoleTrader}
+import uk.gov.hmrc.agentmappingfrontend.model.BusinessType.LimitedCompany
+import uk.gov.hmrc.agentmappingfrontend.model.BusinessType.Llp
+import uk.gov.hmrc.agentmappingfrontend.model.BusinessType.Partnership
+import uk.gov.hmrc.agentmappingfrontend.model.BusinessType.SoleTrader
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 
-class BusinessTypeSpec extends UnitSpec {
+class BusinessTypeSpec
+extends UnitSpec {
 
   "BusinessType" should {
     "serialize to json string for each business type" in {

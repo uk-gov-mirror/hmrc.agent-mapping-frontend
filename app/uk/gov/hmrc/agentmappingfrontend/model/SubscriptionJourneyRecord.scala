@@ -18,7 +18,8 @@ package uk.gov.hmrc.agentmappingfrontend.model
 
 import java.time.LocalDateTime
 import play.api.libs.functional.syntax.unlift
-import play.api.libs.json.{JsPath, OFormat}
+import play.api.libs.json.JsPath
+import play.api.libs.json.OFormat
 import play.api.libs.functional.syntax._
 
 final case class SubscriptionJourneyRecord(
@@ -58,4 +59,5 @@ object SubscriptionJourneyRecord {
       SubscriptionJourneyRecord.apply,
       unlift(SubscriptionJourneyRecord.unapply)
     )
+
 }

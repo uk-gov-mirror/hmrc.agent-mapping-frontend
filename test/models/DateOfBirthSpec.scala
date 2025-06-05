@@ -17,11 +17,15 @@
 package models
 
 import java.time.LocalDate
-import play.api.libs.json.{JsNumber, JsResultException, JsString, Json}
+import play.api.libs.json.JsNumber
+import play.api.libs.json.JsResultException
+import play.api.libs.json.JsString
+import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.model.DateOfBirth
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 
-class DateOfBirthSpec extends UnitSpec {
+class DateOfBirthSpec
+extends UnitSpec {
 
   val validDate: LocalDate = LocalDate.parse("2019-01-01")
 
@@ -55,4 +59,5 @@ class DateOfBirthSpec extends UnitSpec {
       }
     }
   }
+
 }

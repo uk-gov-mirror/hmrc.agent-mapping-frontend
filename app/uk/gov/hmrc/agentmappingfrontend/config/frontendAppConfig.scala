@@ -18,13 +18,15 @@ package uk.gov.hmrc.agentmappingfrontend.config
 
 import com.google.inject.ImplementedBy
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
+import javax.inject.Singleton
 import play.api.i18n.Lang
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import views.html.helper.urlEncode
 
 @ImplementedBy(classOf[FrontendAppConfig])
 trait AppConfig {
+
   val appName: String = "agent-mapping-frontend"
 
   val agentServicesFrontendBaseUrl: String
@@ -42,40 +44,33 @@ trait AppConfig {
 
   // derived values
   private val contactFormServiceIdentifier = "AOSS"
-  lazy val reportAProblemPartialUrl =
-    s"$contactFrontendHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
-  lazy val reportAProblemNonJSUrl =
-    s"$contactFrontendHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  lazy val reportAProblemPartialUrl = s"$contactFrontendHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
+  lazy val reportAProblemNonJSUrl = s"$contactFrontendHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val signOutRedirectUrl: String = s"$agentMappingFrontendBaseUrl/agent-mapping/start-submit"
-  lazy val taskListSignOutRedirectUrl: String =
-    s"$agentMappingFrontendBaseUrl/agent-mapping/task-list/start-submit"
-  lazy val agentSubscriptionFrontendTaskListUrl: String =
-    s"$agentSubscriptionFrontendBaseUrl/task-list"
-  lazy val agentSubscriptionFrontendProgressSavedUrl =
-    s"$agentSubscriptionFrontendBaseUrl/progress-saved/?backLink=$agentMappingFrontendBaseUrl/agent-mapping"
-  lazy val signInAndContinue =
-    s"$companyAuthFrontendBaseUrl/gg/sign-in?continue=${urlEncode(agentServicesFrontendBaseUrl)}"
+  lazy val taskListSignOutRedirectUrl: String = s"$agentMappingFrontendBaseUrl/agent-mapping/task-list/start-submit"
+  lazy val agentSubscriptionFrontendTaskListUrl: String = s"$agentSubscriptionFrontendBaseUrl/task-list"
+  lazy val agentSubscriptionFrontendProgressSavedUrl = s"$agentSubscriptionFrontendBaseUrl/progress-saved/?backLink=$agentMappingFrontendBaseUrl/agent-mapping"
+  lazy val signInAndContinue = s"$companyAuthFrontendBaseUrl/gg/sign-in?continue=${urlEncode(agentServicesFrontendBaseUrl)}"
 
   val languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),
     "cymraeg" -> Lang("cy")
   )
+
 }
 @Singleton
-class FrontendAppConfig @Inject() (servicesConfig: ServicesConfig) extends AppConfig {
+class FrontendAppConfig @Inject() (servicesConfig: ServicesConfig)
+extends AppConfig {
 
   override lazy val contactFrontendHost: String = servicesConfig.getString("contact-frontend.host")
 
   // base urls
-  override lazy val companyAuthFrontendBaseUrl: String =
-    servicesConfig.getString("microservice.services.company-auth-frontend.external-url")
-  override lazy val agentSubscriptionBaseUrl: String =
-    servicesConfig.baseUrl("agent-subscription")
+  override lazy val companyAuthFrontendBaseUrl: String = servicesConfig.getString("microservice.services.company-auth-frontend.external-url")
+  override lazy val agentSubscriptionBaseUrl: String = servicesConfig.baseUrl("agent-subscription")
   override lazy val agentMappingBaseUrl: String = servicesConfig.baseUrl("agent-mapping")
   override lazy val agentSubscriptionFrontendBaseUrl: String =
     s"${servicesConfig.getString("microservice.services.agent-subscription-frontend.external-url")}/agent-subscription"
-  override lazy val agentMappingFrontendBaseUrl: String =
-    s"${servicesConfig.getString("microservice.services.agent-mapping-frontend.external-url")}"
+  override lazy val agentMappingFrontendBaseUrl: String = s"${servicesConfig.getString("microservice.services.agent-mapping-frontend.external-url")}"
   override lazy val agentServicesFrontendBaseUrl: String =
     s"${servicesConfig.getString("microservice.services.agent-services-account-frontend.external-url")}/agent-services-account"
   override val agentClientAuthorisationBaseUrl: String = servicesConfig.baseUrl("agent-client-authorisation")

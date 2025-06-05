@@ -17,17 +17,20 @@
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import javax.inject.Inject
-import play.api.i18n.{Lang, MessagesApi}
+import play.api.i18n.Lang
+import play.api.i18n.MessagesApi
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
+import uk.gov.hmrc.play.language.LanguageController
+import uk.gov.hmrc.play.language.LanguageUtils
 
 class AgentMappingLanguageController @Inject() (
   languageUtils: LanguageUtils,
   override val messagesApi: MessagesApi,
   cc: ControllerComponents,
   appConfig: AppConfig
-) extends LanguageController(languageUtils, cc) {
+)
+extends LanguageController(languageUtils, cc) {
 
   override def languageMap: Map[String, Lang] = appConfig.languageMap
 

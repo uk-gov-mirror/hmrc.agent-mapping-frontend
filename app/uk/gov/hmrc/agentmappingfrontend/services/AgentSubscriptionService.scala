@@ -16,27 +16,32 @@
 
 package uk.gov.hmrc.agentmappingfrontend.services
 
-import play.api.mvc.{RequestHeader, Result}
+import play.api.mvc.RequestHeader
+import play.api.mvc.Result
 import uk.gov.hmrc.agentmappingfrontend.auth.Agent
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.model.SubscriptionJourneyRecord
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class AgentSubscriptionService @Inject() (
   agentSubscriptionConnector: AgentSubscriptionConnector
 )(implicit ec: ExecutionContext) {
 
-  def createOrUpdateRecordOrFail(agent: Agent, newSjr: SubscriptionJourneyRecord, onSuccess: => Future[Result])(implicit
+  def createOrUpdateRecordOrFail(
+    agent: Agent,
+    newSjr: SubscriptionJourneyRecord,
+    onSuccess: => Future[Result]
+  )(implicit
     rh: RequestHeader
-  ): Future[Result] =
-    agentSubscriptionConnector.createOrUpdateJourney(newSjr).flatMap {
-      case Right(_) => onSuccess
-      case Left(e) =>
-        throw new RuntimeException(
-          s"update subscriptionJourneyRecord call failed $e for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"
-        )
-    }
+  ): Future[Result] = agentSubscriptionConnector.createOrUpdateJourney(newSjr).flatMap {
+    case Right(_) => onSuccess
+    case Left(e) =>
+      throw new RuntimeException(
+        s"update subscriptionJourneyRecord call failed $e for agentCode ${agent.agentCodeOpt.getOrElse(" ")}"
+      )
+  }
 
 }

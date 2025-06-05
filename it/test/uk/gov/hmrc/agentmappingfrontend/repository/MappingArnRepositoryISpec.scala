@@ -26,16 +26,19 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
-import java.time.{Instant, ZoneOffset}
-import java.time.temporal.ChronoUnit.{MILLIS, SECONDS}
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit.MILLIS
+import java.time.temporal.ChronoUnit.SECONDS
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class MappingArnRepositoryISpec
-    extends UnitSpec with GuiceOneAppPerSuite with DefaultPlayMongoRepositorySupport[MappingArnResult] {
+extends UnitSpec
+with GuiceOneAppPerSuite
+with DefaultPlayMongoRepositorySupport[MappingArnResult] {
 
-  protected def builder: GuiceApplicationBuilder =
-    new GuiceApplicationBuilder()
-      .configure("mongodb.uri" -> mongoUri)
+  protected def builder: GuiceApplicationBuilder = new GuiceApplicationBuilder()
+    .configure("mongodb.uri" -> mongoUri)
 
   override implicit lazy val app: Application = builder.build()
 
@@ -63,7 +66,11 @@ class MappingArnRepositoryISpec
     }
 
     "find a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn, 0, Seq.empty)
+      val record = MappingArnResult(
+        arn,
+        0,
+        Seq.empty
+      )
       await(repository.collection.insertOne(record).toFuture())
 
       val result = await(mappingArnRepository.findRecord(record.id))
@@ -72,7 +79,11 @@ class MappingArnRepositoryISpec
     }
 
     "update client count and ggTag" in {
-      val record = MappingArnResult(arn, 0, Seq.empty)
+      val record = MappingArnResult(
+        arn,
+        0,
+        Seq.empty
+      )
 
       await(repository.collection.insertOne(record).toFuture())
       await(
@@ -87,7 +98,11 @@ class MappingArnRepositoryISpec
     }
 
     "update current ggTag" in {
-      val record = MappingArnResult(arn, 0, Seq.empty)
+      val record = MappingArnResult(
+        arn,
+        0,
+        Seq.empty
+      )
 
       await(repository.collection.insertOne(record).toFuture())
       await(mappingArnRepository.updateCurrentGGTag(record.id, "6666"))
@@ -97,7 +112,11 @@ class MappingArnRepositoryISpec
     }
 
     "update mapping complete status to true" in {
-      val record = MappingArnResult(arn, 0, Seq.empty)
+      val record = MappingArnResult(
+        arn,
+        0,
+        Seq.empty
+      )
 
       await(repository.collection.insertOne(record).toFuture())
       await(mappingArnRepository.updateMappingCompleteStatus(record.id))
@@ -107,7 +126,11 @@ class MappingArnRepositoryISpec
     }
 
     "delete a MappingArnResult record by Id" in {
-      val record = MappingArnResult(arn, 0, Seq.empty)
+      val record = MappingArnResult(
+        arn,
+        0,
+        Seq.empty
+      )
       await(repository.collection.insertOne(record).toFuture())
 
       await(mappingArnRepository.delete(record.id))
@@ -115,4 +138,5 @@ class MappingArnRepositoryISpec
       await(repository.collection.find(Filters.equal("id", record.id)).headOption()) shouldBe empty
     }
   }
+
 }

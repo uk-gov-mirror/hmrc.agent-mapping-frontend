@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.Format
+import play.api.libs.json.Json
+import play.api.libs.json.OFormat
 
 case class BusinessAddress(
   addressLine1: String,

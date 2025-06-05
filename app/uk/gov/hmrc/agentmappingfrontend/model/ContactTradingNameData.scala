@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.agentmappingfrontend.model
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Format
+import play.api.libs.json.Json
 
-case class ContactTradingNameData(hasTradingName: Boolean, contactTradingName: Option[String])
+case class ContactTradingNameData(
+  hasTradingName: Boolean,
+  contactTradingName: Option[String]
+)
 
 object ContactTradingNameData {
 

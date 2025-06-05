@@ -19,13 +19,24 @@ package uk.gov.hmrc.agentmappingfrontend.util
 import play.api.mvc.PathBindable
 
 // Taken from play-ui library
-class SimpleObjectBinder[T](bind: String => T, unbind: T => String)(implicit m: Manifest[T]) extends PathBindable[T] {
-  override def bind(key: String, value: String): Either[String, T] =
+class SimpleObjectBinder[T](
+  bind: String => T,
+  unbind: T => String
+)(implicit m: Manifest[T])
+extends PathBindable[T] {
+
+  override def bind(
+    key: String,
+    value: String
+  ): Either[String, T] =
     try Right(bind(value))
     catch {
-      case _: Throwable =>
-        Left(s"Cannot parse parameter '$key' with value '$value' as '${m.runtimeClass.getSimpleName}'")
+      case _: Throwable => Left(s"Cannot parse parameter '$key' with value '$value' as '${m.runtimeClass.getSimpleName}'")
     }
 
-  def unbind(key: String, value: T): String = unbind(value)
+  def unbind(
+    key: String,
+    value: T
+  ): String = unbind(value)
+
 }
