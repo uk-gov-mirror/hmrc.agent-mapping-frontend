@@ -21,6 +21,7 @@ import play.api.mvc.Request
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.StringContextOps
 
 class SignOutControllerISpec
 extends BaseControllerISpec {
@@ -31,14 +32,17 @@ extends BaseControllerISpec {
 
   def callEndpointWith[A: Writeable](request: Request[A]): Result = await(play.api.test.Helpers.route(app, request).get)
 
+  def signOutUrlWithContinue(continue: String): String =
+    url"""${"http://localhost:9099/bas-gateway/sign-out-without-state"}?${Map("continue" -> continue)}""".toString
+
   "sign out and redirect" should {
     "redirect to /agent-mapping/client-relationships-found while holding arnRef for next mapping iteration" in {
-      val result = await(controller.signOutAndRedirect("someIdToRetrieveArnWithToMapAccount")(fakeRequest))
+      val id = "someIdToRetrieveArnWithToMapAccount"
+      val expectedContinue = url"""${"http://localhost:9438/agent-mapping/start-submit"}?${Map("id" -> id)}"""
+      val result = await(controller.signOutAndRedirect(id)(fakeRequest))
 
       status(result) shouldBe 303
-      redirectLocation(result).get should include(
-        "agent-mapping%2Fstart-submit%3Fid%3DsomeIdToRetrieveArnWithToMapAccount"
-      )
+      redirectLocation(result).get shouldBe signOutUrlWithContinue(expectedContinue.toString)
     }
   }
 
@@ -53,10 +57,12 @@ extends BaseControllerISpec {
 
   "task list signOutAndRedirect" should {
     "redirect to /agent-subscription/task-list" in {
-      val result = await(controller.taskListSignOutAndRedirect("idToReference")(fakeRequest))
+      val id = "idToReference"
+      val expectedContinue = url"""${"http://localhost:9438/agent-mapping/task-list/start-submit"}?${Map("id" -> id)}"""
+      val result = await(controller.taskListSignOutAndRedirect(id)(fakeRequest))
 
       status(result) shouldBe 303
-      redirectLocation(result).get should include("agent-mapping%2Ftask-list%2Fstart-submit%3Fid%3DidToReference")
+      redirectLocation(result).get shouldBe signOutUrlWithContinue(expectedContinue.toString)
     }
   }
 
@@ -81,9 +87,19 @@ extends BaseControllerISpec {
   "signOut" should {
     "redirect to start" in {
       val result = await(controller.signOut()(fakeRequest))
+      val expectedContinue = "http://localhost:9438/agent-mapping"
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/agent-mapping")
+      redirectLocation(result).get shouldBe signOutUrlWithContinue(expectedContinue)
+    }
+  }
+
+  "timeOut" should {
+    "ensure user is signed out and redirect to the timed out page" in {
+      val expectedContinue = "http://localhost:9438/agent-mapping/timed-out"
+      val result = controller.timeOut()(fakeRequest).futureValue
+      status(result) shouldBe 303
+      redirectLocation(result).get shouldBe signOutUrlWithContinue(expectedContinue)
     }
   }
 

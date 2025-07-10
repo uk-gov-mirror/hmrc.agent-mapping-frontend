@@ -14,8 +14,8 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage._
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage._
 
 @this(
         hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
@@ -27,16 +27,23 @@
 @(
     title: String,
     taskList: Boolean = false,
-    hasTimeout: Boolean = true,
     backLinkHref: Option[String] = None
 )(mainContent: Html)(implicit request : RequestHeader, msgs: Messages)
 
 @serviceName = @{ if(taskList) msgs("app.name")else msgs("app.name-alreadySubscribed")}
+@isSignedIn = @{
+    try {
+        request.session.get("authToken").isDefined
+    } catch {
+        case _: Throwable => false
+    }
+}
 
 @head = {
-    @if(hasTimeout) {
+    @if(isSignedIn) {
         @hmrcTimeoutDialogHelper(
             signOutUrl = routes.SignedOutController.signOut.url,
+            timeoutUrl = Some(routes.SignedOutController.timeOut.url),
             timeout = Some(appConfig.timeout),
             countdown = Some(appConfig.timeoutCountdown)
         )
@@ -56,7 +63,7 @@
     serviceName = Some(serviceName),
     serviceURLs = ServiceURLs(
         serviceUrl = None,
-        signOutUrl = Some(routes.SignedOutController.signOut.url)
+        signOutUrl = if(isSignedIn) Some(routes.SignedOutController.signOut.url) else None
     ),
     banners = Banners(displayHmrcBanner = true),
     templateOverrides = TemplateOverrides(

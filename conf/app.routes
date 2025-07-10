@@ -38,6 +38,7 @@ GET         /task-list/return                                    uk.gov.hmrc.age
 GET         /task-list/return-after-mapping                      uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.returnAfterMapping()
 
 GET         /finish-sign-out                                     uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOut
+GET         /time-out                                            uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.timeOut
 GET         /timed-out                                           uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.timedOut
 
 GET         /language/:lang                                      uk.gov.hmrc.agentmappingfrontend.controllers.AgentMappingLanguageController.switchToLanguage(lang: String)

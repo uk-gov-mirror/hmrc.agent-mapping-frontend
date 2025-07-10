@@ -53,20 +53,20 @@ with SubscriptionJourneyRecordSamples {
     implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/foo")
       .withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-    val env = app.injector.instanceOf[Environment]
-    lazy val config = app.injector.instanceOf[Configuration]
+    val env: Environment = app.injector.instanceOf[Environment]
+    lazy val config: Configuration = app.injector.instanceOf[Configuration]
 
-    val appConfig = app.injector.instanceOf[AppConfig]
+    val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
-    def testWithAuthorisedAgent = await(withAuthorisedAgent("arnRefToTryAgain")(_ => Future.successful(Ok("Done."))))
+    def testWithAuthorisedAgent: Result = await(withAuthorisedAgent("arnRefToTryAgain")(_ => Future.successful(Ok("Done."))))
 
-    def testWithBasicAuth = await(withBasicAuth(Future.successful(Ok("Done."))))
+    def testWithBasicAuth: Result = await(withBasicAuth(Future.successful(Ok("Done."))))
 
-    def testWithBasicAgentAuth = await(withBasicAgentAuth(Future.successful(Ok("Done."))))
+    def testWithBasicAgentAuth: Result = await(withBasicAgentAuth(Future.successful(Ok("Done."))))
 
-    def testWithCheckForArn = await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
+    def testWithCheckForArn: Result = await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
 
-    def testWithSubscribingAgent = await(withSubscribingAgent("mappingArnResultId")(_ => Future.successful(Ok("Done."))))
+    def testWithSubscribingAgent: Result = await(withSubscribingAgent("mappingArnResultId")(_ => Future.successful(Ok("Done."))))
 
   }
 

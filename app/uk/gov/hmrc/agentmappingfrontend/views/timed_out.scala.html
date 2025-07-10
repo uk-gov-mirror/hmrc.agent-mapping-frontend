@@ -29,7 +29,7 @@
     if(timeout < 60) s"$timeout seconds" else s"${timeout/60} minutes"
 }
 
-@mainTemplate(title = msgs("timed-out.header"), hasTimeout = false) {
+@mainTemplate(title = msgs("timed-out.header")) {
 
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">@msgs("timed-out.header")</h1>
     <p class="govuk-body">@msgs("timed-out.p1", timeString)</p>

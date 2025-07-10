@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.agentmappingfrontend.controllers
 
-import javax.inject.Inject
 import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.MessagesControllerComponents
-import play.api.mvc.Result
+import sttp.model.Uri.UriContext
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.views.html.timed_out
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import views.html.helper.urlEncode
 
+import javax.inject.Inject
 import scala.concurrent.Future
 
 class SignedOutController @Inject() (
@@ -37,24 +36,26 @@ class SignedOutController @Inject() (
 )
 extends FrontendController(cc) {
 
-  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
-    val url = s"${appConfig.signOutRedirectUrl}?id=$id"
-    val signOutAndRedirectUrl: String = s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(url)}"
-
+  private def signOutWithContinue(continue: String) = {
+    val signOutAndRedirectUrl: String = uri"${appConfig.signOutUrl}?${Map("continue" -> continue)}".toString
     Redirect(signOutAndRedirectUrl)
   }
 
-  def taskListSignOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
-    val url = s"${appConfig.taskListSignOutRedirectUrl}?id=$id"
-    Redirect(constructRedirectUrl(url))
+  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
+    val url = uri"${appConfig.signOutRedirectUrl}?${Map("id" -> id)}"
+    signOutWithContinue(url.toString)
   }
 
-  private def constructRedirectUrl(continue: String): String = s"${appConfig.companyAuthFrontendBaseUrl}/gg/sign-in?continue=${urlEncode(continue)}"
+  def taskListSignOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
+    val url = uri"${appConfig.taskListSignOutRedirectUrl}?${Map("id" -> id)}"
+    signOutWithContinue(url.toString)
+  }
 
   def reLogForMappingStart: Action[AnyContent] = Action {
-    Redirect(appConfig.signInAndContinue).withNewSession
+    signOutWithContinue(appConfig.signInAndContinue)
   }
 
+  // not sure why this is in the SignedOutController?
   def taskList(): Action[AnyContent] = Action.async {
     val url = appConfig.agentSubscriptionFrontendTaskListUrl
     Future.successful(Redirect(url))
@@ -66,10 +67,14 @@ extends FrontendController(cc) {
   }
 
   def signOut: Action[AnyContent] = Action {
-    startNewSession
+    val url = uri"${appConfig.agentMappingFrontendBaseUrl + routes.MappingController.root.url}"
+    signOutWithContinue(url.toString)
   }
 
-  private def startNewSession: Result = Redirect(routes.MappingController.root).withNewSession
+  def timeOut(): Action[AnyContent] = Action {
+    val url = uri"${appConfig.agentMappingFrontendBaseUrl + routes.SignedOutController.timedOut.url}"
+    signOutWithContinue(url.toString)
+  }
 
   def timedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(timedOutTemplate())

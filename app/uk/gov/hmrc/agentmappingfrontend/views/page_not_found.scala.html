@@ -21,7 +21,7 @@
 
 @(hasTimeout: Boolean = false)(implicit request: RequestHeader, msgs: Messages)
 
-@mainTemplate(title = msgs("page-not-found.title"), hasTimeout = hasTimeout) {
+@mainTemplate(title = msgs("page-not-found.title")) {
     <h1 class="govuk-heading-xl">@msgs("page-not-found.h1")</h1>
 
     <p class="govuk-body">@msgs("page-not-found.p1")</p>

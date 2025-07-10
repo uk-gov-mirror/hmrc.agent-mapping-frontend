@@ -71,7 +71,7 @@ with I18nSupport
 with AuthActions
 with Logging {
 
-  val root: Action[AnyContent] = Action {
+  def root: Action[AnyContent] = Action {
     Redirect(routes.MappingController.start)
   }
 

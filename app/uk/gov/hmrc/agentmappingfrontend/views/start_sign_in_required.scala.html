@@ -22,14 +22,12 @@
 
 @(
 id: Option[MappingArnResultId] = None,
-taskList: Boolean = false,
-hasTimeout: Boolean = false
+taskList: Boolean = false
 )(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(
 title = msgs("start.not-signed-in.title"),
-taskList = taskList,
-hasTimeout = hasTimeout
+taskList = taskList
 ) {
 
  <h1 class="govuk-heading-xl">@msgs("start.not-signed-in.title")</h1>

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.agentmappingfrontend.auth
 
-import play.api.mvc.Results._
-import play.api.mvc._
 import play.api.Configuration
 import play.api.Environment
 import play.api.Logging
+import play.api.mvc.Results._
+import play.api.mvc._
+import sttp.model.Uri.UriContext
 import uk.gov.hmrc.agentmappingfrontend.auth.EnrolmentHelper._
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
@@ -205,7 +206,14 @@ with Logging {
       logger.warn(s"Logged in user does not have the required affinity group")
       Forbidden
 
-    case _: NoActiveSession => Redirect(s"$signInUrl?continue_url=$continueUrl${request.uri}&origin=$appName")
+    case _: NoActiveSession =>
+      val continueUrl = uri"${continueBaseUrl + request.uri}"
+      val params = List(
+        "continue_url" -> continueUrl,
+        "origin" -> appName
+      )
+      val url = uri"""${basGatewayFrontendExternalUrl + signInUrl}?${params}"""
+      Redirect(url.toString)
 
     case _: InsufficientEnrolments =>
       logger.warn(s"Logged in user does not have required enrolments")
@@ -213,11 +221,17 @@ with Logging {
 
     case _: UnsupportedAuthProvider =>
       logger.warn("User is not logged in via  GovernmentGateway, signing out and redirecting")
-      Redirect(s"$signInUrl?continue_url=$continueUrl${request.uri}")
+      val continueUrl = uri"${continueBaseUrl + request.uri}"
+      val params = List(
+        "continue_url" -> continueUrl
+      )
+      val url = uri"""${basGatewayFrontendExternalUrl + signInUrl}?${params}"""
+      Redirect(url.toString)
   }
 
-  private val signInUrl = getString("bas-gateway.url")
-  private val continueUrl = getString("login.continue")
+  private val basGatewayFrontendExternalUrl = getString("microservice.services.bas-gateway-frontend.external-url")
+  private val signInUrl = getString("microservice.services.bas-gateway-frontend.sign-in.path")
+  private val continueBaseUrl = getString("microservice.services.agent-mapping-frontend.external-url")
   private val appName = getString("appName")
 
   private def getString(key: String): String = config.underlying.getString(key)
