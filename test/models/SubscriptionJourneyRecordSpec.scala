@@ -19,7 +19,7 @@ package models
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Utr
 
 import java.time.LocalDate
 

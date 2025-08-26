@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.model
+package uk.gov.hmrc.agentmappingfrontend.model.identifiers
 
-import java.time.LocalDate
+import uk.gov.hmrc.domain.SimpleObjectReads
+import uk.gov.hmrc.domain.SimpleObjectWrites
+import uk.gov.hmrc.domain.TaxIdentifier
 
-import play.api.libs.json.Format
-import play.api.libs.json.Json
-import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Vrn
+case class Vrn(value: String)
+extends TaxIdentifier
 
-case class VatDetails(
-  vrn: Vrn,
-  regDate: LocalDate
-)
+object Vrn {
 
-object VatDetails {
-  implicit val format: Format[VatDetails] = Json.format[VatDetails]
+  implicit val vrnReads: SimpleObjectReads[Vrn] = new SimpleObjectReads[Vrn]("value", Vrn.apply)
+  implicit val vrnWrites: SimpleObjectWrites[Vrn] = new SimpleObjectWrites[Vrn](_.value)
+
+  private[model] def regexCheck(vrn: String): Boolean = vrn.matches("[0-9]{9}")
+
+  def isValid(vrn: String): Boolean = regexCheck(vrn)
+
 }

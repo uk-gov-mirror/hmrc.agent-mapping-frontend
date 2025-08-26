@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmappingfrontend.model._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 
 object MappingStubs {
 

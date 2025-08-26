@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.model
 
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Utr
 import uk.gov.hmrc.domain.Nino
 
 /** Information about the agent's business. They must always provide a business type, UTR and postcode. But other data points are only required for some

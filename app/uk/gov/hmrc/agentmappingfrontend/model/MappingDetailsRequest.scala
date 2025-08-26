@@ -22,7 +22,7 @@ import play.api.libs.functional.syntax.unlift
 import play.api.libs.json.Json.format
 import play.api.libs.json.JsPath
 import play.api.libs.json.OFormat
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import play.api.libs.functional.syntax._
 
 case class MappingDetailsRepositoryRecord(

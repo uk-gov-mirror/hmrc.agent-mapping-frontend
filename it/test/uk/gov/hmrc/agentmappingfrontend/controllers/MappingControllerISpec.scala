@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.mongo.MongoComponent

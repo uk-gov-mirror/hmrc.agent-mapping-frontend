@@ -28,7 +28,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.agentmappingfrontend.model.MongoLocalDateTimeFormat
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import java.time.temporal.ChronoUnit.MILLIS

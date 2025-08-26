@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.SaMapping
 import uk.gov.hmrc.agentmappingfrontend.model.VatMapping
 import uk.gov.hmrc.agentmappingfrontend.util.HttpAPIMonitor
 import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.http.HttpErrorFunctions._
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._

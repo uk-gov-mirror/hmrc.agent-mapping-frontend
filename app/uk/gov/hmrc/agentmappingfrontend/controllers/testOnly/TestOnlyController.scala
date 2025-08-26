@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.views.html.no_mappings
 import uk.gov.hmrc.agentmappingfrontend.views.html.view_sa_mappings
 import uk.gov.hmrc.agentmappingfrontend.views.html.view_vat_mappings
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject

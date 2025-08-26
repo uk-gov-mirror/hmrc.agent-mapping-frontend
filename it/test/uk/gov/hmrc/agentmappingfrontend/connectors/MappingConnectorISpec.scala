@@ -28,7 +28,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRepositoryRecord
 import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRequest
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
 import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.http.ConflictException
 
 import java.time.LocalDateTime

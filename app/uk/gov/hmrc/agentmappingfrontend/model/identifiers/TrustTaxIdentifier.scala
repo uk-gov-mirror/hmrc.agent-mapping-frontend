@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentmappingfrontend.model
+package uk.gov.hmrc.agentmappingfrontend.model.identifiers
 
-import java.time.LocalDate
-
-import play.api.libs.json.Format
-import play.api.libs.json.Json
-import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Vrn
-
-case class VatDetails(
-  vrn: Vrn,
-  regDate: LocalDate
-)
-
-object VatDetails {
-  implicit val format: Format[VatDetails] = Json.format[VatDetails]
+trait TrustTaxIdentifier {
+  val value: String
 }

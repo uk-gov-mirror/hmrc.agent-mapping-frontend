@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.BusinessType
 import uk.gov.hmrc.agentmappingfrontend.model.Postcode
 import uk.gov.hmrc.agentmappingfrontend.model.SubscriptionJourneyRecord
 import uk.gov.hmrc.agentmappingfrontend.model.UserMapping
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Utr
 import uk.gov.hmrc.domain.AgentCode
 
 trait SubscriptionJourneyRecordSamples {
