@@ -218,15 +218,12 @@ with Logging {
 
   def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withSubscribingAgent(id) { agent =>
-      backUrl(id).map(url =>
-        Ok(
-          existingClientRelationshipsTemplate(
-            ExistingClientRelationshipsForm.form,
-            id,
-            agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
-            url,
-            taskList = true
-          )
+      Ok(
+        existingClientRelationshipsTemplate(
+          addClientsForm = ExistingClientRelationshipsForm.form,
+          id = id,
+          clientCountAndGGTags = agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
+          taskList = true
         )
       )
     }
@@ -238,15 +235,12 @@ with Logging {
         .bindFromRequest()
         .fold(
           formWithErrors =>
-            backUrl(id).flatMap(url =>
-              Ok(
-                existingClientRelationshipsTemplate(
-                  formWithErrors,
-                  id,
-                  agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
-                  url,
-                  taskList = true
-                )
+            Ok(
+              existingClientRelationshipsTemplate(
+                addClientsForm = formWithErrors,
+                id = id,
+                clientCountAndGGTags = agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
+                taskList = true
               )
             ),
           {
@@ -337,17 +331,5 @@ with Logging {
           )
       }
     }
-
-  private def backUrl(id: MappingArnResultId): Future[String] = repository.findRecord(id).flatMap {
-    case Some(record) =>
-      if (record.alreadyMapped) {
-        routes.TaskListMappingController.showGGTag(id).url
-      }
-      else {
-        appConfig.agentSubscriptionFrontendTaskListUrl
-      }
-
-    case None => throw new RuntimeException(s"no task-list mapping record found for id $id for backUrl")
-  }
 
 }

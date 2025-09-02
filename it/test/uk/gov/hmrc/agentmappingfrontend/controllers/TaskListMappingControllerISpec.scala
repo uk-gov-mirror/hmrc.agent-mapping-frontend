@@ -398,24 +398,9 @@ with MongoSupport {
       )
 
       bodyOf(result) should include(htmlEscapedMessage("copied.table.single.dd", 1))
-      bodyOf(result) should include(routes.TaskListMappingController.showGGTag(id).url)
 
       result should containSubmitButton("button.saveContinue", "existing-client-relationships-continue")
       result should containSubmitButton("button.saveComeBackLater", "existing-client-relationships-save")
-    }
-
-    "200 the existing-client-relationships page with back link to /agent-subscription/task-list if not already mapped (has just arrived from agent-subscription/task-list" in {
-      givenUserIsAuthenticated(vatEnrolledAgent)
-      givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = false), "continue-id"))
-
-      val request = fakeRequest(GET, s"/agent-mapping/task-list/existing-client-relationships/?id=$id")
-      val result = callEndpointWith(request)
-      status(result) shouldBe 200
-
-      bodyOf(result) should include(appConfig.agentSubscriptionFrontendTaskListUrl)
     }
   }
 

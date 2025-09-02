@@ -240,10 +240,9 @@ with Logging {
         case Some(record) =>
           Ok(
             existingClientRelationshipsTemplate(
-              ExistingClientRelationshipsForm.form,
-              id,
-              record.clientCountAndGGTags,
-              routes.MappingController.showGGTag(id).url,
+              addClientsForm = ExistingClientRelationshipsForm.form,
+              id = id,
+              clientCountAndGGTags = record.clientCountAndGGTags,
               taskList = false
             )
           )
@@ -266,7 +265,6 @@ with Logging {
                     formWithErrors,
                     id,
                     record.clientCountAndGGTags,
-                    routes.MappingController.showClientRelationshipsFound(id).url,
                     taskList = false
                   )
                 )
