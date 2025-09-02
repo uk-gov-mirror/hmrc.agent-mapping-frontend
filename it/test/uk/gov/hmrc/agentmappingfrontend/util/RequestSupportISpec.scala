@@ -17,11 +17,8 @@
 package uk.gov.hmrc.agentmappingfrontend.util
 
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
-import org.scalatestplus.play._
-import play.api.test._
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec

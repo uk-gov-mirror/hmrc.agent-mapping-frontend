@@ -22,8 +22,8 @@ import play.api.libs.json._
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Vrn
 
 class VrnJsonSpec
-  extends AnyFlatSpec
-    with Matchers {
+extends AnyFlatSpec
+with Matchers {
 
   val reference97 = "101747696"
   val reference9755 = "101747641"
@@ -58,8 +58,9 @@ class VrnJsonSpec
 
   "vrnReads" should "parse regardless of validity; format is checked by isValid" in {
     val json = Json.obj("value" -> "abc123xyz")
-    val res  = json.validate[Vrn](Vrn.vrnReads)
+    val res = json.validate[Vrn](Vrn.vrnReads)
     res shouldBe JsSuccess(Vrn("abc123xyz"))
     Vrn.isValid(res.get.value) shouldBe false
   }
+
 }
