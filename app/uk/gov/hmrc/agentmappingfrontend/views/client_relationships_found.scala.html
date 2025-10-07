@@ -42,20 +42,10 @@
 
     <p class="govuk-body govuk-!-margin-bottom-2">@if(clientCount == 1){ @msgs("clientRelationshipsFound.single.p1")} else { @msgs("clientRelationshipsFound.multi.p1")}</p>
 
-    <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-2">
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key agent-summary-list__key--short">
-                <span class="govuk-!-font-size-80">
-                    @if(clientCount >= maxRecords){ @maxRecords} else { @clientCount}
-                </span>
-            </dt>
-            <dd class="govuk-summary-list__value agent-summary-list__value--short">
-                <span class="govuk-!-font-weight-bold">
-                    @if(clientCount == 1){ @msgs("clientRelationshipsFound.single.td")} else {@if(clientCount >= appConfig.clientCountMaxRecords){ @msgs("clientRelationshipsFound.max")} else { @msgs("clientRelationshipsFound.multi.td")}}
-                </span>
-            </dd>
-        </div>
-    </dl>
+    <p class="govuk-body govuk-body-l govuk-!-font-weight-bold govuk-!-margin-bottom-2">
+        @if(clientCount >= maxRecords){ @{"%,d".format(maxRecords)} } else { @{"%,d".format(clientCount)} }
+        @if(clientCount == 1){ @msgs("clientRelationshipsFound.single.td")} else {@if(clientCount >= maxRecords){ @msgs("clientRelationshipsFound.max")} else { @msgs("clientRelationshipsFound.multi.td")}}
+    </p>
 
     <p class="govuk-body">@if(clientCount == 1) { @msgs("clientRelationshipsFound.single.p2")} else {@msgs("clientRelationshipsFound.multi.p2")}</p>
 
