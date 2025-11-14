@@ -31,6 +31,7 @@ lazy val root = (project in file("."))
     scalacOptions ++= scalaCOptions,
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true,
+    Test / logBuffered := false,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
   )
   .settings(
@@ -56,6 +57,7 @@ lazy val it = project
   .settings(libraryDependencies ++= AppDependencies.test)
   .settings(
     Compile / scalafmtOnCompile := true,
-    Test / scalafmtOnCompile := true
+    Test / scalafmtOnCompile := true,
+    Test / logBuffered := false
   )
 

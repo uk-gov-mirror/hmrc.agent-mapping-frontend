@@ -27,7 +27,6 @@ import uk.gov.hmrc.agentmappingfrontend.model.MappingDetails
 import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRepositoryRecord
 import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRequest
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
-import uk.gov.hmrc.agentmappingfrontend.support.MetricTestSupport
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.http.ConflictException
 
@@ -35,8 +34,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class MappingConnectorISpec
-extends BaseControllerISpec
-with MetricTestSupport {
+extends BaseControllerISpec {
 
   private val arn = Arn("ARN0001")
 
@@ -45,10 +43,8 @@ with MetricTestSupport {
 
   "createMapping" should {
     "create a mapping" in {
-      givenCleanMetricRegistry()
       mappingIsCreated(arn)
       await(connector.createMapping(arn)) shouldBe 201
-      timerShouldExistsAndBeenUpdated("ConsumedAPI-Mapping-CreateMapping-PUT")
     }
 
     "not create a mapping when one already exists" in {
@@ -57,14 +53,13 @@ with MetricTestSupport {
     }
 
     "not create a mapping when there is a problem with the supplied known facts" in {
-      mappingKnownFactsIssue(arn)
+      mappingError(arn)
       await(connector.createMapping(arn)) shouldBe 403
     }
   }
 
   "getClientCount" should {
     "return the count" in {
-      givenCleanMetricRegistry()
       givenClientCountRecordsFound(299)
       await(connector.getClientCount) shouldBe 299
     }
@@ -79,23 +74,9 @@ with MetricTestSupport {
       mappings.head.arn shouldBe arn.value
     }
 
-    "find all vat mappings for a given arn" in {
-      vatMappingsFound(arn)
-      val mappings = await(connector.findVatMappingsFor(arn))
-
-      mappings.size shouldBe 2
-      mappings.head.arn shouldBe arn.value
-    }
-
     "return empty list if no sa mappings found for a given arn" in {
       noSaMappingsFound(arn)
       val mappings = await(connector.findSaMappingsFor(arn))
-      mappings.size shouldBe 0
-    }
-
-    "return empty list if no vat mappings found for a given arn" in {
-      noVatMappingsFound(arn)
-      val mappings = await(connector.findVatMappingsFor(arn))
       mappings.size shouldBe 0
     }
 
@@ -106,16 +87,6 @@ with MetricTestSupport {
       )
       intercept[RuntimeException] {
         await(connector.findSaMappingsFor(arn))
-      }
-    }
-
-    "throw a runtime exception when vat mappings call returns an error" in {
-      mappingsError(
-        arn = arn,
-        regime = "vat"
-      )
-      intercept[RuntimeException] {
-        await(connector.findVatMappingsFor(arn))
       }
     }
   }

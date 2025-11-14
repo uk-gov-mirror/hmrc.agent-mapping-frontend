@@ -24,7 +24,6 @@ import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.views.html.no_mappings
 import uk.gov.hmrc.agentmappingfrontend.views.html.view_sa_mappings
-import uk.gov.hmrc.agentmappingfrontend.views.html.view_vat_mappings
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -35,8 +34,7 @@ class TestOnlyController @Inject() (
   override val messagesApi: MessagesApi,
   mappingConnector: MappingConnector,
   viewSaMappingsTemplate: view_sa_mappings,
-  noMappingsTemplate: no_mappings,
-  viewVatMappingsTemplate: view_vat_mappings
+  noMappingsTemplate: no_mappings
 )(implicit
   val ec: ExecutionContext,
   cc: MessagesControllerComponents
@@ -48,15 +46,6 @@ with I18nSupport {
     mappingConnector.findSaMappingsFor(arn).map { mappings =>
       if (mappings.nonEmpty)
         Ok(viewSaMappingsTemplate(arn, mappings))
-      else
-        NotFound(noMappingsTemplate(arn))
-    }
-  }
-
-  def findVatMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
-    mappingConnector.findVatMappingsFor(arn).map { mappings =>
-      if (mappings.nonEmpty)
-        Ok(viewVatMappingsTemplate(arn, mappings))
       else
         NotFound(noMappingsTemplate(arn))
     }

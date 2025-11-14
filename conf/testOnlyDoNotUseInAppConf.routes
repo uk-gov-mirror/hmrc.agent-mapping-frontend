@@ -16,5 +16,4 @@
 GET         /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findSaMappings(arn: uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn)
 
 GET         /agent-mapping/test-only/mappings/sa/:arn     @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findSaMappings(arn: uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn)
-GET         /agent-mapping/test-only/mappings/vat/:arn    @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.findVatMappings(arn: uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn)
 POST        /agent-mapping/test-only/mappings/:arn        @uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController.deleteAllMappings(arn: uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn)

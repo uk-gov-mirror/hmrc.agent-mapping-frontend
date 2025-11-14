@@ -32,10 +32,10 @@ import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult
 import uk.gov.hmrc.agentmappingfrontend.util._
 import uk.gov.hmrc.agentmappingfrontend.views.html._
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.http.ConflictException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -52,15 +52,11 @@ class MappingController @Inject() (
   val config: Configuration,
   val env: Environment,
   signInTemplate: start_sign_in_required,
-  clientRelationShipsFoundTemplate: client_relationships_found,
-  pageNotFoundTemplate: page_not_found,
-  existingClientRelationshipsTemplate: existing_client_relationships,
-  completeTemplate: complete,
+  clientAuthorisationsAddedTemplate: client_authorisations_added,
   startTemplate: start,
   alreadyMappedTemplate: already_mapped,
   notEnrolledTemplate: not_enrolled,
   incorrectAccountTemplate: incorrect_account,
-  ggTagTemplate: gg_tag,
   mcc: MessagesControllerComponents
 )(implicit
   val ec: ExecutionContext,
@@ -156,139 +152,62 @@ with Logging {
   }
 
   def returnFromGGLogin(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
+    withAuthorisedSaAgent(id) { enrolment =>
       repository.findRecord(id).flatMap {
-        case Some(record) =>
-          for {
-            clientCount <- mappingConnector.getClientCount
-            newRef <- repository
-              .create(
-                record.arn,
-                currentCount = clientCount,
-                clientCountAndGGTags = record.clientCountAndGGTags
-              )
-            _ <- repository.delete(id)
-          } yield Redirect(routes.MappingController.showClientRelationshipsFound(newRef))
-
-        case None =>
-          logger.warn(s"could not find a record for id $id")
+        case Some(record @ MappingArnResult(
+              _,
+              arn,
+              Some(agentCode),
+              _,
+              _,
+              _
+            )) if enrolment.identifiers.map(_.value).contains(agentCode) =>
+          mappingConnector.createMapping(arn).flatMap {
+            case CREATED =>
+              for {
+                clientCount <- mappingConnector.getClientCount
+                newRecord = record.copy(
+                  arn = arn,
+                  agentCode = None,
+                  mappedAgentCode = Some(agentCode),
+                  mappedClientCount = Some(clientCount)
+                )
+                _ <- repository.replace(newRecord, id)
+              } yield Redirect(routes.MappingController.showClientAuthorisationsAdded(newRecord.id))
+            case CONFLICT => Future.successful(Redirect(routes.MappingController.alreadyMapped(id)))
+            case e => throw new RuntimeException(s"Unexpected response from mapping service: $e")
+          }
+        case Some(result) if result.agentCode.isDefined =>
+          // TODO differentiate between not enrolled and agent code mismatch
+          Redirect(routes.MappingController.notEnrolled(id))
+        case _ =>
+          logger.warn(s"Agent with $id not found in repository or agent is page hopping")
           Redirect(routes.MappingController.start)
       }
     }
   }
 
-  def showClientRelationshipsFound(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  def showClientAuthorisationsAdded(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAgent(id) { _ =>
       repository.findRecord(id).flatMap {
-        case Some(record) => Ok(clientRelationShipsFoundTemplate(record.currentCount, id))
-
-        case None => Ok(pageNotFoundTemplate())
-      }
-    }
-  }
-
-  def showGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
-      Ok(ggTagTemplate(GGTagForm.form, id))
-    }
-  }
-
-  def submitGGTag(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { providerId =>
-      repository.findRecord(id).flatMap {
-        case Some(record) =>
-          GGTagForm.form
-            .bindFromRequest()
-            .fold(
-              formWithErrors => Ok(ggTagTemplate(formWithErrors, id)),
-              ggTag =>
-                if (!record.alreadyMapped) {
-                  mappingConnector.createMapping(record.arn).flatMap {
-                    case CREATED =>
-                      val clientCountAndGGTags = ClientCountAndGGTag(record.currentCount, ggTag.value) +: record.clientCountAndGGTags
-                      val newRecord = record.copy(clientCountAndGGTags = clientCountAndGGTags, currentGGTag = ggTag.value)
-                      for {
-                        _ <- mappingConnector
-                          .createOrUpdateMappingDetails(
-                            record.arn,
-                            MappingDetailsRequest(
-                              AuthProviderId(providerId),
-                              ggTag.value,
-                              record.currentCount
-                            )
-                          )
-                        _ <- repository.updateMappingCompleteStatus(id)
-                        _ <- repository.upsert(newRecord, id)
-                      } yield Redirect(routes.MappingController.showExistingClientRelationships(id))
-                    case CONFLICT => Redirect(routes.MappingController.alreadyMapped(id))
-                    case e =>
-                      logger.warn(s"unexpected response from server $e")
-                      InternalServerError
-                  }
-                }
-                else
-                  Redirect(routes.MappingController.showExistingClientRelationships(id))
-            )
-        case None => Ok(pageNotFoundTemplate())
-      }
-    }.recover { case _: ConflictException => Redirect(routes.MappingController.alreadyMapped(id)) }
-  }
-
-  def showExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
-      repository.findRecord(id).flatMap {
-        case Some(record) =>
-          Ok(
-            existingClientRelationshipsTemplate(
-              addClientsForm = ExistingClientRelationshipsForm.form,
-              id = id,
-              clientCountAndGGTags = record.clientCountAndGGTags,
-              taskList = false
-            )
-          )
-
-        case None => Ok(pageNotFoundTemplate())
-      }
-    }
-  }
-
-  def submitExistingClientRelationships(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
-      ExistingClientRelationshipsForm.form
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            repository.findRecord(id).flatMap {
-              case Some(record) =>
-                Ok(
-                  existingClientRelationshipsTemplate(
-                    formWithErrors,
-                    id,
-                    record.clientCountAndGGTags,
-                    taskList = false
-                  )
-                )
-
-              case None =>
-                logger.info(s"no record found for id $id")
-                Redirect(routes.MappingController.start)
-            },
-          {
-            case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))
-            case No => Redirect(routes.MappingController.complete(id))
+        case Some(MappingArnResult(
+              _,
+              arn,
+              _,
+              Some(mappedAgentCode),
+              Some(mappedClientCount),
+              _
+            )) =>
+          mappingConnector.findSaMappingsFor(arn).map { saMappings =>
+            Ok(clientAuthorisationsAddedTemplate(
+              mappedAgentCode,
+              mappedClientCount,
+              saMappings
+            ))
           }
-        )
-    }
-  }
-
-  def complete(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
-      repository.findRecord(id).flatMap {
-        case Some(record) => Ok(completeTemplate(id, record.clientCountAndGGTags.map(_.clientCount).sum))
-
-        case None =>
-          logger.warn("user must not completed the mapping journey or have lost the stored arn")
-          InternalServerError
+        case _ =>
+          logger.warn(s"Agent with $id not found in repository or agent is page hopping")
+          Redirect(routes.MappingController.start)
       }
     }
   }

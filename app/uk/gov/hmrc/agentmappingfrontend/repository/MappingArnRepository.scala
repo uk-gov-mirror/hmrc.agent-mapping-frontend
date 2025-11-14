@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentmappingfrontend.repository
 
-import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.IndexModel
@@ -53,13 +52,12 @@ case object ClientCountAndGGTag {
 }
 
 case class MappingArnResult(
-  id: MappingArnResultId,
+  id: MappingArnResultId = UUID.randomUUID().toString.replace("-", ""),
   arn: Arn,
-  createdDate: LocalDateTime = Instant.now().atZone(ZoneOffset.UTC).toLocalDateTime.truncatedTo(MILLIS),
-  currentCount: Int,
-  currentGGTag: String = "",
-  clientCountAndGGTags: Seq[ClientCountAndGGTag] = Seq.empty,
-  alreadyMapped: Boolean = false
+  agentCode: Option[String] = None,
+  mappedAgentCode: Option[String] = None,
+  mappedClientCount: Option[Int] = None,
+  createdDate: LocalDateTime = Instant.now().atZone(ZoneOffset.UTC).toLocalDateTime.truncatedTo(MILLIS)
 )
 
 object MappingResult {
@@ -67,20 +65,6 @@ object MappingResult {
 }
 
 object MappingArnResult {
-
-  def apply(
-    arn: Arn,
-    currentCount: Int,
-    clientCountAndGGTags: Seq[ClientCountAndGGTag]
-  ): MappingArnResult = {
-    val id: MappingArnResultId = UUID.randomUUID().toString.replace("-", "")
-    MappingArnResult(
-      id = id,
-      arn = arn,
-      currentCount = currentCount,
-      clientCountAndGGTags = clientCountAndGGTags
-    )
-  }
 
   implicit val localDateTimeFormat: Format[LocalDateTime] = MongoLocalDateTimeFormat.localDateTimeFormat
   implicit val format: OFormat[MappingArnResult] = Json.format
@@ -105,15 +89,9 @@ extends PlayMongoRepository[MappingArnResult](
 with Logging {
 
   def create(
-    arn: Arn,
-    currentCount: Int = 0,
-    clientCountAndGGTags: Seq[ClientCountAndGGTag] = Seq.empty
+    arn: Arn
   ): Future[MappingArnResultId] = {
-    val record = MappingArnResult(
-      arn = arn,
-      currentCount = currentCount,
-      clientCountAndGGTags = clientCountAndGGTags
-    )
+    val record = MappingArnResult(arn = arn)
     collection
       .insertOne(record)
       .toFuture()
@@ -124,7 +102,7 @@ with Logging {
     .find(equal("id", id))
     .headOption()
 
-  def upsert(
+  def replace(
     mappingArnResult: MappingArnResult,
     id: MappingArnResultId
   ): Future[Unit] = collection
@@ -141,35 +119,6 @@ with Logging {
       else
         logger.info(
           s"Upsert success. Found ${wr.getMatchedCount} matching documents. " +
-            s"${wr.getModifiedCount} were modified."
-        )
-    )
-
-  def updateCurrentGGTag(
-    id: MappingArnResultId,
-    ggTag: String
-  ): Future[Unit] = collection
-    .updateOne(equal("id", id), set("currentGGTag", ggTag))
-    .toFuture()
-    .map(wr =>
-      if (!wr.wasAcknowledged())
-        throw new RuntimeException("Something went wrong with updateCurrentGGTag.")
-      else
-        logger.info(
-          s"updateCurrentGGTag success. Found ${wr.getMatchedCount} matching documents. " +
-            s"${wr.getModifiedCount} were modified."
-        )
-    )
-
-  def updateMappingCompleteStatus(id: MappingArnResultId): Future[Unit] = collection
-    .updateOne(equal("id", id), set("alreadyMapped", true))
-    .toFuture()
-    .map(wr =>
-      if (!wr.wasAcknowledged())
-        throw new RuntimeException("Something went wrong with updateMappingCompleteStatus.")
-      else
-        logger.info(
-          s"updateMappingCompleteStatus success. Found ${wr.getMatchedCount} matching documents. " +
             s"${wr.getModifiedCount} were modified."
         )
     )

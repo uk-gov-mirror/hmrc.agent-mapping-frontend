@@ -29,7 +29,6 @@ extends BaseControllerISpec {
 
   val arn = Arn("ARN0001")
   val sa = "AgentCode1"
-  val vrn = "101747696"
 
   "findMappings" should {
     "return OK with list of sa mappings" in {
@@ -44,23 +43,6 @@ extends BaseControllerISpec {
     "return Not Found when given arn does not have any sa mappings" in {
       noSaMappingsFound(arn)
       val response = await(controller.findSaMappings(arn)(FakeRequest()))
-
-      status(response) shouldBe 404
-      bodyOf(response) should include(s"No mappings found for ${arn.value}")
-    }
-
-    "return OK with list of vat mappings" in {
-      vatMappingsFound(arn)
-      val response = await(controller.findVatMappings(arn)(FakeRequest()))
-      status(response) shouldBe 200
-      val html = bodyOf(response)
-      html should include(arn.value)
-      html should include(vrn)
-    }
-
-    "return Not Found when given arn does not have any vat mappings" in {
-      noVatMappingsFound(arn)
-      val response = await(controller.findVatMappings(arn)(FakeRequest()))
 
       status(response) shouldBe 404
       bodyOf(response) should include(s"No mappings found for ${arn.value}")

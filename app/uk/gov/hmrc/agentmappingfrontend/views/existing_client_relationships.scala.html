@@ -35,14 +35,13 @@
 @(
         addClientsForm: Form[RadioInputAnswer],
         id: MappingArnResultId,
-        clientCountAndGGTags: Seq[ClientCountAndGGTag],
-        taskList: Boolean = false
+        clientCountAndGGTags: Seq[ClientCountAndGGTag]
 )(implicit request: RequestHeader, msgs: Messages)
 
 @mainTemplate(
     title = errorPrefix(addClientsForm) + msgs("existingClientRelationships.title"),
     backLinkHref = None, // this is a transaction complete page so no back link - cannot resubmit
-    taskList = taskList
+    taskList = true
 ) {
 
     @if(addClientsForm.errors.nonEmpty) {
@@ -73,7 +72,7 @@
     </dl>
 
     @formHelper(
-        action = if(taskList) routes.TaskListMappingController.submitExistingClientRelationships(id) else routes.MappingController.submitExistingClientRelationships(id),
+        action = routes.TaskListMappingController.submitExistingClientRelationships(id),
         Symbol("autoComplete") -> "off"
     ) {
 
@@ -99,25 +98,19 @@
             )
         ).withFormField(addClientsForm("additional-clients")))
 
-        @if(taskList) {
-            <div class="govuk-button-group">
-                <button type="submit"
-                name="submit"
-                class="govuk-button"
-                id="existing-client-relationships-continue"
-                value="continue">@msgs("button.saveContinue")</button>
-
-                <button type="submit"
-                name="submit"
-                class="govuk-button govuk-button--secondary"
-                id="existing-client-relationships-save"
-                value="save">@msgs("button.saveComeBackLater")</button>
-            </div>
-        } else {
+        <div class="govuk-button-group">
             <button type="submit"
+            name="submit"
             class="govuk-button"
-            id="submit-existing-clients">@msgs("button.continue")</button>
-        }
+            id="existing-client-relationships-continue"
+            value="continue">@msgs("button.saveContinue")</button>
+
+            <button type="submit"
+            name="submit"
+            class="govuk-button govuk-button--secondary"
+            id="existing-client-relationships-save"
+            value="save">@msgs("button.saveComeBackLater")</button>
+        </div>
 
     }
 

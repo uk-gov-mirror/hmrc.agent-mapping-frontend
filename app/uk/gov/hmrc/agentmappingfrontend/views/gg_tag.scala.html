@@ -34,25 +34,20 @@
 
 @(
         ggTagForm: Form[GGTag],
-        id: MappingArnResultId,
-        taskList: Boolean = false
+        id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
 @backLink = @{
-    if (taskList) {
-        routes.TaskListMappingController.showClientRelationshipsFound(id).url
-    } else {
-        routes.MappingController.showClientRelationshipsFound(id).url
-    }
+    routes.TaskListMappingController.showClientRelationshipsFound(id).url
 }
 
 @mainTemplate(
     title = errorPrefix(ggTagForm) + msgs("gg-tag.title"),
-    taskList = taskList,
+    taskList = true,
     backLinkHref = Some(backLink)
 ) {
 
-    @formHelper(action = if(taskList) routes.TaskListMappingController.submitGGTag(id) else routes.MappingController.submitGGTag(id), 'id -> "gg-tag-form") {
+    @formHelper(action = routes.TaskListMappingController.submitGGTag(id), 'id -> "gg-tag-form") {
 
         @if(ggTagForm.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(ggTagForm))
@@ -92,14 +87,11 @@
 
         </div>
 
-        @if(taskList) {
-            <div class="govuk-button-group">
-                <button type="submit" class="govuk-button" id="gg-tag-continue"  value="continue">@msgs("button.saveContinue")</button>
-                <button type="submit" class="govuk-button govuk-button--secondary" id="gg-tag-save"  value="save">@msgs("button.saveComeBackLater")</button>
-            </div>
-        } else {
-            <button type="submit" class="govuk-button" id="submit-gg-tag">@msgs("button.continue")</button>
-        }
+        <div class="govuk-button-group">
+            <button type="submit" class="govuk-button" id="gg-tag-continue"  value="continue">@msgs("button.saveContinue")</button>
+            <button type="submit" class="govuk-button govuk-button--secondary" id="gg-tag-save"  value="save">@msgs("button.saveComeBackLater")</button>
+        </div>
+
     }
 
 }

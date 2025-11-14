@@ -19,6 +19,8 @@ package uk.gov.hmrc.agentmappingfrontend.model
 import play.api.libs.json.Format
 import play.api.libs.json.Json._
 
+import java.time.LocalDate
+
 case class SaMappings(mappings: List[SaMapping])
 
 object SaMappings {
@@ -27,24 +29,10 @@ object SaMappings {
 
 case class SaMapping(
   arn: String,
-  saAgentReference: String
+  saAgentReference: String,
+  created: Option[LocalDate]
 )
 
 object SaMapping {
   implicit val formats: Format[SaMapping] = format[SaMapping]
-}
-
-case class VatMappings(mappings: List[VatMapping])
-
-object VatMappings {
-  implicit val formats: Format[VatMappings] = format[VatMappings]
-}
-
-case class VatMapping(
-  arn: String,
-  vrn: String
-)
-
-object VatMapping {
-  implicit val formats: Format[VatMapping] = format[VatMapping]
 }

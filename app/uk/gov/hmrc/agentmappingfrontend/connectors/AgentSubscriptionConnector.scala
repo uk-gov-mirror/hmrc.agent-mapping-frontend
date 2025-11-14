@@ -21,7 +21,6 @@ import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
 import uk.gov.hmrc.agentmappingfrontend.model.SubscriptionJourneyRecord
-import uk.gov.hmrc.agentmappingfrontend.util.HttpAPIMonitor
 import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -39,8 +38,7 @@ class AgentSubscriptionConnector @Inject() (
   http: HttpClientV2,
   val metrics: Metrics,
   appConfig: AppConfig
-)(implicit val ec: ExecutionContext)
-extends HttpAPIMonitor {
+)(implicit val ec: ExecutionContext) {
 
   private lazy val baseUrl: String = appConfig.agentSubscriptionBaseUrl
 
@@ -52,40 +50,31 @@ extends HttpAPIMonitor {
 
   def getSubscriptionJourneyRecord(
     authProviderId: AuthProviderId
-  )(implicit rh: RequestHeader): Future[Option[SubscriptionJourneyRecord]] =
-    monitor("ConsumedAPI-Agent-Subscription-getSubscriptionJourneyRecord-GET") {
-      http
-        .get(url"$baseUrl/agent-subscription/subscription/journey/id/${authProviderId.id}")
-        .execute[HttpResponse]
-        .map(mapGetJourneySuccess)
-    }
+  )(implicit rh: RequestHeader): Future[Option[SubscriptionJourneyRecord]] = http
+    .get(url"$baseUrl/agent-subscription/subscription/journey/id/${authProviderId.id}")
+    .execute[HttpResponse]
+    .map(mapGetJourneySuccess)
 
   def getSubscriptionJourneyRecord(
     continueId: String
-  )(implicit rh: RequestHeader): Future[Option[SubscriptionJourneyRecord]] =
-    monitor("ConsumedAPI-Agent-Subscription-findByContinueId-GET") {
-      http
-        .get(url"$baseUrl/agent-subscription/subscription/journey/continueId/$continueId")
-        .execute[HttpResponse]
-        .map(mapGetJourneySuccess)
-    }
+  )(implicit rh: RequestHeader): Future[Option[SubscriptionJourneyRecord]] = http
+    .get(url"$baseUrl/agent-subscription/subscription/journey/continueId/$continueId")
+    .execute[HttpResponse]
+    .map(mapGetJourneySuccess)
 
   def createOrUpdateJourney(
     subscriptionJourneyRecord: SubscriptionJourneyRecord
-  )(implicit rh: RequestHeader): Future[Either[String, Unit]] =
-    monitor("ConsumedAPI-Agent-Subscription-createOrUpdate-POST") {
-      http
-        .post(
-          url"$baseUrl/agent-subscription/subscription/journey/primaryId/${subscriptionJourneyRecord.authProviderId.id}"
-        )
-        .withBody(Json.toJson(subscriptionJourneyRecord))
-        .execute[HttpResponse]
-        .map { response =>
-          response.status match {
-            case 204 => Right(())
-            case status => Left(s"POST to createOrUpdateJourney returned $status")
-          }
-        }
+  )(implicit rh: RequestHeader): Future[Either[String, Unit]] = http
+    .post(
+      url"$baseUrl/agent-subscription/subscription/journey/primaryId/${subscriptionJourneyRecord.authProviderId.id}"
+    )
+    .withBody(Json.toJson(subscriptionJourneyRecord))
+    .execute[HttpResponse]
+    .map { response =>
+      response.status match {
+        case 204 => Right(())
+        case status => Left(s"POST to createOrUpdateJourney returned $status")
+      }
     }
 
 }

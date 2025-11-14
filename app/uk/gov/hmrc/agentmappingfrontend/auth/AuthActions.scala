@@ -69,6 +69,32 @@ with Logging {
     }
   }
 
+  def withAuthorisedSaAgent(idRefToArn: MappingArnResultId)(
+    body: Enrolment => Future[Result]
+  )(implicit
+    request: Request[AnyContent],
+    ec: ExecutionContext
+  ): Future[Result] = {
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+    authorised(AuthProviders(GovernmentGateway))
+      .retrieve(allEnrolments and credentials) {
+        case _ ~ None => Future.successful(Forbidden)
+        case agentEnrolments ~ Some(_) =>
+          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated)
+          val saEnrolment = activeEnrolments.find(_.key == IRAgentReference.serviceKey)
+
+          saEnrolment match {
+            case Some(enrolment) => body(enrolment)
+            case _ if userHasAsAgentEnrolment(activeEnrolments) => Future.successful(Redirect(routes.MappingController.incorrectAccount(idRefToArn)))
+            case _ if userHasAtedAgentEnrolment(activeEnrolments) => Future.successful(Redirect(routes.MappingController.alreadyMapped(idRefToArn)))
+            case _ => Future.successful(Redirect(routes.MappingController.notEnrolled(idRefToArn)))
+          }
+      }
+      .recover {
+        handleException
+      }
+  }
+
   def withAuthorisedAgent(idRefToArn: MappingArnResultId)(
     body: String => Future[Result]
   )(implicit

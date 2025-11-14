@@ -131,8 +131,7 @@ with Logging {
                 .map(_ =>
                   Ok(clientRelationshipsFoundTemplate(
                     count,
-                    id,
-                    taskList = true
+                    id
                   ))
                 )
             }
@@ -140,8 +139,7 @@ with Logging {
           else {
             Ok(clientRelationshipsFoundTemplate(
               record.clientCount,
-              id,
-              taskList = true
+              id
             ))
           }
 
@@ -157,8 +155,7 @@ with Logging {
     withSubscribingAgent(id) { _ =>
       Ok(ggTagTemplate(
         GGTagForm.form,
-        id,
-        taskList = true
+        id
       ))
     }
   }
@@ -171,8 +168,7 @@ with Logging {
           formWithErrors =>
             Ok(ggTagTemplate(
               formWithErrors,
-              id,
-              taskList = true
+              id
             )),
           ggTag =>
             repository.findRecord(id).flatMap {
@@ -222,8 +218,7 @@ with Logging {
         existingClientRelationshipsTemplate(
           addClientsForm = ExistingClientRelationshipsForm.form,
           id = id,
-          clientCountAndGGTags = agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
-          taskList = true
+          clientCountAndGGTags = agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag)
         )
       )
     }
@@ -239,8 +234,7 @@ with Logging {
               existingClientRelationshipsTemplate(
                 addClientsForm = formWithErrors,
                 id = id,
-                clientCountAndGGTags = agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag),
-                taskList = true
+                clientCountAndGGTags = agent.getMandatorySubscriptionJourneyRecord.userMappings.map(u => u.toClientCountAndGGTag)
               )
             ),
           {

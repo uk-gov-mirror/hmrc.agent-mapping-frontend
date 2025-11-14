@@ -26,15 +26,14 @@
 
 @(
         clientCount: Int,
-        id: MappingArnResultId,
-        taskList: Boolean = false
+        id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
 @returnUrl=@{s"/task-list/client-relationships-found/?id=$id"}
 
 @maxRecords=@{appConfig.clientCountMaxRecords}
 
-@mainTemplate(title = msgs("clientRelationshipsFound.title"), taskList = taskList) {
+@mainTemplate(title = msgs("clientRelationshipsFound.title"), taskList = true) {
 
     <h1 class="govuk-heading-xl">
         @if(clientCount == 1){ @msgs("clientRelationshipsFound.single.title")} else { @msgs("clientRelationshipsFound.multi.title")}
@@ -53,17 +52,12 @@
         content = Text(msgs("clientRelationshipsFound.inset"))
     ))
 
-    @if(taskList){
-        <div class="govuk-button-group">
-            <a  class="govuk-button"  id="clients-found-continue" href="@routes.TaskListMappingController.showGGTag(id)"
-                role="button" draggable="false">@msgs("button.saveContinue")</a>
-            <a  class="govuk-button govuk-button--secondary"  id="clients-found-save"
-                href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl'
-                draggable="false">@msgs("button.saveComeBackLater")</a>
-        </div>
-    } else {
-        <a  class="govuk-button" id="clients" href="@routes.MappingController.showGGTag(id)"
-            role="button" draggable="false">@msgs("button.continue")</a>
-    }
+    <div class="govuk-button-group">
+        <a  class="govuk-button"  id="clients-found-continue" href="@routes.TaskListMappingController.showGGTag(id)"
+            role="button" draggable="false">@msgs("button.saveContinue")</a>
+        <a  class="govuk-button govuk-button--secondary"  id="clients-found-save"
+            href='@appConfig.agentSubscriptionFrontendProgressSavedUrl@returnUrl'
+            draggable="false">@msgs("button.saveComeBackLater")</a>
+    </div>
 
 }

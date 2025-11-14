@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,22 @@
 
 package uk.gov.hmrc.agentmappingfrontend.util
 
-import uk.gov.hmrc.play.bootstrap.metrics.Metrics
+import play.api.i18n.Lang
+import play.api.mvc.RequestHeader
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import java.time.format.DateTimeFormatter
+import java.time.LocalDate
 
-trait HttpAPIMonitor {
+object DisplayDate {
 
-  val metrics: Metrics
-  implicit val ec: ExecutionContext
-  def monitor[A](str: String)(f: => Future[A]): Future[A] = {
-    val timerContext = metrics.defaultRegistry.timer(s"Timer-$str").time()
-    f.andThen { case _ => timerContext.stop() }
+  def displayDateForLang(date: LocalDate)(implicit request: RequestHeader): String = {
+    val lang = request.cookies
+      .get("PLAY_LANG")
+      .map(_.value)
+      .getOrElse("en")
+
+    val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM uuuu", Lang(lang).toLocale)
+
+    date.format(dateFormatter)
   }
-
 }

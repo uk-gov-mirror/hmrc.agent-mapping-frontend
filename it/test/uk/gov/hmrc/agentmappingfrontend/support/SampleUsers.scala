@@ -26,11 +26,12 @@ case class SampleUser(
 
 object SampleUsers {
 
+  val saAgentCode = "HZ1234"
   val eligibleAgent = SampleUser(
     s"""{
        |  "allEnrolments": [
        |   { "key":"IR-SA-AGENT", "identifiers": [
-       |      { "key":"IRAgentReference", "value": "HZ1234" }
+       |      { "key":"IRAgentReference", "value": "$saAgentCode" }
        |    ]}
        |  ],
        |  "optionalCredentials": {

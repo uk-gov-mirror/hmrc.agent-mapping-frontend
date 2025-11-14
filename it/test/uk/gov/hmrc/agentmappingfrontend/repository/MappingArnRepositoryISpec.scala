@@ -49,7 +49,6 @@ with DefaultPlayMongoRepositorySupport[MappingArnResult] {
   private val arn = Arn("TARN0000001")
 
   "MappingArnRepository" should {
-
     "create a MappingArnResult record" in {
       val now = Instant.now().atZone(ZoneOffset.UTC).toLocalDateTime.truncatedTo(MILLIS)
       val result = await(mappingArnRepository.create(arn))
@@ -62,15 +61,13 @@ with DefaultPlayMongoRepositorySupport[MappingArnResult] {
       mappingArnResult.createdDate.truncatedTo(SECONDS) shouldBe now.truncatedTo(
         SECONDS
       ) // check approx match (await time results in ms delay), could remove
-      mappingArnResult.currentCount shouldBe 0
+      mappingArnResult.agentCode shouldBe None
+      mappingArnResult.mappedClientCount shouldBe None
+      mappingArnResult.mappedAgentCode shouldBe None
     }
 
     "find a MappingArnResult record by Id" in {
-      val record = MappingArnResult(
-        arn,
-        0,
-        Seq.empty
-      )
+      val record = MappingArnResult(arn = arn)
       await(repository.collection.insertOne(record).toFuture())
 
       val result = await(mappingArnRepository.findRecord(record.id))
@@ -78,59 +75,25 @@ with DefaultPlayMongoRepositorySupport[MappingArnResult] {
       result shouldBe Some(record)
     }
 
-    "update client count and ggTag" in {
-      val record = MappingArnResult(
-        arn,
-        0,
-        Seq.empty
-      )
-
+    "replace a mapping matched by id" in {
+      val record = MappingArnResult(arn = arn)
       await(repository.collection.insertOne(record).toFuture())
+      val newRecord = MappingArnResult(arn = arn)
       await(
-        mappingArnRepository.upsert(
-          record.copy(clientCountAndGGTags = record.clientCountAndGGTags :+ ClientCountAndGGTag(12, "")),
+        mappingArnRepository.replace(
+          newRecord,
           record.id
         )
       )
-      val result = await(mappingArnRepository.findRecord(record.id)).get.clientCountAndGGTags.head.clientCount
 
-      result shouldBe 12
-    }
-
-    "update current ggTag" in {
-      val record = MappingArnResult(
-        arn,
-        0,
-        Seq.empty
-      )
-
-      await(repository.collection.insertOne(record).toFuture())
-      await(mappingArnRepository.updateCurrentGGTag(record.id, "6666"))
-      val result = await(mappingArnRepository.findRecord(record.id)).get.currentGGTag
-
-      result shouldBe "6666"
-    }
-
-    "update mapping complete status to true" in {
-      val record = MappingArnResult(
-        arn,
-        0,
-        Seq.empty
-      )
-
-      await(repository.collection.insertOne(record).toFuture())
-      await(mappingArnRepository.updateMappingCompleteStatus(record.id))
-      val result = await(mappingArnRepository.findRecord(record.id)).get.alreadyMapped
-
-      result shouldBe true
+      val oldIdResult = await(mappingArnRepository.findRecord(record.id))
+      oldIdResult shouldBe None
+      val newIdResult = await(mappingArnRepository.findRecord(newRecord.id))
+      newIdResult shouldBe Some(newRecord)
     }
 
     "delete a MappingArnResult record by Id" in {
-      val record = MappingArnResult(
-        arn,
-        0,
-        Seq.empty
-      )
+      val record = MappingArnResult(arn = arn)
       await(repository.collection.insertOne(record).toFuture())
 
       await(mappingArnRepository.delete(record.id))
