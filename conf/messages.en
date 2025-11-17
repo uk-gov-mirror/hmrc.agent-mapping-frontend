@@ -171,3 +171,13 @@ authorisationsAdded.table.agentReference=Agent code
 authorisationsAdded.table.dateCreated=Date added
 authorisationsAdded.link.addAnother=Add another Self Assessment agent code
 authorisationsAdded.link.asa=Sign back in to your agent services account
+
+agentCode.title=What agent code do you want to add to this account?
+agentCode.heading=What agent code do you want to add to this account?
+agentCode.hint=For example, A12345
+agentCode.button=Continue
+agentCode.error.required=Enter the agent code you want to add
+agentCode.error.lengthAndFormat=Enter an agent code that is 6 characters long and only contains letters and numbers
+agentCode.error.length=Enter an agent code that is 6 characters long
+agentCode.error.format=Enter an agent code in the correct format
+agentCode.error.alreadyMapped=Enter an agent code that is not already linked to your agent services account

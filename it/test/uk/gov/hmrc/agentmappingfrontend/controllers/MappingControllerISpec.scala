@@ -248,7 +248,141 @@ with MongoSupport {
     }
   }
 
-  import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
+  "GET /agent-code" should {
+    "show the agent code page when record is found" in {
+      val testData = MappingArnResult(
+        arn = arn,
+        agentCode = None
+      )
+      await(repo.collection.insertOne(testData).toFuture())
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "agentCode.title",
+        "agentCode.heading",
+        "agentCode.hint",
+        "agentCode.button"
+      )
+    }
+
+    "show the prepopulated agent code page when record is found" in {
+      val testData = MappingArnResult(
+        arn = arn,
+        agentCode = Some(saAgentCode)
+      )
+      await(repo.collection.insertOne(testData).toFuture())
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "agentCode.title",
+        "agentCode.heading",
+        "agentCode.hint",
+        "agentCode.button"
+      )
+      containSubstrings(
+        saAgentCode
+      )
+    }
+
+    "redirect to start when no record is found" in {
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = fakeRequest(GET, routes.MappingController.showAgentCode("foo").url)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+    }
+  }
+
+  "POST /agent-code" should {
+    "redirect to 'use GG id for agent code' when a valid agent code is submitted" in {
+      val testData = MappingArnResult(
+        arn = arn,
+        agentCode = None
+      )
+      await(repo.collection.insertOne(testData).toFuture())
+      givenUserIsAuthenticated(eligibleAgent)
+      saMappingsFound(arn)
+
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+        .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("use the gov gateway id for agent code page") // TODO: Update when implemented
+      await(repo.findRecord(testData.id)) shouldBe Some(
+        testData.copy(
+          agentCode = Some(saAgentCode)
+        )
+      )
+    }
+
+    "return 400 when already mapped agent code is submitted" in {
+      val testData = MappingArnResult(
+        arn = arn,
+        agentCode = None
+      )
+      await(repo.collection.insertOne(testData).toFuture())
+      givenUserIsAuthenticated(eligibleAgent)
+      saMappingsFound(arn)
+
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+        .withFormUrlEncodedBody("agentCode" -> "A12345")
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 400
+      checkHtmlResultContainsEscapedMsgs(
+        result,
+        "agentCode.error.alreadyMapped"
+      )
+    }
+
+    val invalidCases = Seq(
+      "" -> "agentCode.error.required",
+      "A123456" -> "agentCode.error.length",
+      "AB!@#4" -> "agentCode.error.format",
+      "!" -> "agentCode.error.lengthAndFormat"
+    )
+    invalidCases.foreach { case (input, errorMsg) =>
+      s"return 400 when invalid agent code $input is submitted" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
+        saMappingsFound(arn)
+
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+          .withFormUrlEncodedBody("agentCode" -> input)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 400
+        checkHtmlResultContainsEscapedMsgs(
+          result,
+          errorMsg
+        )
+      }
+    }
+
+    "redirect to start when no record is found" in {
+      givenUserIsAuthenticated(eligibleAgent)
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode("foo").url)
+        .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+    }
+  }
 
   "/start-submit" should {
     val arn = Arn("TARN0000001")

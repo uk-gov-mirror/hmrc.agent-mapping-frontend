@@ -28,7 +28,7 @@ extends BaseControllerISpec {
   private lazy val controller: TestOnlyController = app.injector.instanceOf[TestOnlyController]
 
   val arn = Arn("ARN0001")
-  val sa = "AgentCode1"
+  val sa = "A12345"
 
   "findMappings" should {
     "return OK with list of sa mappings" in {

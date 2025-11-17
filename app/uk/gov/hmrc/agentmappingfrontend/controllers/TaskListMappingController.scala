@@ -20,7 +20,6 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.Configuration
 import play.api.Environment
-import play.api.Logging
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
@@ -67,8 +66,7 @@ class TaskListMappingController @Inject() (
 )
 extends FrontendController(cc)
 with I18nSupport
-with AuthActions
-with Logging {
+with AuthActions {
 
   def root(continueId: String): Action[AnyContent] = Action.async {
     Redirect(routes.TaskListMappingController.start(continueId))

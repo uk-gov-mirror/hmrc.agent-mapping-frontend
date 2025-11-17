@@ -21,7 +21,6 @@ import play.api.mvc._
 import play.api.data._
 import play.api.Configuration
 import play.api.Environment
-import play.api.Logging
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
@@ -52,6 +51,7 @@ class MappingController @Inject() (
   val config: Configuration,
   val env: Environment,
   signInTemplate: start_sign_in_required,
+  agentCodeTemplate: agent_code,
   clientAuthorisationsAddedTemplate: client_authorisations_added,
   startTemplate: start,
   alreadyMappedTemplate: already_mapped,
@@ -64,8 +64,7 @@ class MappingController @Inject() (
 )
 extends FrontendController(mcc)
 with I18nSupport
-with AuthActions
-with Logging {
+with AuthActions {
 
   def root: Action[AnyContent] = Action {
     Redirect(routes.MappingController.start)
@@ -148,6 +147,56 @@ with Logging {
     withCheckForArn {
       case Some(_) => Future.successful(Redirect(routes.MappingController.start))
       case None => Future.successful(Ok(signInTemplate()))
+    }
+  }
+
+  def showAgentCode(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withBasicAgentAuth {
+      repository.findRecord(id).map {
+        case Some(record) =>
+          val form =
+            record.agentCode match {
+              case Some(code) => AgentCodeForm.form.fill(code)
+              case None => AgentCodeForm.form
+            }
+          Ok(agentCodeTemplate(form, id))
+        case _ =>
+          logger.warn(s"Agent with $id not found in repository or agent is page hopping")
+          Redirect(routes.MappingController.start)
+      }
+    }
+  }
+
+  def submitAgentCode(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withBasicAgentAuth {
+      AgentCodeForm.form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => BadRequest(agentCodeTemplate(formWithErrors, id)),
+          agentCode =>
+            repository.findRecord(id).flatMap {
+              case Some(record) =>
+                mappingConnector.findSaMappingsFor(record.arn).flatMap { saMappings =>
+                  if (saMappings.map(_.saAgentReference).contains(agentCode)) {
+                    Future.successful(BadRequest(agentCodeTemplate(
+                      AgentCodeForm.form.withError(
+                        AgentCodeForm.fieldName,
+                        "agentCode.error.alreadyMapped"
+                      ).fill(agentCode),
+                      id
+                    )))
+                  }
+                  else {
+                    repository.replace(record.copy(agentCode = Some(agentCode)), id).map { _ =>
+                      Redirect("use the gov gateway id for agent code page") // TODO add actual redirect url
+                    }
+                  }
+                }
+              case _ =>
+                logger.warn(s"Agent with $id not found in repository or agent is page hopping")
+                Future.successful(Redirect(routes.MappingController.start))
+            }
+        )
     }
   }
 

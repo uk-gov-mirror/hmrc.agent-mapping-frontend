@@ -8,6 +8,8 @@ GET         /start                                               uk.gov.hmrc.age
 POST        /start                                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitStart(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 
 GET         /start-submit                                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /agent-code                                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showAgentCode(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+POST        /agent-code                                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitAgentCode(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /sign-in-required                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.needAgentServicesAccount
 GET         /client-authorisations-added                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showClientAuthorisationsAdded(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /error/already-linked                                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)

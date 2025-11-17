@@ -30,12 +30,12 @@ object MappingStubs {
   val listOfSaMappings = List(
     SaMapping(
       "ARN0001",
-      "AgentCode1",
+      "A12345",
       Some(LocalDate.now())
     ),
     SaMapping(
       "ARN0001",
-      "AgentCode2",
+      "B12345",
       Some(LocalDate.now())
     )
   )
