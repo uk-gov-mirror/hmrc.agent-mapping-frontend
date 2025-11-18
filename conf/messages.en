@@ -181,3 +181,12 @@ agentCode.error.lengthAndFormat=Enter an agent code that is 6 characters long an
 agentCode.error.length=Enter an agent code that is 6 characters long
 agentCode.error.format=Enter an agent code in the correct format
 agentCode.error.alreadyMapped=Enter an agent code that is not already linked to your agent services account
+
+userTheGgUserId.title=Use the Government Gateway user ID for agent code {0}
+userTheGgUserId.heading=Use the Government Gateway user ID for agent code {0}
+userTheGgUserId.para.1=On the next page, we’ll ask you to sign in through the Government Gateway. This will sign you out of your agent services account.
+userTheGgUserId.para.2=When prompted, enter the user ID and password linked to the agent code {0}.
+userTheGgUserId.para.3=Signing in will:
+userTheGgUserId.bullet.1=confirm this agent code was given to you by HMRC
+userTheGgUserId.bullet.2=allow us to link all authorisations under the code to your agent services account
+userTheGgUserId.button=Continue

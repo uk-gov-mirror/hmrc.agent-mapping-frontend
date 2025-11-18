@@ -31,7 +31,8 @@
 @(
         agentCode: String,
         clientCount: Int,
-        mappings: Seq[SaMapping]
+        mappings: Seq[SaMapping],
+        id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
 @countSuffix = @{
@@ -78,8 +79,8 @@
 
     <p class="govuk-body">
         <a class="govuk-link govuk-body" target="_blank" rel="noreferrer noopener" href="@{
-            "routes.MappingController.showWhatAgentCode.url"
-        }"> @* TODO add this route *@
+            routes.MappingController.showAgentCode(id).url
+        }">
             @msgs("authorisationsAdded.link.addAnother")
         </a>
     </p>

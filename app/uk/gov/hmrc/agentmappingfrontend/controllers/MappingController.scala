@@ -52,6 +52,7 @@ class MappingController @Inject() (
   val env: Environment,
   signInTemplate: start_sign_in_required,
   agentCodeTemplate: agent_code,
+  useTheGgUserIdTemplate: use_the_gg_user_id,
   clientAuthorisationsAddedTemplate: client_authorisations_added,
   startTemplate: start,
   alreadyMappedTemplate: already_mapped,
@@ -188,7 +189,7 @@ with AuthActions {
                   }
                   else {
                     repository.replace(record.copy(agentCode = Some(agentCode)), id).map { _ =>
-                      Redirect("use the gov gateway id for agent code page") // TODO add actual redirect url
+                      Redirect(routes.MappingController.showUseTheGgUserId(id))
                     }
                   }
                 }
@@ -197,6 +198,25 @@ with AuthActions {
                 Future.successful(Redirect(routes.MappingController.start))
             }
         )
+    }
+  }
+
+  def showUseTheGgUserId(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+    withBasicAgentAuth {
+      repository.findRecord(id).map {
+        case Some(MappingArnResult(
+              _,
+              _,
+              Some(agentCode),
+              _,
+              _,
+              _
+            )) =>
+          Ok(useTheGgUserIdTemplate(agentCode, id))
+        case _ =>
+          logger.warn(s"Agent with $id not found in repository or agent is page hopping")
+          Redirect(routes.MappingController.start)
+      }
     }
   }
 
@@ -251,7 +271,8 @@ with AuthActions {
             Ok(clientAuthorisationsAddedTemplate(
               mappedAgentCode,
               mappedClientCount,
-              saMappings
+              saMappings,
+              id
             ))
           }
         case _ =>

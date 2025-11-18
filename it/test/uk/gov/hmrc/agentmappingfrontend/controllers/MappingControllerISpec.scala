@@ -317,7 +317,7 @@ with MongoSupport {
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("use the gov gateway id for agent code page") // TODO: Update when implemented
+      redirectLocation(result) shouldBe Some(routes.MappingController.showUseTheGgUserId(testData.id).url)
       await(repo.findRecord(testData.id)) shouldBe Some(
         testData.copy(
           agentCode = Some(saAgentCode)
@@ -384,7 +384,55 @@ with MongoSupport {
     }
   }
 
-  "/start-submit" should {
+  "GET /use-gg-user-id" should {
+    "show the 'use GG user id' page for agent code page when record is found" in {
+      val testData = MappingArnResult(
+        arn = arn,
+        agentCode = Some(saAgentCode)
+      )
+      await(repo.collection.insertOne(testData).toFuture())
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = fakeRequest(GET, routes.MappingController.showUseTheGgUserId(testData.id).url)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 200
+      checkHtmlResultContainsMsgsWithArgs(
+        result,
+        Map(
+          "userTheGgUserId.title" -> saAgentCode,
+          "userTheGgUserId.heading" -> saAgentCode,
+          "userTheGgUserId.para.1" -> "",
+          "userTheGgUserId.para.2" -> saAgentCode,
+          "userTheGgUserId.para.3" -> "",
+          "userTheGgUserId.bullet.1" -> "",
+          "userTheGgUserId.bullet.2" -> "",
+          "userTheGgUserId.button" -> ""
+        )
+      )
+    }
+
+    "redirect to start when no agent code is found" in {
+      val testData = MappingArnResult(arn = arn)
+      givenUserIsAuthenticated(eligibleAgent)
+
+      val request = fakeRequest(GET, routes.MappingController.showUseTheGgUserId(testData.id).url)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+    }
+
+    "redirect to start when no record is found" in {
+      givenUserIsAuthenticated(eligibleAgent)
+      val request = fakeRequest(GET, routes.MappingController.showUseTheGgUserId("foo").url)
+      val result = callEndpointWith(request)
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+    }
+  }
+
+  "GET /start-submit" should {
     val arn = Arn("TARN0000001")
     "redirect to client authorisations added for a user with IR-SA-AGENT enrolment after mapping and updating session" in {
       val testData = MappingArnResult(
@@ -476,7 +524,7 @@ with MongoSupport {
     }
   }
 
-  "/client-authorisations-added" should {
+  "GET /client-authorisations-added" should {
     val arn = Arn("TARN0000001")
 
     behave like anEndpointReachableIfSignedInWithEligibleEnrolment(
