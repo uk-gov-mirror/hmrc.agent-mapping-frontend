@@ -18,18 +18,14 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import play.api.data._
 import play.api.Configuration
 import play.api.Environment
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
-import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.No
-import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer.Yes
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult
 import uk.gov.hmrc.agentmappingfrontend.util._
@@ -78,65 +74,15 @@ with AuthActions {
   val start: Action[AnyContent] = Action.async { implicit request =>
     withCheckForArn {
       case Some(arn) =>
-        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] =
-          for {
-            mdOpt <- mappingConnector.getMappingDetails(arn)
-            details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
-          } yield ClientCountAndGGTag(details.count, details.ggTag)
-
-        clientCountsAndGGTags.flatMap { countsAndTags =>
-          val activeForm: Form[RadioInputAnswer] =
-            if (countsAndTags.isEmpty)
-              StartMappingForm.form
-            else
-              ExistingClientRelationshipsForm.form
+        mappingConnector.findSaMappingsFor(arn).flatMap { agentCodes =>
           repository
             .create(arn)
             .map(id =>
               Ok(startTemplate(
                 id,
-                countsAndTags,
-                getBackLinkForStart,
-                activeForm
+                agentCodes,
+                getBackLinkForStart
               ))
-            )
-        }
-
-      case None => Future.successful(Redirect(routes.MappingController.needAgentServicesAccount))
-    }
-  }
-
-  def submitStart(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withCheckForArn {
-      case Some(arn) =>
-        val clientCountsAndGGTags: Future[Seq[ClientCountAndGGTag]] =
-          for {
-            mdOpt <- mappingConnector.getMappingDetails(arn)
-            details <- mdOpt.fold(Seq.empty[MappingDetails])(md => md.mappingDetails)
-          } yield ClientCountAndGGTag(details.count, details.ggTag)
-
-        clientCountsAndGGTags.flatMap { countsAndTags =>
-          val activeForm: Form[RadioInputAnswer] =
-            if (countsAndTags.isEmpty)
-              StartMappingForm.form
-            else
-              ExistingClientRelationshipsForm.form
-          activeForm
-            .bindFromRequest()
-            .fold(
-              formWithErrors =>
-                BadRequest(
-                  startTemplate(
-                    id,
-                    countsAndTags,
-                    getBackLinkForStart,
-                    formWithErrors
-                  )
-                ),
-              {
-                case Yes => Redirect(routes.SignedOutController.signOutAndRedirect(id))
-                case No => Redirect(appConfig.agentServicesFrontendBaseUrl)
-              }
             )
         }
 

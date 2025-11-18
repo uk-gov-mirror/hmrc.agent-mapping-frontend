@@ -17,8 +17,9 @@
 @import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
-@import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
-@import uk.gov.hmrc.agentmappingfrontend.model.RadioInputAnswer
+@import uk.gov.hmrc.agentmappingfrontend.model.SaMapping
+@import uk.gov.hmrc.agentmappingfrontend.util.DisplayDate
+@import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 
 @import uk.gov.hmrc.govukfrontend.views.Implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -29,95 +30,77 @@
         formWithCSRF: FormWithCSRF,
         govukRadios: GovukRadios,
         govukButton: GovukButton,
-        govukErrorSummary: GovukErrorSummary
+        govukTable: GovukTable,
+        govukErrorSummary: GovukErrorSummary,
+        govukInsetText : GovukInsetText,
+        govukDetails: GovukDetails
 )
 
 @(
         id: MappingArnResultId,
-        clientCountAndGGTags: Seq[ClientCountAndGGTag],
+        agentCodes: Seq[SaMapping],
         backLink: String,
-        form: Form[RadioInputAnswer]
 )(implicit request: RequestHeader, msgs: Messages)
-
-@addedTag = {
-    <strong class="govuk-tag govuk-tag--blue">
-        @msgs("start.added")
-    </strong>
-}
-
-@rows = @{
-    clientCountAndGGTags.map(clientCountAndGGTag =>
-        SummaryListRow(
-            key = Key(content = Text(s"XXXX-XXXX-${clientCountAndGGTag.ggTag}")),
-            value = Value(content = HtmlContent(addedTag))
-        )
-    )
-}
-@legend = @{
-  if(clientCountAndGGTags.isEmpty) {
-    msgs("start.addClients")
-  } else {
-    msgs("start.addMore")
-  }
-
-}
 
 @mainTemplate(
     title = msgs("start.title"),
     backLinkHref = Some(backLink),
-    taskList = false
 ) {
+    <h1 class="govuk-heading-xl">@msgs("start.title")</h1>
+    <p class="govuk-body">@msgs("start.p1")</p>
 
-    @if(form.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
+    @if(agentCodes.nonEmpty) {
+        @govukTable(
+            Table(
+                caption = Some(msgs("start.table.caption")),
+                head = Some(Seq(
+                    HeadCell(Text(msgs("authorisationsAdded.table.agentReference"))),
+                    HeadCell(Text(msgs("authorisationsAdded.table.dateCreated")))
+                )),
+                rows = agentCodes.map { agentCode =>
+                    Seq(
+                        TableRow(Text(agentCode.saAgentReference)),
+                        TableRow(Text(agentCode.created.map(DisplayDate.displayDateForLang).getOrElse("")))
+                    )
+                }
+            )
+        )
     }
 
-    <h1 class="govuk-heading-xl">@msgs("start.title")</h1>
+    <p class="govuk-body">@msgs("start.li.header")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@msgs("start.li1")</li>
+        <li>@msgs("start.li2")</li>
+    </ul>
 
-    <p class="govuk-body">@msgs("start.p1")</p>
-    <p class="govuk-body">@msgs("start.p2")</p>
-    <div class="govuk-inset-text">
-        @msgs("start.inset")
-    </div>
+    @govukInsetText(InsetText(
+        content = Text(msgs("start.inset"))
+    ))
 
-    @if(clientCountAndGGTags.nonEmpty) {
-        <p class="govuk-body">@msgs("start.copied")</p>
-        @govukSummaryList(SummaryList(
-            classes = "govuk-summary-list--no-border",
-            rows = rows
+    @if(agentCodes.length <= 1) {
+        @govukDetails(Details(
+            summary = Text(msgs("start.details.link")),
+            content = HtmlContent (
+                s"""
+             <p class="govuk-body">${msgs("start.details1")}</p>
+             <p class="govuk-body">${msgs("start.details2")}</p>
+             <p class="govuk-body">${msgs("start.details3")}</p>
+               """
+            )
+        ))
+
+    }else {
+        @govukDetails(Details(
+            summary = Text(msgs("start.details.link")),
+            content = HtmlContent (
+                s"""
+             <p class="govuk-body">${msgs("start.details1")}</p>
+             <p class="govuk-body">${msgs("start.details4")}</p>
+               """
+            )
         ))
     }
 
-    @formWithCSRF(action = routes.MappingController.submitStart(id)) {
-        @govukRadios(Radios(
-            hint = Some(Hint(
-                content = Text(msgs("start.hint"))
-            )),
-            items = Seq(
-                RadioItem(
-                    value = Some("yes"),
-                    content = Text(msgs("start.yes")),
-                    checked = false
-                ),
-                RadioItem(
-                    value = Some("no"),
-                    content = Text(msgs("button.no")),
-                    checked = false
-                )
-            ),
-            fieldset = Some(Fieldset(
-                legend = Some(Legend(
-                    content = Text(legend),
-                    isPageHeading = false,
-                    classes = "govuk-fieldset__legend--m"
-                ))
-            ))
-        ).withFormField(form("additional-clients")))
-
-      @govukButton(Button(
-          content = Text(msgs("button.continue"))
-      ))
-
-    }
-
+    <a href="@routes.MappingController.showAgentCode(id).url" class="govuk-button" role="button">
+    @msgs("start.button.agent.code")</a>
 }

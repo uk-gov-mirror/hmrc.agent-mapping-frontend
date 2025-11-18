@@ -5,7 +5,6 @@ GET         /assets/*file                                        controllers.Ass
 
 GET         /                                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.root
 GET         /start                                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.start
-POST        /start                                               uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.submitStart(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 
 GET         /start-submit                                        uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.returnFromGGLogin(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /agent-code                                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showAgentCode(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
