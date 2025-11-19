@@ -37,7 +37,8 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set("IR-SA-AGENT")
   )
@@ -69,24 +70,8 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
-       |}""".stripMargin,
-    activeEnrolments = Set()
-  )
-
-  val vatEnrolledAgentInactive = SampleUser(
-    s"""{
-       |  "allEnrolments": [
-       |   { "key":"HMCE-VAT-AGNT",
-       |     "identifiers": [
-       |        { "key":"AgentRefNo", "value": "HZ1234" }
-       |      ],
-       |     "state": "Inactive" }
-       |  ],
-       |  "optionalCredentials": {
-       |    "providerId": "12345-credId",
-       |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set()
   )
@@ -97,7 +82,8 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set()
   )
@@ -112,7 +98,8 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set("HMRC-AS-AGENT")
   )
@@ -127,7 +114,8 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set("HMRC-AGENT-AGENT")
   )
@@ -142,15 +130,22 @@ object SampleUsers {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set("FOO")
   )
 
   val individual = SampleUser(
-    "",
-    Set.empty,
-    Some(InsufficientEnrolments())
+    s"""{
+       | "allEnrolments": [],
+       |  "optionalCredentials": {
+       |    "providerId": "12345-credId",
+       |    "providerType": "GovernmentGateway"
+       |  },
+       |  "affinityGroup": "Individual"
+       |}""".stripMargin,
+    activeEnrolments = Set()
   )
 
 }

@@ -35,11 +35,16 @@
 
 @(
         agentCodeForm: Form[String],
+        fromCompletePage: Boolean,
         id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
 @backLink = @{
-    "TODO Add url after rebasing"
+    if(fromCompletePage) {
+        routes.MappingController.showClientAuthorisationsAdded(id).url
+    } else {
+        routes.MappingController.start.url
+    }
 }
 
 @mainTemplate(

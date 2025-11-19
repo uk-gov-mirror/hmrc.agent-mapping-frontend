@@ -64,6 +64,7 @@
     @govukTable(
         Table(
             caption = Some(msgs("authorisationsAdded.table.caption")),
+            firstCellIsHeader = true,
             head = Some(Seq(
                 HeadCell(Text(msgs("authorisationsAdded.table.agentReference"))),
                 HeadCell(Text(msgs("authorisationsAdded.table.dateCreated")))
@@ -78,14 +79,14 @@
     )
 
     <p class="govuk-body">
-        <a class="govuk-link govuk-body" target="_blank" rel="noreferrer noopener" href="@{
+        <a class="govuk-link govuk-body" href="@{
             routes.MappingController.showAgentCode(id).url
         }">
             @msgs("authorisationsAdded.link.addAnother")
         </a>
     </p>
     <p class="govuk-body">
-        <a class="govuk-link govuk-body" target="_blank" rel="noreferrer noopener" href="@{
+        <a class="govuk-link govuk-body" href="@{
             routes.SignedOutController.reLogForMappingStart.url
         }">
             @msgs("authorisationsAdded.link.asa")

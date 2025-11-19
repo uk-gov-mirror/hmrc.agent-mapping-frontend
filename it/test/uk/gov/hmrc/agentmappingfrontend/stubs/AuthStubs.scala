@@ -44,7 +44,8 @@ trait AuthStubs {
        |  "optionalCredentials": {
        |    "providerId": "12345-credId",
        |    "providerType": "GovernmentGateway"
-       |  }
+       |  },
+       |  "affinityGroup": "Agent"
        |}""".stripMargin
   )
 

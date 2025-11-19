@@ -12,10 +12,9 @@ POST        /agent-code                                          uk.gov.hmrc.age
 GET         /use-the-gg-user-id                                  uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showUseTheGgUserId(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /sign-in-required                                    uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.needAgentServicesAccount
 GET         /client-authorisations-added                         uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.showClientAuthorisationsAdded(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
-GET         /error/already-linked                                uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.alreadyMapped(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
-GET         /error/not-enrolled                                  uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.notEnrolled(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
-GET         /error/incorrect-account                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.incorrectAccount(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
-
+GET         /error/wrong-sign-in-asa                             uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.wrongSignInDetailsAsa(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /error/wrong-sign-in-not-agent                       uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.wrongSignInDetailsNotAgent(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
+GET         /error/problem-with-details                          uk.gov.hmrc.agentmappingfrontend.controllers.MappingController.problemWithDetails(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /signed-out-redirect                                 uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.signOutAndRedirect(id: uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId)
 GET         /re-log-in-redirect                                  uk.gov.hmrc.agentmappingfrontend.controllers.SignedOutController.reLogForMappingStart
 

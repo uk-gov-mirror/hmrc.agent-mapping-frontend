@@ -196,3 +196,19 @@ userTheGgUserId.para.3=Signing in will:
 userTheGgUserId.bullet.1=confirm this agent code was given to you by HMRC
 userTheGgUserId.bullet.2=allow us to link all authorisations under the code to your agent services account
 userTheGgUserId.button=Continue
+
+wrongSignInDetails.title=You entered the wrong sign in details
+wrongSignInDetails.heading=You entered the wrong sign in details
+wrongSignInDetails.para.1.asa=The sign in details you entered are for your agent services account.
+wrongSignInDetails.para.1.notAgent=The sign in details you entered are not for an agent account.
+wrongSignInDetails.para.2=Enter a Government Gateway user ID and password you use to manage Self Assessment for your clients.
+wrongSignInDetails.button=Try again
+
+problemWithDetails.title=There is a problem with the details you entered
+problemWithDetails.heading=There is a problem with the details you entered
+problemWithDetails.para.1=The details do not match what we hold in our records.
+problemWithDetails.para.2=This might be because:
+problemWithDetails.bullet.1=the agent code you entered is not for Self Assessment
+problemWithDetails.bullet.2=the Government gateway user ID you entered is not used to manage Self Assessment clients
+problemWithDetails.bullet.3=the agent code you entered is for Self Assessment, but it’s linked to a different user ID than than the one you entered
+problemWithDetails.button=Try again

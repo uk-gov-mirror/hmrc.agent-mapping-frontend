@@ -21,8 +21,8 @@ import com.google.inject.ImplementedBy
 import javax.inject.Inject
 import javax.inject.Singleton
 import play.api.i18n.Lang
+import sttp.model.Uri.UriContext
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import views.html.helper.urlEncode
 
 @ImplementedBy(classOf[FrontendAppConfig])
 trait AppConfig {
@@ -50,7 +50,7 @@ trait AppConfig {
   lazy val taskListSignOutRedirectUrl: String = s"$agentMappingFrontendBaseUrl/agent-mapping/task-list/start-submit"
   lazy val agentSubscriptionFrontendTaskListUrl: String = s"$agentSubscriptionFrontendBaseUrl/task-list"
   lazy val agentSubscriptionFrontendProgressSavedUrl = s"$agentSubscriptionFrontendBaseUrl/progress-saved/?backLink=$agentMappingFrontendBaseUrl/agent-mapping"
-  lazy val signInAndContinue = s"$signInUrl?continue=${urlEncode(agentServicesFrontendBaseUrl)}"
+  lazy val signInAndContinue: String = uri"$signInUrl?continue_url=$agentServicesFrontendBaseUrl".toString
 
   val languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),

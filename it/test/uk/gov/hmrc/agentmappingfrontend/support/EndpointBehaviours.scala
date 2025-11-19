@@ -67,50 +67,42 @@ extends AuthStubs {
       doRequest
     )
 
-    "redirect to /not-enrolled page if the current user has an ineligible enrolment" in {
+    "redirect to /problem-with-details page if the current user does not have the IR-SA-AGENT enrolment" in {
       givenUserIsAuthenticated(notEligibleAgent)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = doRequest(request)
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
+      result.header.headers("Location") shouldBe routes.MappingController.problemWithDetails(id = "someArnRefForMapping").url
     }
 
-    "redirect to /incorrect-account page if the current user has an HMRC-AS-AGENT enrolment" in {
+    "redirect to /wrong-sign-in-asa page if the current user has an HMRC-AS-AGENT enrolment" in {
       givenUserIsAuthenticated(mtdAsAgent)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = doRequest(request)
 
       result.header.status shouldBe 303
       result.header
-        .headers("Location") shouldBe routes.MappingController.incorrectAccount(id = "someArnRefForMapping").url
+        .headers("Location") shouldBe routes.MappingController.wrongSignInDetailsAsa(id = "someArnRefForMapping").url
     }
 
-    "redirect to /already-linked page if the current user has an HMRC-AGENT-AGENT enrolment" in {
-      givenUserIsAuthenticated(mtdAgentAgent)
+    "redirect to /wrong-sign-in-not-agent page if the current user is not an agent" in {
+      givenUserIsAuthenticated(individual)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = doRequest(request)
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.alreadyMapped(id = "someArnRefForMapping").url
+      result.header
+        .headers("Location") shouldBe routes.MappingController.wrongSignInDetailsNotAgent(id = "someArnRefForMapping").url
     }
 
-    "redirect to /not-enrolled page if the current user has no enrolments" in {
-      givenUserIsAuthenticated(agentNotEnrolled)
-      val request = fakeRequest(endpointMethod, endpointPath)
-      val result = doRequest(request)
-
-      result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
-    }
-
-    "render the /not-enrolled page if the current user has only inactive enrolments" in {
+    "render the /problem-with-details page if the current user has only inactive enrolments" in {
       givenUserIsAuthenticated(saEnrolledAgentInactive)
       val request = fakeRequest(endpointMethod, endpointPath)
       val result = doRequest(request)
 
       result.header.status shouldBe 303
-      result.header.headers("Location") shouldBe routes.MappingController.notEnrolled(id = "someArnRefForMapping").url
+      result.header.headers("Location") shouldBe routes.MappingController.problemWithDetails(id = "someArnRefForMapping").url
     }
   }
 

@@ -53,6 +53,7 @@
         @govukTable(
             Table(
                 caption = Some(msgs("start.table.caption")),
+                firstCellIsHeader = true,
                 head = Some(Seq(
                     HeadCell(Text(msgs("authorisationsAdded.table.agentReference"))),
                     HeadCell(Text(msgs("authorisationsAdded.table.dateCreated")))

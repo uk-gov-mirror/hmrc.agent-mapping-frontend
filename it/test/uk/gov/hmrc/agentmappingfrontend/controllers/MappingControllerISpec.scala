@@ -374,7 +374,7 @@ with MongoSupport {
       )
     }
 
-    "redirect to already mapped for a user with IR-SA-AGENT enrolment after mapping responds with a duplicate error" in {
+    "throw error if a user with IR-SA-AGENT enrolment has an identical code to an existing mapping" in {
       val testData = MappingArnResult(
         arn = arn,
         agentCode = Some(saAgentCode)
@@ -384,10 +384,9 @@ with MongoSupport {
       givenUserIsAuthenticated(eligibleAgent)
 
       val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, routes.MappingController.returnFromGGLogin(testData.id).url)
-      val result = callEndpointWith(request)
+      val result = intercept[RuntimeException](callEndpointWith(request))
 
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.alreadyMapped(testData.id).url)
+      result.getMessage should include("Agent is already mapped - unexpected state as this was checked earlier")
     }
 
     "throw error for a user with IR-SA-AGENT enrolment after mapping returns unexpected response" in {
@@ -416,7 +415,7 @@ with MongoSupport {
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.notEnrolled(testData.id).url)
+      redirectLocation(result) shouldBe Some(routes.MappingController.problemWithDetails(testData.id).url)
     }
 
     "redirect to start if is a record without an agentCode" in {
@@ -535,59 +534,56 @@ with MongoSupport {
       }
   }
 
-  "not enrolled " should {
-    "contain a message indicating that the user is not enrolled for a valid non-mtd enrolment" in {
+  "/wrong-sign-in-asa" should {
+    "contain a message indicating that the user is logged in with an ASA" in {
       givenUserIsAuthenticated(agentNotEnrolled)
-      val request = fakeRequest(GET, routes.MappingController.notEnrolled(id = "someArnRefForMapping").url)
+      val request = fakeRequest(GET, routes.MappingController.wrongSignInDetailsAsa(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(
         result,
-        "notEnrolled.p1",
-        "button.signInAlt"
+        "wrongSignInDetails.title",
+        "wrongSignInDetails.heading",
+        "wrongSignInDetails.para.1.asa",
+        "wrongSignInDetails.para.2",
+        "wrongSignInDetails.button"
       )
     }
   }
 
-  "already mapped " should {
-    "contain a message indicating that the user has already mapped all of her non-mtd identifiers" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.alreadyMapped(id = "someArnRefForMapping").url)
+  "/wrong-sign-in-not-agent" should {
+    "contain a message indicating that the user not logged in with an agent account" in {
+      givenUserIsAuthenticated(agentNotEnrolled)
+      val request = fakeRequest(GET, routes.MappingController.wrongSignInDetailsNotAgent(id = "someArnRefForMapping").url)
       val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(
         result,
-        "alreadyMapped.h1",
-        "alreadyMapped.p1",
-        "button.tryAgain"
+        "wrongSignInDetails.title",
+        "wrongSignInDetails.heading",
+        "wrongSignInDetails.para.1.notAgent",
+        "wrongSignInDetails.para.2",
+        "wrongSignInDetails.button"
       )
     }
   }
 
-  "incorrectAccount" should {
-    trait IncorrectAccountFixture {
-      givenUserIsAuthenticated(mtdAsAgent)
-      val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, routes.MappingController.incorrectAccount(id = "someArnRefForMapping").url)
-      val result: Result = callEndpointWith(request)
-      val resultBody: String = bodyOf(result)
-    }
-
-    "contain a Try Again button for signing in again and repeating the journey" in new IncorrectAccountFixture {
-      checkHtmlResultContainsEscapedMsgs(result, "button.tryAgain")
-      resultBody should include(""" href="/agent-mapping/signed-out-redirect?id=""")
-    }
-
-    "contain a link to Agent Services Account homepage" in new IncorrectAccountFixture {
-      checkHtmlResultContainsEscapedMsgs(result, "link.goToASAccount")
-      resultBody should include(""" href="http://localhost:9401/agent-services-account" """)
-    }
-
-    "return 200 response and contain appropriate content" in new IncorrectAccountFixture {
+  "/problem-with-details" should {
+    "contain a message indicating that there is a problem matching the users cred to the agent code" in {
+      givenUserIsAuthenticated(agentNotEnrolled)
+      val request = fakeRequest(GET, routes.MappingController.problemWithDetails(id = "someArnRefForMapping").url)
+      val result = callEndpointWith(request)
       status(result) shouldBe 200
       checkHtmlResultContainsEscapedMsgs(
         result,
-        "incorrectAccount.h1",
-        "incorrectAccount.p1"
+        "problemWithDetails.title",
+        "problemWithDetails.heading",
+        "problemWithDetails.para.1",
+        "problemWithDetails.para.2",
+        "problemWithDetails.bullet.1",
+        "problemWithDetails.bullet.2",
+        "problemWithDetails.bullet.3",
+        "problemWithDetails.button"
       )
     }
   }

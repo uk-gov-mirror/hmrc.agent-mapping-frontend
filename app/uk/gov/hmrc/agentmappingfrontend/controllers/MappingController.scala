@@ -50,10 +50,9 @@ class MappingController @Inject() (
   agentCodeTemplate: agent_code,
   useTheGgUserIdTemplate: use_the_gg_user_id,
   clientAuthorisationsAddedTemplate: client_authorisations_added,
+  wrongSignInDetailsTemplate: wrong_sign_in_details,
+  problemWithDetailsTemplate: problem_with_details,
   startTemplate: start,
-  alreadyMappedTemplate: already_mapped,
-  notEnrolledTemplate: not_enrolled,
-  incorrectAccountTemplate: incorrect_account,
   mcc: MessagesControllerComponents
 )(implicit
   val ec: ExecutionContext,
@@ -98,7 +97,7 @@ with AuthActions {
   }
 
   def showAgentCode(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withBasicAgentAuth {
+    withBasicAuth {
       repository.findRecord(id).map {
         case Some(record) =>
           val form =
@@ -106,7 +105,11 @@ with AuthActions {
               case Some(code) => AgentCodeForm.form.fill(code)
               case None => AgentCodeForm.form
             }
-          Ok(agentCodeTemplate(form, id))
+          Ok(agentCodeTemplate(
+            form,
+            record.mappedAgentCode.isDefined,
+            id
+          ))
         case _ =>
           logger.warn(s"Agent with $id not found in repository or agent is page hopping")
           Redirect(routes.MappingController.start)
@@ -115,14 +118,19 @@ with AuthActions {
   }
 
   def submitAgentCode(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withBasicAgentAuth {
-      AgentCodeForm.form
-        .bindFromRequest()
-        .fold(
-          formWithErrors => BadRequest(agentCodeTemplate(formWithErrors, id)),
-          agentCode =>
-            repository.findRecord(id).flatMap {
-              case Some(record) =>
+    withBasicAuth {
+      repository.findRecord(id).flatMap {
+        case Some(record) =>
+          AgentCodeForm.form
+            .bindFromRequest()
+            .fold(
+              formWithErrors =>
+                BadRequest(agentCodeTemplate(
+                  formWithErrors,
+                  record.mappedAgentCode.isDefined,
+                  id
+                )),
+              agentCode =>
                 mappingConnector.findSaMappingsFor(record.arn).flatMap { saMappings =>
                   if (saMappings.map(_.saAgentReference).contains(agentCode)) {
                     Future.successful(BadRequest(agentCodeTemplate(
@@ -130,6 +138,7 @@ with AuthActions {
                         AgentCodeForm.fieldName,
                         "agentCode.error.alreadyMapped"
                       ).fill(agentCode),
+                      record.mappedAgentCode.isDefined,
                       id
                     )))
                   }
@@ -139,16 +148,16 @@ with AuthActions {
                     }
                   }
                 }
-              case _ =>
-                logger.warn(s"Agent with $id not found in repository or agent is page hopping")
-                Future.successful(Redirect(routes.MappingController.start))
-            }
-        )
+            )
+        case _ =>
+          logger.warn(s"Agent with $id not found in repository or agent is page hopping")
+          Future.successful(Redirect(routes.MappingController.start))
+      }
     }
   }
 
   def showUseTheGgUserId(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withBasicAgentAuth {
+    withBasicAuth {
       repository.findRecord(id).map {
         case Some(MappingArnResult(
               _,
@@ -189,12 +198,10 @@ with AuthActions {
                 )
                 _ <- repository.replace(newRecord, id)
               } yield Redirect(routes.MappingController.showClientAuthorisationsAdded(newRecord.id))
-            case CONFLICT => Future.successful(Redirect(routes.MappingController.alreadyMapped(id)))
+            case CONFLICT => throw new RuntimeException("Agent is already mapped - unexpected state as this was checked earlier")
             case e => throw new RuntimeException(s"Unexpected response from mapping service: $e")
           }
-        case Some(result) if result.agentCode.isDefined =>
-          // TODO differentiate between not enrolled and agent code mismatch
-          Redirect(routes.MappingController.notEnrolled(id))
+        case Some(result) if result.agentCode.isDefined => Redirect(routes.MappingController.problemWithDetails(id))
         case _ =>
           logger.warn(s"Agent with $id not found in repository or agent is page hopping")
           Redirect(routes.MappingController.start)
@@ -203,7 +210,7 @@ with AuthActions {
   }
 
   def showClientAuthorisationsAdded(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAgent(id) { _ =>
+    withAuthorisedSaAgent(id) { _ =>
       repository.findRecord(id).flatMap {
         case Some(MappingArnResult(
               _,
@@ -228,21 +235,21 @@ with AuthActions {
     }
   }
 
-  def alreadyMapped(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  def wrongSignInDetailsAsa(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      Future.successful(Ok(alreadyMappedTemplate(id)))
+      Future.successful(Ok(wrongSignInDetailsTemplate(id, isAsa = true)))
     }
   }
 
-  def notEnrolled(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  def wrongSignInDetailsNotAgent(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      Future.successful(Ok(notEnrolledTemplate(id)))
+      Future.successful(Ok(wrongSignInDetailsTemplate(id, isAsa = false)))
     }
   }
 
-  def incorrectAccount(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
+  def problemWithDetails(id: MappingArnResultId): Action[AnyContent] = Action.async { implicit request =>
     withBasicAuth {
-      Future.successful(Ok(incorrectAccountTemplate(id)))
+      Future.successful(Ok(problemWithDetailsTemplate(id)))
     }
   }
 

@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.agentmappingfrontend.util.RequestAwareLogging
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.affinityGroup
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.agentCode
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.credentials
@@ -77,54 +78,17 @@ with RequestAwareLogging {
   ): Future[Result] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
     authorised(AuthProviders(GovernmentGateway))
-      .retrieve(allEnrolments and credentials) {
-        case _ ~ None => Future.successful(Forbidden)
-        case agentEnrolments ~ Some(_) =>
+      .retrieve(allEnrolments and credentials and affinityGroup) {
+        case _ ~ None ~ _ => Future.successful(Forbidden)
+        case agentEnrolments ~ Some(_) ~ Some(affinityGroup) =>
           val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated)
           val saEnrolment = activeEnrolments.find(_.key == IRAgentReference.serviceKey)
 
           saEnrolment match {
             case Some(enrolment) => body(enrolment)
-            case _ if userHasAsAgentEnrolment(activeEnrolments) => Future.successful(Redirect(routes.MappingController.incorrectAccount(idRefToArn)))
-            case _ if userHasAtedAgentEnrolment(activeEnrolments) => Future.successful(Redirect(routes.MappingController.alreadyMapped(idRefToArn)))
-            case _ => Future.successful(Redirect(routes.MappingController.notEnrolled(idRefToArn)))
-          }
-      }
-      .recover {
-        handleException
-      }
-  }
-
-  def withAuthorisedAgent(idRefToArn: MappingArnResultId)(
-    body: String => Future[Result]
-  )(implicit
-    request: Request[AnyContent],
-    ec: ExecutionContext
-  ): Future[Result] = {
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-    authorised(AuthProviders(GovernmentGateway))
-      .retrieve(allEnrolments and credentials) {
-        case _ ~ None => Future.successful(Forbidden)
-        case agentEnrolments ~ Some(Credentials(providerId, _)) =>
-          val activeEnrolments = agentEnrolments.enrolments.filter(_.isActivated)
-
-          val eligibleEnrolments: Set[Enrolment] = activeEnrolments.filter(LegacyAgentEnrolmentType.exists)
-          def redirectRoute: Call =
-            if (userHasAsAgentEnrolment(activeEnrolments)) {
-              routes.MappingController.incorrectAccount(idRefToArn)
-            }
-            else if (userHasAtedAgentEnrolment(activeEnrolments)) {
-              routes.MappingController.alreadyMapped(idRefToArn)
-            }
-            else {
-              routes.MappingController.notEnrolled(idRefToArn)
-            }
-
-          if (eligibleEnrolments.nonEmpty) {
-            body(providerId)
-          }
-          else {
-            Future.successful(Redirect(redirectRoute))
+            case _ if userHasAsAgentEnrolment(activeEnrolments) => Future.successful(Redirect(routes.MappingController.wrongSignInDetailsAsa(idRefToArn)))
+            case _ if affinityGroup != AffinityGroup.Agent => Future.successful(Redirect(routes.MappingController.wrongSignInDetailsNotAgent(idRefToArn)))
+            case _ => Future.successful(Redirect(routes.MappingController.problemWithDetails(idRefToArn)))
           }
       }
       .recover {

@@ -14,42 +14,38 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 
 @this(
         appConfig: AppConfig,
         mainTemplate: MainTemplate,
-        govukInsetText: GovukInsetText,
         govukButton: GovukButton
 )
 
 @(
-        agentCode: String,
         id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
-@mainTemplate(
-    title = msgs("userTheGgUserId.title", agentCode),
-    backLinkHref = Some(routes.MappingController.showAgentCode(id).url)
-) {
+@mainTemplate(title = msgs("problemWithDetails.title")) {
 
-    <h1 class="govuk-heading-xl">@msgs("userTheGgUserId.heading", agentCode)</h1>
+    <h1 class="govuk-heading-xl">@msgs("problemWithDetails.heading")</h1>
 
-    <p class="govuk-body">@msgs(s"userTheGgUserId.para.1")</p>
-    <p class="govuk-body">@msgs(s"userTheGgUserId.para.2", agentCode)</p>
-    <p class="govuk-body">@msgs(s"userTheGgUserId.para.3")</p>
+    <p class="govuk-body">@msgs("problemWithDetails.para.1")</p>
+
+    <p class="govuk-body">@msgs("problemWithDetails.para.2")</p>
 
     <ul class="govuk-list govuk-list--bullet">
-        <li>@msgs("userTheGgUserId.bullet.1")</li>
-        <li>@msgs("userTheGgUserId.bullet.2")</li>
+        <li>@msgs("problemWithDetails.bullet.1")</li>
+        <li>@msgs("problemWithDetails.bullet.2")</li>
+        <li>@msgs("problemWithDetails.bullet.3")</li>
     </ul>
 
     @govukButton(Button(
         attributes = Map("id" -> "continue"),
-        href = Some(routes.SignedOutController.signOutAndRedirect(id).url),
-        content = Text(msgs("userTheGgUserId.button"))
+        href = Some(routes.MappingController.showAgentCode(id).url),
+        content = Text(msgs("problemWithDetails.button"))
     ))
 
 }

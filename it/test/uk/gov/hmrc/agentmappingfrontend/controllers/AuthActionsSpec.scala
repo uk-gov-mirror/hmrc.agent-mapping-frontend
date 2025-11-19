@@ -58,7 +58,7 @@ with SubscriptionJourneyRecordSamples {
 
     val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
-    def testWithAuthorisedAgent: Result = await(withAuthorisedAgent("arnRefToTryAgain")(_ => Future.successful(Ok("Done."))))
+    def testWithAuthorisedSaAgent: Result = await(withAuthorisedSaAgent("arnRefToTryAgain")(_ => Future.successful(Ok("Done."))))
 
     def testWithBasicAuth: Result = await(withBasicAuth(Future.successful(Ok("Done."))))
 
@@ -110,10 +110,12 @@ with SubscriptionJourneyRecordSamples {
          |  "optionalCredentials": {
          |    "providerId": "12345-credId",
          |    "providerType": "GovernmentGateway"
-         |  }}""".stripMargin
+         |  },
+         |  "affinityGroup": "Agent"
+         |}""".stripMargin
     )
 
-    val result: Result = TestController.testWithAuthorisedAgent
+    val result: Result = TestController.testWithAuthorisedSaAgent
     status(result) shouldBe 303
     result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
     ()
@@ -166,45 +168,41 @@ with SubscriptionJourneyRecordSamples {
       }
     }
 
-    eligibleEnrolments.foreach { case (enrolment, identifier) =>
-      s"check if agent is enrolled for the eligible enrolment $enrolment and extract $identifier" in {
-        givenAuthorisedFor(
-          "{}",
-          s"""{
-             |  "allEnrolments": [
-             |    { "key":"$enrolment", "identifiers": [
-             |      { "key":"$identifier", "value": "fooReference" }
-             |    ]}
-             |  ],
-             |  "optionalCredentials": {
-             |    "providerId": "12345-credId",
-             |    "providerType": "GovernmentGateway"
-             |  }}""".stripMargin
-        )
-        val result = TestController.testWithAuthorisedAgent
-        status(result) shouldBe 200
-        bodyOf(result) shouldBe "Done."
-      }
+    "check if agent is enrolled for the eligible enrolment IR-SA-AGENT and extract IRAgentReference" in {
+      givenAuthorisedFor(
+        "{}",
+        s"""{
+           |  "allEnrolments": [
+           |    { "key":"IR-SA-AGENT", "identifiers": [
+           |      { "key":"IRAgentReference", "value": "fooReference" }
+           |    ]}
+           |  ],
+           |  "optionalCredentials": {
+           |    "providerId": "12345-credId",
+           |    "providerType": "GovernmentGateway"
+           |  },
+           |  "affinityGroup": "Agent"
+           |  }""".stripMargin
+      )
+      val result = TestController.testWithAuthorisedSaAgent
+      status(result) shouldBe 200
+      bodyOf(result) shouldBe "Done."
     }
 
-    "redirect to /already-linked" when {
+    "redirect to /problem-with-details" when {
       "agent has just a HMRC-AGENT-AGENT enrolment but not HMRC-AS-AGENT" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.alreadyMapped(id = "arnRefToTryAgain").url,
+          expectedLocation = routes.MappingController.problemWithDetails(id = "arnRefToTryAgain").url,
           enrolments = "HMRC-AGENT-AGENT" -> "AgentRefNumber"
         )
       }
-    }
-
-    "redirect to /not-enrolled" when {
-      "agent has only 'non-agent' enrolments" in {
+      "agent does not have IR-SA-AGENT enrolment" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url,
-          enrolments = "IR-SA" -> "UTR"
+          expectedLocation = routes.MappingController.problemWithDetails(id = "arnRefToTryAgain").url,
+          enrolments = ("", "")
         )
       }
-
-      "agent has only inactive (but otherwise eligible) enrolments" in {
+      "agent has only inactive IR-SA-AGENT enrolment" in {
         givenAuthorisedFor(
           "{}",
           s"""{
@@ -218,42 +216,55 @@ with SubscriptionJourneyRecordSamples {
              |  "optionalCredentials": {
              |    "providerId": "12345-credId",
              |    "providerType": "GovernmentGateway"
-             |  }}""".stripMargin
+             |  },
+             |  "affinityGroup": "Agent"
+             |  }""".stripMargin
         )
-        val result = TestController.testWithAuthorisedAgent
+        val result = TestController.testWithAuthorisedSaAgent
         status(result) shouldBe 303
         result.header
-          .headers(HeaderNames.LOCATION) shouldBe routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url
-      }
-
-      "agent has no enrolments" in {
-        behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.notEnrolled(id = "arnRefToTryAgain").url,
-          enrolments = ("", "")
-        )
-
+          .headers(HeaderNames.LOCATION) shouldBe routes.MappingController.problemWithDetails(id = "arnRefToTryAgain").url
       }
     }
 
-    "redirect to /incorrect-account" when {
-      "agent has just a HMRC-AS-AGENT enrolment" in {
+    "redirect to /wrong-sign-in-asa" when {
+      "agent has a HMRC-AS-AGENT enrolment" in {
         behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.incorrectAccount(id = "arnRefToTryAgain").url,
+          expectedLocation = routes.MappingController.wrongSignInDetailsAsa(id = "arnRefToTryAgain").url,
           enrolments = "HMRC-AS-AGENT" -> "AgentReferenceNumber"
         )
       }
+    }
 
-      "agent has both HMRC-AS-AGENT and HMRC-AGENT-AGENT enrolments" in {
-        behave like testAuthorisedAgentRedirectedTo(
-          expectedLocation = routes.MappingController.incorrectAccount(id = "arnRefToTryAgain").url,
-          enrolments = Seq("HMRC-AS-AGENT" -> "AgentReferenceNumber", "HMRC-AGENT-AGENT" -> "AgentRefNumber"): _*
+    "redirect to /wrong-sign-in-not-agent" when {
+      "agent signed in with a personal cred" in {
+        givenAuthorisedFor(
+          "{}",
+          s"""{
+             |  "allEnrolments": [
+             |    {
+             |      "key":"IR-SA-AGENT",
+             |      "identifiers": [ { "key":"IRAgentReference", "value": "fooReference" } ],
+             |      "state": "Inactive"
+             |    }
+             |  ],
+             |  "optionalCredentials": {
+             |    "providerId": "12345-credId",
+             |    "providerType": "GovernmentGateway"
+             |  },
+             |  "affinityGroup": "Individual"
+             |  }""".stripMargin
         )
+        val result = TestController.testWithAuthorisedSaAgent
+        status(result) shouldBe 303
+        result.header
+          .headers(HeaderNames.LOCATION) shouldBe routes.MappingController.wrongSignInDetailsNotAgent(id = "arnRefToTryAgain").url
       }
     }
 
     "redirect to sign-in if an agent is not logged in" in {
       givenUnauthorisedWith("MissingBearerToken")
-      val result = TestController.testWithAuthorisedAgent
+      val result = TestController.testWithAuthorisedSaAgent
       status(result) shouldBe 303
       result.header.headers(
         HeaderNames.LOCATION

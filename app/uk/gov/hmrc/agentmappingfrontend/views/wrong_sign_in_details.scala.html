@@ -14,42 +14,37 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.controllers.routes
+@import uk.gov.hmrc.agentmappingfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 
 @this(
         appConfig: AppConfig,
         mainTemplate: MainTemplate,
-        govukInsetText: GovukInsetText,
         govukButton: GovukButton
 )
 
 @(
-        agentCode: String,
-        id: MappingArnResultId
+        id: MappingArnResultId,
+        isAsa: Boolean
 )(implicit request: RequestHeader, msgs: Messages)
 
-@mainTemplate(
-    title = msgs("userTheGgUserId.title", agentCode),
-    backLinkHref = Some(routes.MappingController.showAgentCode(id).url)
-) {
+@mainTemplate(title = msgs("wrongSignInDetails.title")) {
 
-    <h1 class="govuk-heading-xl">@msgs("userTheGgUserId.heading", agentCode)</h1>
+    <h1 class="govuk-heading-xl">@msgs("wrongSignInDetails.heading")</h1>
 
-    <p class="govuk-body">@msgs(s"userTheGgUserId.para.1")</p>
-    <p class="govuk-body">@msgs(s"userTheGgUserId.para.2", agentCode)</p>
-    <p class="govuk-body">@msgs(s"userTheGgUserId.para.3")</p>
+    @if(isAsa) {
+        <p class="govuk-body">@msgs("wrongSignInDetails.para.1.asa")</p>
+    } else {
+        <p class="govuk-body">@msgs("wrongSignInDetails.para.1.notAgent")</p>
+    }
 
-    <ul class="govuk-list govuk-list--bullet">
-        <li>@msgs("userTheGgUserId.bullet.1")</li>
-        <li>@msgs("userTheGgUserId.bullet.2")</li>
-    </ul>
+    <p class="govuk-body">@msgs("wrongSignInDetails.para.2")</p>
 
     @govukButton(Button(
         attributes = Map("id" -> "continue"),
-        href = Some(routes.SignedOutController.signOutAndRedirect(id).url),
-        content = Text(msgs("userTheGgUserId.button"))
+        href = Some(routes.MappingController.showAgentCode(id).url),
+        content = Text(msgs("wrongSignInDetails.button"))
     ))
 
 }
