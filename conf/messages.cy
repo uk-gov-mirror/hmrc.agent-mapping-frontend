@@ -7,13 +7,19 @@ start.not-signed-in.title=Copïwch eich cleientiaid Hunanasesiad presennol ar dr
 start.not-signed-in.p1=Mae’n rhaid i chi fewngofnodi i’ch cyfrif gwasanaethau asiant er mwyn defnyddio’r gwasanaeth hwn.
 
 start.title=Ychwanegwch awdurdodiadau gan gleientiaid Hunanasesiad
-start.p1=Mae angen i chi roi gwybod i ni am bob cyfrif Porth y Llywodraeth yr ydych yn ei ddefnyddio i reoli’ch cleientiaid Hunanasesiad.
-start.p2=Mae hyn er mwyn sicrhau ein bod yn ychwanegu eich awdurdodiadau gan gleientiaid at eich cyfrif gwasanaethau asiant.
-start.inset=Y cyfan y bydd ychwanegu awdurdodiadau yn ei wneud yw copïo’r awdurdodiadau hyn draw i’ch cyfrif gwasanaethau asiant. Ni fyddwch yn colli unrhyw fynediad neu ganiatâd sydd gennych i reoli Hunanasesiad ar ran eich cleientiaid yn eich cyfrif gwasanaethau ar-lein CThEF.
+start.p1=Mae angen i ni wybod yr holl godau asiant rydych chi’n eu defnyddio i reoli cleientiaid Hunanasesiad.
+start.inset=Ni fydd ychwanegu awdurdodiadau gan gleientiaid at eich cyfrif gwasanaethau asiant yn newid eich caniatâd presennol – bydd gwneud hyn ond yn golygu bod dim angen i’ch cleientiaid eich awdurdodi eto.
 start.copied=Rydych eisoes wedi copïo drosodd bob awdurdodiad cleientiaid o dan:
-start.added=Awdurdodiadau wedi’u hychwanegu
-start.addClients=A ydych am ychwanegu awdurdodiadau gan eich cleient?
-start.addMore=A ydych am ychwanegu rhagor o awdurdodiadau?
+start.table.caption=Codau sydd eisoes wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
+start.li.header=Mae rhoi gwybod i CThEF am eich codau asiant yn golygu: 
+start.li1=y gallwn gasglu awdurdodiadau gan gleientiaid o’ch cyfrif Hunanasesiad a’u trosglwyddo i’ch cyfrif gwasanaethau asiant
+start.li2=ni fydd angen i’ch cleientiaid eich awdurdodi eto ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm
+start.details.link=Rhagor o wybodaeth am godau asiant Hunanasesiad
+start.details1=Mae’r codau hyn yn cael eu rhoi i chi gan CThEF fel y gallwch reoli Hunanasesiad ar gyfer eich cleientiaid. 
+start.details2=Efallai mai dim ond un cod asiant Hunanasesiad sydd gennych – mae hyn yn digwydd os ydych yn rheoli eich holl gleientiaid Hunanasesiad o dan yr un Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
+start.details3=Ond nid oes terfyn ar faint o godau asiant y gallwch eu cael. 
+start.details4=Nid oes terfyn ar faint o godau asiant y gallwch eu cael. 
+start.button.agent.code=Ychwanegu cod asiant
 start.yes=Iawn - byddaf yn mewngofnodi nawr
 start.hint=Mae angen i chi fewngofnodi gan ddefnyddio?r Dynodydd Defnyddiwr (ID) perthnasol ar gyfer Porth y Llywodraeth er mwyn profi bod gennych fynediad at y cyfrif.
 start.error.required=Dewiswch ‘Iawn’ os ydych am ychwanegu eich awdurdodiadau gan gleientiaid
@@ -149,4 +155,60 @@ global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Tret
 # TODO - remove?
 footer.links.accessibility.text=Hygyrchedd
 footer.links.accessibility.url=/agent-mapping/accessibility-statement
+
+authorisationsAdded.title.none=0 o awdurdodiadau gan gleientiaid wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.title.single=1 awdurdodiad cleient wedi’i ychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.title.multi={0} o awdurdodiadau gan gleientiaid wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.banner.header.none=0 o awdurdodiadau gan gleientiaid wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.banner.header.single=1 awdurdodiad cleient wedi’i ychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.banner.header.multi={0} o awdurdodiadau gan gleientiaid wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.banner.body=Cod asiant Hunanasesiad: {0}
+authorisationsAdded.h2=Beth mae hyn yn ei olygu
+authorisationsAdded.para.1.none=Rydych wedi cysylltu’r cod asiant hwn â’ch cyfrif gwasanaethau asiant.
+authorisationsAdded.para.1.single=Gallwch nawr reoli’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm ar gyfer y cleient hwn.
+authorisationsAdded.para.1.multi=Gallwch nawr reoli’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm ar gyfer y cleientiaid hyn.
+authorisationsAdded.para.2.none=Fodd bynnag, nid yw’r cod hwn yn cael ei ddefnyddio i reoli cleientiaid Hunanasesiad eto.
+authorisationsAdded.inset.none=Pan fyddwch yn ychwanegu cleientiaid Hunanasesiad o dan god asiant {0}, gellir hefyd defnyddio eu hawdurdodiadau ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
+authorisationsAdded.inset.single=Os byddwch yn ychwanegu rhagor o gleientiaid Hunanasesiad o dan god asiant {0}, gellir hefyd defnyddio eu hawdurdodiadau ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
+authorisationsAdded.inset.multi=Os byddwch yn ychwanegu rhagor o gleientiaid Hunanasesiad o dan god asiant {0}, gellir hefyd defnyddio eu hawdurdodiadau ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
+authorisationsAdded.table.caption=Codau sydd wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
+authorisationsAdded.table.agentReference=Cod asiant
+authorisationsAdded.table.dateCreated=Dyddiad yr ychwanegiad
+authorisationsAdded.link.addAnother=Ychwanegwch god asiant Hunanasesiad arall
+authorisationsAdded.link.asa=Mewngofnodwch eto i’ch cyfrif gwasanaethau asiant
+
+agentCode.title=Pa god asiant ydych chi am ei ychwanegu at y cyfrif hwn?
+agentCode.heading=Pa god asiant ydych chi am ei ychwanegu at y cyfrif hwn?
+agentCode.hint=Er enghraifft, A12345
+agentCode.button=Er enghraifft, A12345
+agentCode.error.required=Nodwch y cod asiant rydych am ei ychwanegu
+agentCode.error.lengthAndFormat=Nodwch god asiant sy’n cynnwys 6 o gymeriadau ac sy’n llythrennau a rhifau yn unig
+agentCode.error.length=Nodwch god asiant sy’n cynnwys 6 o gymeriadau
+agentCode.error.format=Nodwch god asiant yn y fformat cywir 
+agentCode.error.alreadyMapped=Nodwch god asiant sydd heb gael ei gysylltu â’ch cyfrif gwasanaethau asiant eisoes
+
+userTheGgUserId.title=Defnyddiwch y Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer cod asiant {0}
+userTheGgUserId.heading=Defnyddiwch y Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer cod asiant {0}
+userTheGgUserId.para.1=Ar y dudalen nesaf, byddwn yn gofyn i chi fewngofnodi drwy Borth y Llywodraeth. Bydd gwneud hyn yn eich allgofnodi o’ch cyfrif gwasanaethau asiant.
+userTheGgUserId.para.2=Nodwch yr ID Defnyddiwr, a’r cyfrinair sy’n gysylltiedig â’r cod asiant {0}, pan ofynnir i chi wneud hynny.
+userTheGgUserId.para.3=Bydd mewngofnodi yn:
+userTheGgUserId.bullet.1=cadarnhau bod y cod asiant hwn wedi’i roi i chi gan CThEF
+userTheGgUserId.bullet.2=ein caniatáu i gysylltu pob awdurdodiad o dan y cod perthansol â’ch cyfrif gwasanaethau asiant
+userTheGgUserId.button=Parhau
+
+wrongSignInDetails.title=Rydych wedi nodi’r manylion mewngofnodi anghywir
+wrongSignInDetails.heading=Rydych wedi nodi’r manylion mewngofnodi anghywir
+wrongSignInDetails.para.1.asa=Mae’r manylion mewngofnodi a nodwyd gennych yn fanylion ar gyfer eich cyfrif gwasanaethau asiant.
+wrongSignInDetails.para.1.notAgent=Nid yw’r manylion mewngofnodi a nodwyd gennych ar gyfer eich cyfrif asiant.
+wrongSignInDetails.para.2=Nodwch y Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth rydych yn eu defnyddio i reoli Hunanasesiad ar gyfer eich cleientiaid. 
+wrongSignInDetails.button=Rhowch gynnig arall arni
+
+problemWithDetails.title=Mae problem gyda’r manylion rydych wedi’u nodi
+problemWithDetails.heading=Mae problem gyda’r manylion rydych wedi’u nodi
+problemWithDetails.para.1=Nid yw’r manylion yn cyd-fynd â’r hyn sydd gennym yn ein cofnodion.
+problemWithDetails.para.2=Gall hyn fod oherwydd:
+problemWithDetails.bullet.1=nid yw’r cod asiant a nodwyd gennych yn god ar gyfer Hunanasesiad
+problemWithDetails.bullet.2=nid yw’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth a nodwyd gennych yn cael ei ddefnyddio i reoli cleientiaid Hunanasesiad
+problemWithDetails.bullet.3=mae’r cod asiant a nodwyd gennych yn god ar gyfer Hunanasesiad, ond mae’n gysylltiedig ag ID Defnyddiwr gwahanol i’r un a roesoch
+problemWithDetails.button=Rhowch gynnig arall arni
 
