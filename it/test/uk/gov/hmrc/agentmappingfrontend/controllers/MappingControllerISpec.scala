@@ -26,7 +26,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnResult
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
@@ -39,8 +38,6 @@ class MappingControllerISpec
 extends BaseControllerISpec
 with AuthStubs
 with MongoSupport {
-
-  private lazy val repo = app.injector.instanceOf[MappingArnRepository]
 
   override def additionalConfig: Map[String, String] = Map("mongodb.uri" -> mongoUri)
 
@@ -164,111 +161,136 @@ with MongoSupport {
     }
   }
 
-  "GET /agent-code" should {
-    "show the agent code page when record is found" in {
-      val testData = MappingArnResult(
-        arn = arn,
-        agentCode = None
-      )
-      await(repo.collection.insertOne(testData).toFuture())
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
-      val result = callEndpointWith(request)
+  "GET /agent-code" when {
+    "the agent is on a mapping journey" should {
+      "show the agent code page when record is found" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
+        val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
+        val result = callEndpointWith(request)
 
-      status(result) shouldBe 200
-      checkHtmlResultContainsEscapedMsgs(
-        result,
-        "agentCode.title",
-        "agentCode.heading",
-        "agentCode.hint",
-        "agentCode.button"
-      )
+        status(result) shouldBe 200
+        checkHtmlResultContainsEscapedMsgs(
+          result,
+          "agentCode.title",
+          "agentCode.heading",
+          "agentCode.hint",
+          "agentCode.button"
+        )
+      }
+
+      "show the prepopulated agent code page when record is found" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = Some(saAgentCode)
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
+        val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 200
+        checkHtmlResultContainsEscapedMsgs(
+          result,
+          "agentCode.title",
+          "agentCode.heading",
+          "agentCode.hint",
+          "agentCode.button"
+        )
+        containSubstrings(
+          saAgentCode
+        )
+      }
+
+      "redirect to ASA home when no record is found" in {
+        givenUserIsAuthenticated(eligibleAgent)
+        val request = fakeRequest(GET, routes.MappingController.showAgentCode("foo").url)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
+      }
     }
+    "the agent is on a client auth mapping journey" should {
+      "show the agent code page when record is found" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None,
+          legacyClientDetails = Some(LegacyClientDetails(
+            "Client Name",
+            Seq("A12345"),
+            "/test-url",
+            "/test-url"
+          ))
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
+        val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
+        val result = callEndpointWith(request)
 
-    "show the prepopulated agent code page when record is found" in {
-      val testData = MappingArnResult(
-        arn = arn,
-        agentCode = Some(saAgentCode)
-      )
-      await(repo.collection.insertOne(testData).toFuture())
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.showAgentCode(testData.id).url)
-      val result = callEndpointWith(request)
+        status(result) shouldBe 200
+        checkHtmlResultContainsMsgsWithArg(
+          result,
+          Map(
+            "agentCodeAuth.title" -> "",
+            "agentCodeAuth.heading" -> "",
+            "agentCodeAuth.para.1" -> "Client Name",
+            "agentCodeAuth.para.2" -> "",
+            "agentCodeAuth.para.3" -> "",
+            "agentCodeAuth.bullet.1" -> "Client Name",
+            "agentCodeAuth.bullet.2" -> "Client Name",
+            "agentCodeAuth.insetText" -> "",
+            "agentCodeAuth.details.summary" -> "",
+            "agentCodeAuth.details.para.1" -> "",
+            "agentCodeAuth.details.para.2" -> "",
+            "agentCodeAuth.details.para.3" -> "",
+            "agentCodeAuth.label" -> "",
+            "agentCodeAuth.hint" -> "",
+            "agentCodeAuth.button" -> "",
+            "agentCodeAuth.cancelLink" -> "Client Name"
+          )
+        )
+      }
 
-      status(result) shouldBe 200
-      checkHtmlResultContainsEscapedMsgs(
-        result,
-        "agentCode.title",
-        "agentCode.heading",
-        "agentCode.hint",
-        "agentCode.button"
-      )
-      containSubstrings(
-        saAgentCode
-      )
-    }
+      "redirect to ASA home when no record is found" in {
+        givenUserIsAuthenticated(eligibleAgent)
+        val request = fakeRequest(GET, routes.MappingController.showAgentCode("foo").url)
+        val result = callEndpointWith(request)
 
-    "redirect to start when no record is found" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request = fakeRequest(GET, routes.MappingController.showAgentCode("foo").url)
-      val result = callEndpointWith(request)
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
+      }
 
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+      "redirect to ASA home when the journey is already complete" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None,
+          legacyClientDetails = Some(LegacyClientDetails(
+            "Client Name",
+            Seq("A12345"),
+            "/test-url",
+            "/test-url"
+          )),
+          mappedAgentCode = Some("A12345"),
+          mappedClientCount = Some(1)
+        )
+        givenUserIsAuthenticated(eligibleAgent)
+        val request = fakeRequest(GET, routes.MappingController.showAgentCode("foo").url)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
+      }
     }
   }
 
-  "POST /agent-code" should {
-    "redirect to 'use GG id for agent code' when a valid agent code is submitted" in {
-      val testData = MappingArnResult(
-        arn = arn,
-        agentCode = None
-      )
-      await(repo.collection.insertOne(testData).toFuture())
-      givenUserIsAuthenticated(eligibleAgent)
-      saMappingsFound(arn)
-
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
-        .withFormUrlEncodedBody("agentCode" -> saAgentCode)
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.showUseTheGgUserId(testData.id).url)
-      await(repo.findRecord(testData.id)) shouldBe Some(
-        testData.copy(
-          agentCode = Some(saAgentCode)
-        )
-      )
-    }
-
-    "return 400 when already mapped agent code is submitted" in {
-      val testData = MappingArnResult(
-        arn = arn,
-        agentCode = None
-      )
-      await(repo.collection.insertOne(testData).toFuture())
-      givenUserIsAuthenticated(eligibleAgent)
-      saMappingsFound(arn)
-
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
-        .withFormUrlEncodedBody("agentCode" -> "A12345")
-      val result = callEndpointWith(request)
-
-      status(result) shouldBe 400
-      checkHtmlResultContainsEscapedMsgs(
-        result,
-        "agentCode.error.alreadyMapped"
-      )
-    }
-
-    val invalidCases = Seq(
-      "" -> "agentCode.error.required",
-      "A123456" -> "agentCode.error.length",
-      "AB!@#4" -> "agentCode.error.format",
-      "!" -> "agentCode.error.lengthAndFormat"
-    )
-    invalidCases.foreach { case (input, errorMsg) =>
-      s"return 400 when invalid agent code $input is submitted" in {
+  "POST /agent-code" when {
+    "the agent is on a mapping journey" should {
+      "redirect to 'use GG id for agent code' when a valid agent code is submitted" in {
         val testData = MappingArnResult(
           arn = arn,
           agentCode = None
@@ -278,25 +300,160 @@ with MongoSupport {
         saMappingsFound(arn)
 
         val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
-          .withFormUrlEncodedBody("agentCode" -> input)
+          .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.MappingController.showUseTheGgUserId(testData.id).url)
+        await(repo.findRecord(testData.id)) shouldBe Some(
+          testData.copy(
+            agentCode = Some(saAgentCode)
+          )
+        )
+      }
+
+      "return 400 when already mapped agent code is submitted" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
+        saMappingsFound(arn)
+
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+          .withFormUrlEncodedBody("agentCode" -> "A12345")
         val result = callEndpointWith(request)
 
         status(result) shouldBe 400
         checkHtmlResultContainsEscapedMsgs(
           result,
-          errorMsg
+          "agentCode.error.alreadyMapped"
         )
       }
+
+      val invalidCases = Seq(
+        "" -> "agentCode.error.required",
+        "A123456" -> "agentCode.error.length",
+        "AB!@#4" -> "agentCode.error.format",
+        "!" -> "agentCode.error.lengthAndFormat"
+      )
+      invalidCases.foreach { case (input, errorMsg) =>
+        s"return 400 when invalid agent code $input is submitted" in {
+          val testData = MappingArnResult(
+            arn = arn,
+            agentCode = None
+          )
+          await(repo.collection.insertOne(testData).toFuture())
+          givenUserIsAuthenticated(eligibleAgent)
+          saMappingsFound(arn)
+
+          val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+            .withFormUrlEncodedBody("agentCode" -> input)
+          val result = callEndpointWith(request)
+
+          status(result) shouldBe 400
+          checkHtmlResultContainsEscapedMsgs(
+            result,
+            errorMsg
+          )
+        }
+      }
+
+      "redirect to ASA home when no record is found" in {
+        givenUserIsAuthenticated(eligibleAgent)
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode("foo").url)
+          .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
+      }
     }
+    "the agent is on a client auth mapping journey" should {
+      "redirect to 'use GG id for agent code' when a valid agent code is submitted" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None,
+          legacyClientDetails = Some(LegacyClientDetails(
+            "Client Name",
+            Seq(saAgentCode),
+            "/test-url",
+            "/test-url"
+          ))
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
 
-    "redirect to start when no record is found" in {
-      givenUserIsAuthenticated(eligibleAgent)
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode("foo").url)
-        .withFormUrlEncodedBody("agentCode" -> saAgentCode)
-      val result = callEndpointWith(request)
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+          .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+        val result = callEndpointWith(request)
 
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.MappingController.showUseTheGgUserId(testData.id).url)
+        await(repo.findRecord(testData.id)) shouldBe Some(
+          testData.copy(
+            agentCode = Some(saAgentCode)
+          )
+        )
+      }
+
+      "return 400 when agent code that is not for this client is submitted" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None,
+          legacyClientDetails = Some(LegacyClientDetails(
+            "Client Name",
+            Seq(saAgentCode),
+            "/test-url",
+            "/test-url"
+          ))
+        )
+        await(repo.collection.insertOne(testData).toFuture())
+        givenUserIsAuthenticated(eligibleAgent)
+        saMappingsFound(arn)
+
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode(testData.id).url)
+          .withFormUrlEncodedBody("agentCode" -> "A12345")
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 400
+        checkHtmlResultContainsMsgsWithArg(
+          result,
+          Map("agentCodeAuth.error.wrongCode" -> "Client Name")
+        )
+      }
+
+      "redirect to ASA home when no record is found" in {
+        givenUserIsAuthenticated(eligibleAgent)
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode("foo").url)
+          .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
+      }
+      "redirect to ASA home when the journey is already complete" in {
+        val testData = MappingArnResult(
+          arn = arn,
+          agentCode = None,
+          legacyClientDetails = Some(LegacyClientDetails(
+            "Client Name",
+            Seq(saAgentCode),
+            "/test-url",
+            "/test-url"
+          )),
+          mappedAgentCode = Some(saAgentCode),
+          mappedClientCount = Some(1)
+        )
+        givenUserIsAuthenticated(eligibleAgent)
+        val request: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest(POST, routes.MappingController.submitAgentCode("foo").url)
+          .withFormUrlEncodedBody("agentCode" -> saAgentCode)
+        val result = callEndpointWith(request)
+
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
+      }
     }
   }
 
@@ -312,7 +469,7 @@ with MongoSupport {
       val result = callEndpointWith(request)
 
       status(result) shouldBe 200
-      checkHtmlResultContainsMsgsWithArgs(
+      checkHtmlResultContainsMsgsWithArg(
         result,
         Map(
           "userTheGgUserId.title" -> saAgentCode,
@@ -327,7 +484,7 @@ with MongoSupport {
       )
     }
 
-    "redirect to start when no agent code is found" in {
+    "redirect to ASA home when no agent code is found" in {
       val testData = MappingArnResult(arn = arn)
       givenUserIsAuthenticated(eligibleAgent)
 
@@ -335,16 +492,16 @@ with MongoSupport {
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+      redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
     }
 
-    "redirect to start when no record is found" in {
+    "redirect to ASA home when no record is found" in {
       givenUserIsAuthenticated(eligibleAgent)
       val request = fakeRequest(GET, routes.MappingController.showUseTheGgUserId("foo").url)
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+      redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
     }
   }
 
@@ -418,7 +575,7 @@ with MongoSupport {
       redirectLocation(result) shouldBe Some(routes.MappingController.problemWithDetails(testData.id).url)
     }
 
-    "redirect to start if is a record without an agentCode" in {
+    "redirect to ASA home if is a record without an agentCode" in {
       val testData = MappingArnResult(arn = arn)
       await(repo.collection.insertOne(testData).toFuture())
       givenUserIsAuthenticated(eligibleAgent)
@@ -426,16 +583,16 @@ with MongoSupport {
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+      redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
     }
 
-    "redirect to start if there is no record found" in {
+    "redirect to ASA home if there is no record found" in {
       givenUserIsAuthenticated(eligibleAgent)
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = fakeRequest(GET, routes.MappingController.returnFromGGLogin("foo").url)
       val result = callEndpointWith(request)
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+      redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
     }
   }
 
@@ -450,22 +607,22 @@ with MongoSupport {
     testsWithClientCount(0)
     testsWithClientCount(1)
     testsWithClientCount(10)
+    authJourneyTestsWithClientCount(1)
+    authJourneyTestsWithClientCount(10)
 
     // scalastyle:off method.length
     def testsWithClientCount(clientCount: Int): Unit =
       s"display the complete page with correct content for a user with" +
         s" enrolments: ${eligibleAgent.activeEnrolments.mkString(", ")} and a client count of $clientCount" in {
-          val mappingId = await(repo.create(arn))
-          val record = await(repo.findRecord(mappingId)).get
-          await(
-            repo.replace(
-              record.copy(
-                mappedClientCount = Some(clientCount),
-                mappedAgentCode = Some(saAgentCode)
-              ),
-              mappingId
-            )
-          )
+          val mappingId = repo.create(arn).futureValue
+          val record = repo.findRecord(mappingId).futureValue.get
+          repo.replace(
+            record.copy(
+              mappedClientCount = Some(clientCount),
+              mappedAgentCode = Some(saAgentCode)
+            ),
+            mappingId
+          ).futureValue
 
           givenUserIsAuthenticated(eligibleAgent)
           saMappingsFound(arn)
@@ -479,29 +636,69 @@ with MongoSupport {
               "single"
             else
               "multi"
-          checkHtmlResultContainsMsgsWithArgs(
+          checkHtmlResultContainsMsgsWithArg(
             result,
             Map(
               s"authorisationsAdded.title.$countSuffix" -> clientCount.toString,
               s"authorisationsAdded.banner.header.$countSuffix" -> clientCount.toString,
               "authorisationsAdded.banner.body" -> saAgentCode,
               s"authorisationsAdded.para.1.$countSuffix" -> "",
+              s"authorisationsAdded.para.2${if (clientCount == 0)
+                  ".none"
+                else
+                  ""}" -> "",
               s"authorisationsAdded.inset.$countSuffix" -> saAgentCode,
               "authorisationsAdded.table.caption" -> "",
               "authorisationsAdded.table.agentReference" -> "",
               "authorisationsAdded.table.dateCreated" -> "",
               "authorisationsAdded.link.addAnother" -> "",
               "authorisationsAdded.link.asa" -> ""
-            ) ++ (
-              if (clientCount == 0)
-                Map(
-                  "authorisationsAdded.para.2.none" -> ""
-                )
-              else
-                Map[String, String]()
             )
           )
+        }
+    def authJourneyTestsWithClientCount(clientCount: Int): Unit =
+      s"display the complete page with correct content for a user on a client auth journey with" +
+        s" enrolments: ${eligibleAgent.activeEnrolments.mkString(", ")} and a client count of $clientCount" in {
+          val mappingId = repo.create(arn).futureValue
+          val record = repo.findRecord(mappingId).futureValue.get
+          repo.replace(
+            record.copy(
+              legacyClientDetails = Some(
+                LegacyClientDetails(
+                  "Client Name",
+                  Seq(saAgentCode),
+                  "/continue-url",
+                  "/back-url"
+                )
+              ),
+              mappedClientCount = Some(clientCount),
+              mappedAgentCode = Some(saAgentCode)
+            ),
+            mappingId
+          ).futureValue
 
+          givenUserIsAuthenticated(eligibleAgent)
+          saMappingsFound(arn)
+          val request = fakeRequest(GET, routes.MappingController.showClientAuthorisationsAdded(id = mappingId).url)
+          val result = callEndpointWith(request)
+          status(result) shouldBe 200
+          val countSuffix =
+            if (clientCount == 1)
+              "single"
+            else
+              "multi"
+          checkHtmlResultContainsMsgsWithArgs(
+            result,
+            Map(
+              s"authorisationsAdded.title.$countSuffix" -> Seq(clientCount.toString),
+              s"authorisationsAdded.banner.header.$countSuffix" -> Seq(clientCount.toString),
+              "authorisationsAdded.banner.body" -> Seq(saAgentCode),
+              s"authorisationsAdded.para.1.$countSuffix.named" -> Seq(saAgentCode, "Client Name"),
+              "authorisationsAdded.para.2" -> Nil,
+              s"authorisationsAdded.inset.$countSuffix" -> Seq(saAgentCode),
+              "authorisationsAdded.link.asa" -> Nil
+            )
+          )
         }
 
     s"redirect to journey start when repository does not hold the record for the user with" +
@@ -510,7 +707,7 @@ with MongoSupport {
         val request = fakeRequest(GET, routes.MappingController.showClientAuthorisationsAdded(id = "someArnRefForMapping").url)
         val result = callEndpointWith(request)
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
       }
 
     s"redirect to journey start when repository does not hold the mapped agent code and count for the user with" +
@@ -530,7 +727,7 @@ with MongoSupport {
         val request = fakeRequest(GET, routes.MappingController.showClientAuthorisationsAdded(id = mappingId).url)
         val result = callEndpointWith(request)
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.MappingController.start.url)
+        redirectLocation(result) shouldBe Some("http://localhost:9401/agent-services-account")
       }
   }
 

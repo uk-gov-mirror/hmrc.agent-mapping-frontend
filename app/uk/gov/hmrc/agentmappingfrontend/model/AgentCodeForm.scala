@@ -29,23 +29,26 @@ object AgentCodeForm {
   val regex = "[a-zA-Z0-9]*"
   val length = 6
 
-  val form: Form[String] = {
+  def form(legacyClientDetails: Option[LegacyClientDetails] = None): Form[String] = {
     Form(
       single(
         fieldName -> text
           .transform(_.trim, identity[String])
-          .verifying(validateAgentCode())
+          .verifying(validateAgentCode(legacyClientDetails))
       )
     )
   }
 
-  private def validateAgentCode(): Constraint[String] = {
+  // scalastyle:off cyclomatic.complexity
+  private def validateAgentCode(legacyClientDetails: Option[LegacyClientDetails]): Constraint[String] = {
     Constraint[String] { agentCode: String =>
       agentCode match {
         case value if value.isEmpty => Invalid(ValidationError("agentCode.error.required"))
         case value if value.length != length && !value.matches(regex) => Invalid(ValidationError("agentCode.error.lengthAndFormat"))
         case value if value.length != length => Invalid(ValidationError("agentCode.error.length"))
         case value if !value.matches(regex) => Invalid(ValidationError("agentCode.error.format"))
+        case value if legacyClientDetails.isDefined && !legacyClientDetails.exists(_.clientsLegacyRelationships.contains(value)) =>
+          Invalid(ValidationError("agentCodeAuth.error.wrongCode", legacyClientDetails.get.clientName))
         case _ => Valid
       }
     }

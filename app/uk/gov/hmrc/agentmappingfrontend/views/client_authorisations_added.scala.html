@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 @import uk.gov.hmrc.agentmappingfrontend.model.SaMapping
 @import uk.gov.hmrc.agentmappingfrontend.util.DisplayDate
+@import uk.gov.hmrc.agentmappingfrontend.model.LegacyClientDetails
 
 @this(
         mainTemplate: MainTemplate,
@@ -31,65 +32,78 @@
 @(
         agentCode: String,
         clientCount: Int,
+        optLegacyClientDetails: Option[LegacyClientDetails],
         mappings: Seq[SaMapping],
         id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
+@clientName = @{
+    optLegacyClientDetails.map(_.clientName).getOrElse("")
+}
+@namedSuffix = @{
+    if(optLegacyClientDetails.isDefined) ".named" else ""
+}
 @countSuffix = @{
     if(clientCount == 0) {
-        "none"
+        ".none"
     } else if(clientCount == 1) {
-        "single"
+        ".single"
     } else {
-        "multi"
+        ".multi"
     }
 }
-@mainTemplate(title = msgs(s"authorisationsAdded.title.$countSuffix", clientCount)) {
+@mainTemplate(title = msgs(s"authorisationsAdded.title$countSuffix", clientCount)) {
 
     @govukPanel(Panel(
-        title = Text(msgs(s"authorisationsAdded.banner.header.$countSuffix", clientCount)),
+        title = Text(msgs(s"authorisationsAdded.banner.header$countSuffix", clientCount)),
         content = Text(msgs("authorisationsAdded.banner.body", agentCode))
     ))
 
     <h2 class="govuk-heading-m">@msgs(s"authorisationsAdded.h2")</h2>
-    <p class="govuk-body">@msgs(s"authorisationsAdded.para.1.$countSuffix")</p>
+    <p class="govuk-body">@msgs(s"authorisationsAdded.para.1$countSuffix$namedSuffix", agentCode, clientName)</p>
     @if(clientCount == 0) {
         <p class="govuk-body">@msgs("authorisationsAdded.para.2.none")</p>
+    } else {
+        <p class="govuk-body">@msgs("authorisationsAdded.para.2")</p>
     }
 
     @govukInsetText(InsetText(
-        content = Text(msgs(s"authorisationsAdded.inset.$countSuffix", agentCode))
+        content = Text(msgs(s"authorisationsAdded.inset$countSuffix", agentCode))
     ))
 
-    @govukTable(
-        Table(
-            caption = Some(msgs("authorisationsAdded.table.caption")),
-            firstCellIsHeader = true,
-            head = Some(Seq(
-                HeadCell(Text(msgs("authorisationsAdded.table.agentReference"))),
-                HeadCell(Text(msgs("authorisationsAdded.table.dateCreated")))
-            )),
-            rows = mappings.map { mapping =>
-                Seq(
-                    TableRow(Text(mapping.saAgentReference)),
-                    TableRow(Text(mapping.created.map(DisplayDate.displayDateForLang).getOrElse("")))
-                )
-            }
+    @if(optLegacyClientDetails.isEmpty) {
+        @govukTable(
+            Table(
+                caption = Some(msgs("authorisationsAdded.table.caption")),
+                firstCellIsHeader = true,
+                head = Some(Seq(
+                    HeadCell(Text(msgs("authorisationsAdded.table.agentReference"))),
+                    HeadCell(Text(msgs("authorisationsAdded.table.dateCreated")))
+                )),
+                rows = mappings.map { mapping =>
+                    Seq(
+                        TableRow(Text(mapping.saAgentReference)),
+                        TableRow(Text(mapping.created.map(DisplayDate.displayDateForLang).getOrElse("")))
+                    )
+                }
+            )
         )
-    )
+    }
 
-    <p class="govuk-body">
-        <a class="govuk-link govuk-body" href="@{
-            routes.MappingController.showAgentCode(id).url
-        }">
+    @if(optLegacyClientDetails.isEmpty) {
+        <p class="govuk-body">
+            <a class="govuk-link govuk-body" href="@{
+                routes.MappingController.showAgentCode(id).url
+            }">
             @msgs("authorisationsAdded.link.addAnother")
-        </a>
-    </p>
+            </a>
+        </p>
+    }
     <p class="govuk-body">
         <a class="govuk-link govuk-body" href="@{
             routes.SignedOutController.reLogForMappingStart.url
         }">
-            @msgs("authorisationsAdded.link.asa")
+        @msgs("authorisationsAdded.link.asa")
         </a>
     </p>
 

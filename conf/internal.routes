@@ -1,0 +1,3 @@
+# For routes that should not be accessible by users directly
++ nocsrf
+POST        /start-auth-mapping-journey                          uk.gov.hmrc.agentmappingfrontend.controllers.internal.MappingInternalController.startAuthMappingJourney

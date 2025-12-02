@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import org.apache.pekko.stream.Materializer
 import com.google.inject.AbstractModule
 import org.jsoup.Jsoup
+import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.matchers.MatchResult
 import org.scalatest.matchers.Matcher
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -31,6 +32,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.GET
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.agentmappingfrontend.support.EndpointBehaviours
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
@@ -43,6 +45,7 @@ with WireMockSupport
 with EndpointBehaviours {
 
   override implicit lazy val app: Application = appBuilder.build()
+  val repo: MappingArnRepository = app.injector.instanceOf[MappingArnRepository]
 
   def additionalConfig: Map[String, String] = Map.empty
   def moduleWithOverrides: AbstractModule = new AbstractModule {}
@@ -61,6 +64,10 @@ with EndpointBehaviours {
 
   protected implicit val materializer: Materializer = app.materializer
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    repo.collection.deleteMany(BsonDocument()).toFuture().futureValue
+  }
   protected def fakeRequest(
     endpointMethod: String = GET,
     endpointPath: String = ""
@@ -94,7 +101,7 @@ with EndpointBehaviours {
     }
   }
 
-  protected def checkHtmlResultContainsMsgsWithArgs(
+  protected def checkHtmlResultContainsMsgsWithArg(
     result: Result,
     expectedMessageKeys: Map[String, String]
   ): Unit = {
@@ -109,6 +116,26 @@ with EndpointBehaviours {
       val expectedContent = Messages(messageKey, messageArg)
 
       withClue(s"Expected content ('$expectedContent') for message key '$messageKey' to be in request body: ") {
+        bodyOf(result) should include(htmlEscapedMessage(expectedContent))
+      }
+    }
+  }
+
+  protected def checkHtmlResultContainsMsgsWithArgs(
+    result: Result,
+    expectedMessageKeys: Map[String, Seq[String]]
+  ): Unit = {
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+
+    expectedMessageKeys.foreach { case (messageKey, messageArgs) =>
+      withClue(s"Expected message key '$messageKey' to exist: ") {
+        Messages.isDefinedAt(messageKey) shouldBe true
+      }
+
+      val expectedContent = Messages(messageKey, messageArgs: _*)
+
+      withClue(s"Expected content ('$expectedContent') for message keys '$messageKey' to be in request body: ") {
         bodyOf(result) should include(htmlEscapedMessage(expectedContent))
       }
     }

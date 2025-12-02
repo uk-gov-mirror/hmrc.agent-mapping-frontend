@@ -44,7 +44,7 @@ with AgentSubscriptionStubs
 with SubscriptionJourneyRecordSamples
 with MongoSupport {
 
-  val repo = app.injector.instanceOf[TaskListMappingRepository]
+  val taskListRepo = app.injector.instanceOf[TaskListMappingRepository]
 
   override def additionalConfig: Map[String, String] = Map("mongodb.uri" -> mongoUri)
 
@@ -84,7 +84,7 @@ with MongoSupport {
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
       val request = fakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
-      val id = await(repo.findByContinueId("continue-id")).get.id
+      val id = await(taskListRepo.findByContinueId("continue-id")).get.id
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.TaskListMappingController.incorrectAccount(id).url)
     }
@@ -136,7 +136,7 @@ with MongoSupport {
       val request = fakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 303
-      val id = await(repo.findByContinueId("continue-id")).get.id
+      val id = await(taskListRepo.findByContinueId("continue-id")).get.id
 
       redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showClientRelationshipsFound(id).url)
     }
@@ -148,7 +148,7 @@ with MongoSupport {
       val request = fakeRequest(GET, "/agent-mapping/task-list/start/?continueId=continue-id")
       val result = callEndpointWith(request)
       status(result) shouldBe 303
-      val id = await(repo.findByContinueId("continue-id")).get.id
+      val id = await(taskListRepo.findByContinueId("continue-id")).get.id
 
       redirectLocation(result) shouldBe Some(routes.TaskListMappingController.showExistingClientRelationships(id).url)
     }
@@ -159,7 +159,7 @@ with MongoSupport {
     "200 the show client relationships; get client count and update db when the current user first visits the page" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
       mappingStubs.givenClientCountRecordsFound(4)
       val request = fakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
       val result = callEndpointWith(request)
@@ -184,9 +184,9 @@ with MongoSupport {
     "200 the show client relationships without update to db if the user has come from the next page (not the first time on page)" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 12, alreadyMapped = true), "continue-id"))
       val request = fakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
@@ -209,9 +209,9 @@ with MongoSupport {
     "200 the show client relationships with max record text if the client count exceeds config max (set here at 15)" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 16, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 16, alreadyMapped = true), "continue-id"))
       val request = fakeRequest(GET, s"/agent-mapping/task-list/client-relationships-found/?id=$id")
       val result = callEndpointWith(request)
       status(result) shouldBe 200
@@ -246,7 +246,7 @@ with MongoSupport {
     "display the ggTag page" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
 
       val request = fakeRequest(GET, s"/agent-mapping/task-list/tag-gg/?id=$id")
       val result = callEndpointWith(request)
@@ -266,9 +266,9 @@ with MongoSupport {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithNoUserMappings)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 12), "continue-id"))
       givenUpdateSubscriptionJourneyRecordSucceeds(
         sjrWithNoUserMappings
           .copy(
@@ -296,7 +296,7 @@ with MongoSupport {
     "redisplay the page with errors when an invalid gg-tag is submitted" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
         "ggTag" -> "ab!7",
@@ -316,9 +316,9 @@ with MongoSupport {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenNoSubscriptionJourneyRecordFoundForAuthProviderId(AuthProviderId("12345-credId"))
       givenSubscriptionJourneyRecordNotFoundForContinueId("continue-id")
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 12), "continue-id"))
       givenUpdateSubscriptionJourneyRecordFails(
         sjrWithNoUserMappings
           .copy(
@@ -362,9 +362,9 @@ with MongoSupport {
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
       givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping)
       givenUpdateSubscriptionJourneyRecordFails(sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 12), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 12), "continue-id"))
       val request = fakeRequest(POST, s"/agent-mapping/task-list/tag-gg/?id=$id").withFormUrlEncodedBody(
         "ggTag" -> "1234",
         "submit" -> "continue"
@@ -381,9 +381,9 @@ with MongoSupport {
     "200 the existing-client-relationships page with back link to /show-client-relationships-found if already mapped" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = fakeRequest(GET, s"/agent-mapping/task-list/existing-client-relationships/?id=$id")
       val result = callEndpointWith(request)
@@ -409,9 +409,9 @@ with MongoSupport {
     "redirect to agent-subscription/return-after-mapping if user selects 'No' and continues" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
         "additional-clients" -> "no",
@@ -428,9 +428,9 @@ with MongoSupport {
     "redirect to /task-list/signed-out-redirect if user selects 'Yes' and continues" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
         "additional-clients" -> "yes",
@@ -447,9 +447,9 @@ with MongoSupport {
     "redirect to agent-subscription/saved-progress if user selects 'Yes' and saves" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
         "additional-clients" -> "yes",
@@ -468,9 +468,9 @@ with MongoSupport {
     "redirect to agent-subscription/saved-progress if user selects 'No' and saves" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
         "additional-clients" -> "no",
@@ -489,9 +489,9 @@ with MongoSupport {
     "redisplay the page with errors if the form is invalid" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
-      val record = await(repo.findRecord(id)).get
-      await(repo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
+      val record = await(taskListRepo.findRecord(id)).get
+      await(taskListRepo.upsert(record.copy(clientCount = 1, alreadyMapped = true), "continue-id"))
 
       val request = fakeRequest(POST, s"/agent-mapping/task-list/existing-client-relationships/?id=$id").withFormUrlEncodedBody(
         "additional-clients" -> "foo",
@@ -512,7 +512,7 @@ with MongoSupport {
     "redirect to /client-relationships-found when user has not mapped before " in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordNotFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
       givenSubscriptionJourneyRecordExistsForContinueId(
         "continue-id",
         sjrWithMapping.copy(authProviderId = AuthProviderId("123-credId"))
@@ -520,7 +520,7 @@ with MongoSupport {
 
       val request = fakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
       val result = callEndpointWith(request)
-      val newId = await(repo.findByContinueId("continue-id")).get.id
+      val newId = await(taskListRepo.findByContinueId("continue-id")).get.id
 
       status(result) shouldBe 303
 
@@ -530,7 +530,7 @@ with MongoSupport {
     "303 to /already-mapped page when the user has already mapped" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrWithMapping)
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
       givenSubscriptionJourneyRecordExistsForContinueId(
         "continue-id",
         sjrWithMapping.copy(userMappings =
@@ -563,7 +563,7 @@ with MongoSupport {
     "throw a runtime exception when there is no subscription journey record" in {
       givenUserIsAuthenticated(vatEnrolledAgent)
       givenSubscriptionJourneyRecordNotFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
       givenNoSubscriptionJourneyRecordFoundForContinueId("continue-id")
 
       val request = fakeRequest(GET, s"/agent-mapping/task-list/start-submit/?id=$id")
@@ -576,7 +576,7 @@ with MongoSupport {
     "redirect to not enrolled if the logged in user has no enrolments" in {
       givenUserIsAuthenticated(agentNotEnrolled)
       givenSubscriptionJourneyRecordNotFoundForAuthProviderId(AuthProviderId("12345-credId"))
-      val id = await(repo.create("continue-id"))
+      val id = await(taskListRepo.create("continue-id"))
       givenSubscriptionJourneyRecordExistsForContinueId(
         "continue-id",
         sjrWithMapping.copy(authProviderId = AuthProviderId("123-credId"))

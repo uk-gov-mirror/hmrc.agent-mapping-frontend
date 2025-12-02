@@ -25,13 +25,14 @@ import play.api.Logging
 import play.api.libs.json.Format
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
+import uk.gov.hmrc.agentmappingfrontend.model.LegacyClientDetails
 import uk.gov.hmrc.agentmappingfrontend.model.MongoLocalDateTimeFormat
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import java.time.temporal.ChronoUnit.MILLIS
 
+import java.time.temporal.ChronoUnit.MILLIS
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -54,6 +55,7 @@ case object ClientCountAndGGTag {
 case class MappingArnResult(
   id: MappingArnResultId = UUID.randomUUID().toString.replace("-", ""),
   arn: Arn,
+  legacyClientDetails: Option[LegacyClientDetails] = None,
   agentCode: Option[String] = None,
   mappedAgentCode: Option[String] = None,
   mappedClientCount: Option[Int] = None,
@@ -89,9 +91,13 @@ extends PlayMongoRepository[MappingArnResult](
 with Logging {
 
   def create(
-    arn: Arn
+    arn: Arn,
+    optLegacyClientDetails: Option[LegacyClientDetails] = None
   ): Future[MappingArnResultId] = {
-    val record = MappingArnResult(arn = arn)
+    val record = MappingArnResult(
+      arn = arn,
+      legacyClientDetails = optLegacyClientDetails
+    )
     collection
       .insertOne(record)
       .toFuture()

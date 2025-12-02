@@ -21,7 +21,9 @@ import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.io.Source
 
-class MessagesSpec extends AnyWordSpecLike with Matchers {
+class MessagesSpec
+extends AnyWordSpecLike
+with Matchers {
 
   private def getMessageKeys(fileName: String) = {
     Source.fromResource(fileName)
@@ -40,13 +42,23 @@ class MessagesSpec extends AnyWordSpecLike with Matchers {
     "have a corresponding Welsh translation for all keys" in {
       val missingKeys: List[String] = english.filterNot(welsh.contains)
 
-      if (missingKeys.nonEmpty) fail(s"Missing keys in Welsh translation: ${missingKeys.mkString("\n", "\n", "\n")}")
+      if (missingKeys.nonEmpty)
+        fail(s"Missing keys in Welsh translation: ${missingKeys.mkString(
+            "\n",
+            "\n",
+            "\n"
+          )}")
     }
 
     "have no duplicates" in {
       val duplicateKeys: List[String] = english.diff(english.distinct).distinct
 
-      if (duplicateKeys.nonEmpty) fail(s"Duplicate keys in English translation: ${duplicateKeys.mkString("\n", "\n", "\n")}")
+      if (duplicateKeys.nonEmpty)
+        fail(s"Duplicate keys in English translation: ${duplicateKeys.mkString(
+            "\n",
+            "\n",
+            "\n"
+          )}")
     }
   }
 
@@ -54,14 +66,23 @@ class MessagesSpec extends AnyWordSpecLike with Matchers {
     "have a corresponding English translation for all keys" in {
       val missingKeys: List[String] = welsh.filterNot(english.contains)
 
-      if (missingKeys.nonEmpty) fail(s"Missing keys in English translation: ${missingKeys.mkString("\n", "\n", "\n")}")
+      if (missingKeys.nonEmpty)
+        fail(s"Missing keys in English translation: ${missingKeys.mkString(
+            "\n",
+            "\n",
+            "\n"
+          )}")
     }
-
 
     "have no duplicates" in {
       val duplicateKeys: List[String] = welsh.diff(welsh.distinct).distinct
 
-      if (duplicateKeys.nonEmpty) fail(s"Duplicate keys in Welsh translation: ${duplicateKeys.mkString("\n", "\n", "\n")}")
+      if (duplicateKeys.nonEmpty)
+        fail(s"Duplicate keys in Welsh translation: ${duplicateKeys.mkString(
+            "\n",
+            "\n",
+            "\n"
+          )}")
     }
   }
 

@@ -23,6 +23,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmappingfrontend.views.html.helpers.error_prefix
 @import uk.gov.hmrc.agentmappingfrontend.model.AgentCodeForm
+@import uk.gov.hmrc.agentmappingfrontend.model.LegacyClientDetails
 
 @this(
         mainTemplate: MainTemplate,
@@ -30,48 +31,78 @@
         govukErrorSummary: GovukErrorSummary,
         formHelper: FormWithCSRF,
         govukButton: GovukButton,
-        errorPrefix: error_prefix
+        errorPrefix: error_prefix,
+        govukInsetText: GovukInsetText,
+        govukDetails: GovukDetails,
+        appConfig: AppConfig
 )
 
 @(
         agentCodeForm: Form[String],
         fromCompletePage: Boolean,
+        legacyClientDetails: LegacyClientDetails,
         id: MappingArnResultId
 )(implicit request: RequestHeader, msgs: Messages)
 
-@backLink = @{
-    if(fromCompletePage) {
-        routes.MappingController.showClientAuthorisationsAdded(id).url
-    } else {
-        routes.MappingController.start.url
-    }
+@detailsContent = {
+    <p class="govuk-body">@msgs("agentCodeAuth.details.para.1")</p>
+    <p class="govuk-body">@msgs("agentCodeAuth.details.para.2")</p>
+    <p class="govuk-body">@msgs("agentCodeAuth.details.para.3")</p>
 }
 
 @mainTemplate(
-    title = errorPrefix(agentCodeForm) + msgs("agentCode.title"),
-    backLinkHref = Some(backLink)
+    title = errorPrefix(agentCodeForm) + msgs("agentCodeAuth.title"),
+    backLinkHref = Some(legacyClientDetails.backUrl)
 ) {
 
     @if(agentCodeForm.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentCodeForm))
     }
 
+    <h1 class="govuk-heading-xl">@msgs("agentCodeAuth.heading")</h1>
+
+    <p class="govuk-body">@msgs("agentCodeAuth.para.1", legacyClientDetails.clientName)</p>
+    <p class="govuk-body">@msgs("agentCodeAuth.para.2")</p>
+    <p class="govuk-body">@msgs("agentCodeAuth.para.3")</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@msgs("agentCodeAuth.bullet.1", legacyClientDetails.clientName)</li>
+        <li>@msgs("agentCodeAuth.bullet.2", legacyClientDetails.clientName)</li>
+    </ul>
+
+    @govukInsetText(
+        InsetText(
+            content = HtmlContent(msgs("agentCodeAuth.insetText"))
+        )
+    )
+
+    @govukDetails(
+        Details(
+            summary = Text(msgs("agentCodeAuth.details.summary")),
+            content = HtmlContent(detailsContent)
+        )
+    )
+
     @formHelper(action = routes.MappingController.submitAgentCode(id)) {
         @govukInput(Input(
             label = Label(
-                isPageHeading = true,
-                classes = "govuk-label--xl",
-                content = Text(msgs("agentCode.heading"))
+                isPageHeading = false,
+                classes = "govuk-label--l",
+                content = Text(msgs("agentCodeAuth.label"))
             ),
-            hint = Some(Hint(content = HtmlContent(msgs("agentCode.hint")))),
+            hint = Some(Hint(content = HtmlContent(msgs("agentCodeAuth.hint")))),
             classes = s"govuk-input--width-20"
         ).withFormField(agentCodeForm(AgentCodeForm.fieldName)))
 
-        @govukButton(Button(
-            attributes = Map("id" -> "continue"),
-            inputType = Some("submit"),
-            content = Text(msgs("agentCode.button"))
-        ))
+        <div class="govuk-button-group">
+            @govukButton(Button(
+                attributes = Map("id" -> "continue"),
+                inputType = Some("submit"),
+                content = Text(msgs("agentCodeAuth.button"))
+            ))
+
+            <a class="govuk-link" href="@legacyClientDetails.cancelUrl">@msgs("agentCodeAuth.cancelLink", legacyClientDetails.clientName)</a>
+        </div>
     }
 
 }
