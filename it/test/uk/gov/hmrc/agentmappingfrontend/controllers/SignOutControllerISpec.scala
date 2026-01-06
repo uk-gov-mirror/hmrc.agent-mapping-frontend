@@ -55,35 +55,6 @@ extends BaseControllerISpec {
     }
   }
 
-  "task list signOutAndRedirect" should {
-    "redirect to /agent-subscription/task-list" in {
-      val id = "idToReference"
-      val expectedContinue = url"""${"http://localhost:9438/agent-mapping/task-list/start-submit"}?${Map("id" -> id)}"""
-      val result = await(controller.taskListSignOutAndRedirect(id)(fakeRequest))
-
-      status(result) shouldBe 303
-      redirectLocation(result).get shouldBe signOutUrlWithContinue(expectedContinue.toString)
-    }
-  }
-
-  "taskList" should {
-    "redirect to the task list" in {
-      val result = await(controller.taskList()(fakeRequest))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("http://localhost:9437/agent-subscription/task-list")
-    }
-  }
-
-  "returnAfterMapping" should {
-    "redirect to the return after mapping url" in {
-      val result = await(controller.returnAfterMapping()(fakeRequest))
-
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("http://localhost:9437/agent-subscription/return-after-mapping")
-    }
-  }
-
   "signOut" should {
     "redirect to start" in {
       val result = await(controller.signOut()(fakeRequest))

@@ -26,11 +26,10 @@
 
 @(
     title: String,
-    taskList: Boolean = false,
     backLinkHref: Option[String] = None
 )(mainContent: Html)(implicit request : RequestHeader, msgs: Messages)
 
-@serviceName = @{ if(taskList) msgs("app.name")else msgs("app.name-alreadySubscribed")}
+@serviceName = @{msgs("app.name-alreadySubscribed")}
 @isSignedIn = @{
     try {
         request.session.get("authToken").isDefined

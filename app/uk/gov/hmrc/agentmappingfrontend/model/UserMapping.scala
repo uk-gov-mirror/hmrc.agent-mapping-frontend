@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentmappingfrontend.model
 
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
-import uk.gov.hmrc.agentmappingfrontend.repository.ClientCountAndGGTag
 import uk.gov.hmrc.domain.AgentCode
 
 /** A single GG user (agent login) which is being consolidated into a new ASA account
@@ -40,10 +39,7 @@ final case class UserMapping(
   legacyEnrolments: Seq[AgentEnrolment],
   count: Int = 0,
   ggTag: String
-) {
-
-  def toClientCountAndGGTag: ClientCountAndGGTag = ClientCountAndGGTag(this.count, this.ggTag)
-}
+)
 
 object UserMapping {
   implicit val format: OFormat[UserMapping] = Json.format

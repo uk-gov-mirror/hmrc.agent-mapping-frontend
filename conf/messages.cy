@@ -1,5 +1,4 @@
 #Common
-app.name=Creu cyfrif gwasanaethau asiant
 app.name-alreadySubscribed=Cyfrif gwasanaethau asiant
 servicename.titleSuffix=– GOV.UK
 #Connect agent services
@@ -24,61 +23,10 @@ start.yes=Iawn - byddaf yn mewngofnodi nawr
 start.hint=Mae angen i chi fewngofnodi gan ddefnyddio?r Dynodydd Defnyddiwr (ID) perthnasol ar gyfer Porth y Llywodraeth er mwyn profi bod gennych fynediad at y cyfrif.
 start.error.required=Dewiswch ‘Iawn’ os ydych am ychwanegu eich awdurdodiadau gan gleientiaid
 
-start.task-list.heading=Ychwanegwch awdurdodiadau ar gyfer Hunanasesiad
-start.task-list.p1=Mae hyn yn golygu:
-start.task-list.li1=byddwch yn rhoi gwybod i ni pa gyfrifon Porth y Llywodraeth yr ydych yn eu defnyddio i reoli’ch cleientiaid Hunanasesiad yn eich cyfrif gwasanaethau ar-lein CThEF
-start.task-list.li2=byddwn yn ychwanegu’r awdurdodiadau ar gyfer Hunanasesiad at eich cyfrif gwasanaethau asiant
-start.task-list.li3=ni fydd yn rhaid i’r cleientiaid sydd eisoes wedi eich awdurdodi ar gyfer Hunanasesiad eich awdurdodi eto ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm – mae hyn yn cynnwys unrhyw gleientiaid newydd y byddwch yn eu cymryd o dan yr un Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth
-start.task-list.p2=Nid yw ychwanegu awdurdodiadau yn golygu:
-start.task-list.li4=y bydd angen i chi gofrestru’ch cleientiaid ar gyfer y cynllun Troi Treth yn Ddigidol ar hyn o bryd
-start.task-list.li5=y byddwch yn colli unrhyw fynediad neu ganiatâd presennol sydd gennych i reoli Hunanasesiad ar ran eich cleientiaid yn eich cyfrif gwasanaethau ar-lein CThEF
-
-#client-relationships-found
-clientRelationshipsFound.title=Wedi canfod awdurdodiadau gan gleientiaid
-clientRelationshipsFound.single.title=Wedi canfod awdurdodiadau gan gleientiaid
-clientRelationshipsFound.single.p1=Ar hyn o bryd, mae gan eich Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth:
-clientRelationshipsFound.single.td=o awdurdodiadau gan gleientiaid Hunanasesiad
-clientRelationshipsFound.single.p2=Byddwn yn ychwanegu’r awdurdodiadau hyn at eich cyfrif gwasanaethau asiant.
-clientRelationshipsFound.multi.title=Wedi canfod awdurdodiadau gan gleientiaid
-clientRelationshipsFound.multi.p1=Ar hyn o bryd, mae gan eich Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth:
-clientRelationshipsFound.multi.td=o awdurdodiadau gan gleientiaid Hunanasesiad
-clientRelationshipsFound.multi.p2=Byddwn yn ychwanegu’r awdurdodiadau hyn at eich cyfrif gwasanaethau asiant.
-clientRelationshipsFound.max=neu ragor o gleientiaid Hunanasesiad
-clientRelationshipsFound.inset=Y cyfan y bydd ychwanegu awdurdodiadau yn ei wneud yw copïo’r awdurdodiadau hyn draw i’ch cyfrif gwasanaethau asiant. Ni fyddwch yn colli unrhyw fynediad neu ganiatâd sydd gennych i reoli Hunanasesiad ar ran eich cleientiaid yn eich cyfrif gwasanaethau ar-lein CThEF.
-
-#gg-tag
-gg-tag.title=Nodwch 4 rhif olaf y Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth a ddefnyddioch i fewngofnodi
-gg-tag.p1=Byddwn yn defnyddio hwn fel cyfeirnod i ddangos pa awdurdodiadau gan ba gleientiaid yr ydych wedi eu hychwanegu at eich cyfrif gwasanaethau asiant.
-gg-tag.form.hint=Er enghraifft, XXXX-XXXX-1234
-gg-tag.xs=XXXX-XXXX-
-
-#existing-client-relationships
-existingClientRelationships.title=Awdurdodiadau gan gleientiaid wedi’u hychwanegu at eich cyfrif gwasanaethau asiant
-copied.table.single.dd={0} awdurdodiad ar gyfer Hunanasesiad
-copied.table.multi.dd={0} o awdurdodiadau ar gyfer Hunanasesiad
-copied.table.max.dd={0} neu ragor o awdurdodiadau ar gyfer Hunanasesiad
-copied.table.ggTag=XXXX-XXXX-{0}
-existingClientRelationships.heading=A ydych am ychwanegu rhagor o awdurdodiadau ar gyfer Hunanasesiad?
-existingClientRelationships.yes=Iawn – byddaf yn mewngofnodi eto gan ddefnyddio Dynodydd Defnyddiwr (ID) gwahanol ar gyfer Porth y Llywodraeth
-existingClientRelationships.no=Na
-error.existingClientRelationships.choice.invalid=Dewiswch ‘Iawn’ os ydych am ychwanegu rhagor o awdurdodiadau Hunanasesiad
-
 #PageNotFound
 page-not-found.title=Heb ddod o hyd i’r dudalen
 page-not-found.h1=Heb ddod o hyd i’r dudalen
 page-not-found.p1=Mae’n rhaid i chi fewngofnodi i’ch cyfrif gwasanaethau asiant eto.
-
-#Already linked
-alreadyMapped.h1=Mae’r Dynodydd Defnyddiwr (ID) hwn eisoes wedi’i gysylltu â’ch cyfrif gwasanaethau asiant
-alreadyMapped.p1=Os oes angen i chi gysylltu Dynodydd Defnyddiwr (ID) arall ar gyfer Porth y Llywodraeth, mewngofnodwch gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair.
-#Incorrect account
-incorrectAccount.h1=Gwnaethoch geisio mewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer eich cyfrif gwasanaethau asiant.
-incorrectAccount.p1=Mae angen i chi fewngofnodi gan ddefnyddio Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth yr ydych yn ei ddefnyddio i reoli’ch cleientiaid Hunanasesiad.
-
-#Not enrolled
-notEnrolled.h1=Ni allwch gysylltu’r Dynodydd Defnyddiwr (ID) hwn â’ch cyfrif gwasanaethau asiant
-notEnrolled.p1=Gallwch ond cysylltu Dynodyddion Defnyddiwr (IDs) sydd wedi’u cofrestru i’ch busnes.
-notEnrolled.p2=Os oes angen i chi gysylltu Dynodydd Defnyddiwr (ID) arall ar gyfer Porth y Llywodraeth, mewngofnodwch gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair.
 
 #Connection complete
 connectionComplete.title=Perthnasoedd â chleientiaid wedi’u copïo
@@ -93,14 +41,10 @@ link.goToASAccount=Mewngofnodwch i’ch cyfrif gwasanaethau asiant
 button.continue=Yn eich blaen
 button.signOut=Allgofnodi
 button.startNow=Dechrau nawr
-button.saveContinue=Cadw ac yn eich blaen
-button.saveComeBackLater=Cadw ar ffurf drafft
 button.yes=Iawn
 button.no=Na
 button.back=Yn ôl
-button.tryAgain=Rhoi cynnig arall arni
 button.signIn=Mewngofnodi
-button.signInAlt=Mewngofnodi gyda Dynodydd Defnyddiwr (ID) arall
 
 #Errors
 error.title=Mae problem wedi codi

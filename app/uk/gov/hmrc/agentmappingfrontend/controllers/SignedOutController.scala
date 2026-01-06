@@ -46,24 +46,8 @@ extends FrontendController(cc) {
     signOutWithContinue(url.toString)
   }
 
-  def taskListSignOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
-    val url = uri"${appConfig.taskListSignOutRedirectUrl}?${Map("id" -> id)}"
-    signOutWithContinue(url.toString)
-  }
-
   def reLogForMappingStart: Action[AnyContent] = Action {
     signOutWithContinue(appConfig.signInAndContinue)
-  }
-
-  // not sure why this is in the SignedOutController?
-  def taskList(): Action[AnyContent] = Action.async {
-    val url = appConfig.agentSubscriptionFrontendTaskListUrl
-    Future.successful(Redirect(url))
-  }
-
-  def returnAfterMapping(): Action[AnyContent] = Action.async {
-    val url = s"${appConfig.agentSubscriptionFrontendBaseUrl}/return-after-mapping"
-    Future.successful(Redirect(url))
   }
 
   def signOut: Action[AnyContent] = Action {

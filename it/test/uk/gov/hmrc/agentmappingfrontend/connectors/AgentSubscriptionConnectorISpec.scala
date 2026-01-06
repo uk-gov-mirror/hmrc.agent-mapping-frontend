@@ -60,28 +60,4 @@ with SubscriptionJourneyRecordSamples {
     }
   }
 
-  "getSubscriptionJourneyRecord - by continueId" should {
-    "return the SubscriptionJourneyRecord with status 200 if found" in {
-      givenSubscriptionJourneyRecordExistsForContinueId("continue-id", sjrWithMapping)
-      await(connector.getSubscriptionJourneyRecord("continue-id")) shouldBe Some(sjrWithMapping)
-    }
-
-    "return None if not found" in {
-      givenNoSubscriptionJourneyRecordFoundForContinueId("continue-id")
-      await(connector.getSubscriptionJourneyRecord("continue-id")) shouldBe None
-    }
-  }
-
-  "createOrUpdateJourney" should {
-    "return Right(()) if the update was successful" in {
-      givenUpdateSubscriptionJourneyRecordSucceeds(sjrWithMapping)
-      await(connector.createOrUpdateJourney(sjrWithMapping)) shouldBe Right(())
-    }
-
-    "return Left[String] if the update was unsuccessful" in {
-      givenUpdateSubscriptionJourneyRecordFails(sjrWithMapping)
-      await(connector.createOrUpdateJourney(sjrWithMapping)).isLeft shouldBe true
-    }
-  }
-
 }

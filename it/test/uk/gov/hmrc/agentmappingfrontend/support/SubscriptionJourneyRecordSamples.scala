@@ -55,30 +55,5 @@ trait SubscriptionJourneyRecordSamples {
   )
 
   val sjrNoContinueId = sjrBuilder("12345-credId")
-  val sjrWithNoUserMappings = sjrNoContinueId.copy(continueId = Some("continue-id"))
-  val sjrWithCleanCredId = sjrWithNoUserMappings.copy(cleanCredsAuthProviderId = Some(AuthProviderId("12345-credId")))
-  val sjrWithMapping = sjrWithNoUserMappings.copy(userMappings =
-    List(
-      UserMapping(
-        authProviderId = AuthProviderId("1-credId"),
-        agentCode = Some(AgentCode("agentCode-1")),
-        count = 1,
-        legacyEnrolments = List.empty,
-        ggTag = "6666"
-      )
-    )
-  )
-
-  val sjrWithUserAlreadyMapped = sjrWithNoUserMappings.copy(userMappings =
-    List(
-      UserMapping(
-        authProviderId = AuthProviderId("12345-credId"),
-        agentCode = Some(AgentCode("agentCode-1")),
-        count = 1,
-        legacyEnrolments = List.empty,
-        ggTag = "6666"
-      )
-    )
-  )
 
 }

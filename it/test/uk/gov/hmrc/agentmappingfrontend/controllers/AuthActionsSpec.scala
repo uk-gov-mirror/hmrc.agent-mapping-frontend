@@ -66,7 +66,7 @@ with SubscriptionJourneyRecordSamples {
 
     def testWithCheckForArn: Result = await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
 
-    def testWithSubscribingAgent: Result = await(withSubscribingAgent("mappingArnResultId")(_ => Future.successful(Ok("Done."))))
+    def testWithSubscribingAgent: Result = await(withSubscribingAgent()(_ => Future.successful(Ok("Done."))))
 
   }
 
@@ -293,33 +293,6 @@ with SubscriptionJourneyRecordSamples {
         val result = TestController.testWithSubscribingAgent
         status(result) shouldBe 200
         bodyOf(result) shouldBe "Done."
-      }
-    }
-
-    "redirect to task-list/error/incorrect-account" when {
-      "agent has only HMRC-AS-AGENT enrolment" in {
-        behave like testSubscribingAgentRedirectedTo(
-          expectedLocation = routes.TaskListMappingController.incorrectAccount("mappingArnResultId").url,
-          enrolments = "HMRC-AS-AGENT" -> "AgentRefNumber"
-        )
-      }
-    }
-
-    "redirect to task-list/error/already-linked" when {
-      "agent has only HMRC-AGENT-AGENT enrolment" in {
-        behave like testSubscribingAgentRedirectedTo(
-          expectedLocation = routes.TaskListMappingController.alreadyMapped("mappingArnResultId").url,
-          enrolments = "HMRC-AGENT-AGENT" -> "AgentRefNumber"
-        )
-      }
-    }
-
-    "redirect to /task-list/not-enrolled" when {
-      "agent has no eligible enrolments and neither HMRC-AS-AGENT nor HMRC-AGENT-AGENT enrolment" in {
-        behave like testSubscribingAgentRedirectedTo(
-          expectedLocation = routes.TaskListMappingController.notEnrolled("mappingArnResultId").url,
-          enrolments = "NOT_VALID" -> "something"
-        )
       }
     }
 

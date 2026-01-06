@@ -43,21 +43,6 @@ object SampleUsers {
     activeEnrolments = Set("IR-SA-AGENT")
   )
 
-  val vatEnrolledAgent = SampleUser(
-    s"""{
-       |  "allEnrolments": [
-       |   { "key":"HMCE-VAT-AGNT", "identifiers": [
-       |      { "key":"AgentRefNo", "value": "HZ1234" }
-       |    ]}
-       |  ],
-       |  "optionalCredentials": {
-       |    "providerId": "12345-credId",
-       |    "providerType": "GovernmentGateway"
-       |  }, "agentCode":"HZ1234"
-       |}""".stripMargin,
-    activeEnrolments = Set("HMCE-VAT-AGNT")
-  )
-
   val saEnrolledAgentInactive = SampleUser(
     s"""{
        |  "allEnrolments": [
@@ -102,22 +87,6 @@ object SampleUsers {
        |  "affinityGroup": "Agent"
        |}""".stripMargin,
     activeEnrolments = Set("HMRC-AS-AGENT")
-  )
-
-  val mtdAgentAgent = SampleUser(
-    s"""{
-       |  "allEnrolments": [
-       |   { "key":"HMRC-AGENT-AGENT", "identifiers": [
-       |      { "key":"AgentRefNumber", "value": "TARN0000001" }
-       |    ]}
-       |  ],
-       |  "optionalCredentials": {
-       |    "providerId": "12345-credId",
-       |    "providerType": "GovernmentGateway"
-       |  },
-       |  "affinityGroup": "Agent"
-       |}""".stripMargin,
-    activeEnrolments = Set("HMRC-AGENT-AGENT")
   )
 
   val notEligibleAgent = SampleUser(

@@ -129,9 +129,7 @@ with RequestAwareLogging {
     }
   }
 
-  def withSubscribingAgent(
-    id: MappingArnResultId
-  )(body: Agent => Future[Result])(implicit
+  def withSubscribingAgent()(body: Agent => Future[Result])(implicit
     request: Request[AnyContent],
     ec: ExecutionContext
   ): Future[Result] = {
@@ -155,17 +153,7 @@ with RequestAwareLogging {
             }
           }
           else {
-            val redirectRoute =
-              if (userHasAsAgentEnrolment(activeEnrolments)) {
-                routes.TaskListMappingController.incorrectAccount(id)
-              }
-              else if (userHasAtedAgentEnrolment(activeEnrolments)) {
-                routes.TaskListMappingController.alreadyMapped(id)
-              }
-              else {
-                routes.TaskListMappingController.notEnrolled(id)
-              }
-            Future.successful(Redirect(redirectRoute))
+            Future.successful(Forbidden)
           }
         case ~(~(None, _), _) => Future.successful(Forbidden)
       }
