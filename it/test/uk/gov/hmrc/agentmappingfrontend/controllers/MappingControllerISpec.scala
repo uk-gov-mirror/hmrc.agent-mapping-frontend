@@ -266,18 +266,6 @@ with MongoSupport {
       }
 
       "redirect to ASA home when the journey is already complete" in {
-        val testData = MappingArnResult(
-          arn = arn,
-          agentCode = None,
-          legacyClientDetails = Some(LegacyClientDetails(
-            "Client Name",
-            Seq("A12345"),
-            "/test-url",
-            "/test-url"
-          )),
-          mappedAgentCode = Some("A12345"),
-          mappedClientCount = Some(1)
-        )
         givenUserIsAuthenticated(eligibleAgent)
         val request = fakeRequest(GET, routes.MappingController.showAgentCode("foo").url)
         val result = callEndpointWith(request)

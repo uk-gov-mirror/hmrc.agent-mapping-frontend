@@ -23,7 +23,6 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
 import uk.gov.hmrc.agentmappingfrontend.model._
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
 import uk.gov.hmrc.auth.core._
@@ -38,7 +37,6 @@ import scala.concurrent.Future
 @Singleton
 class MappingInternalController @Inject() (
   val authConnector: AuthConnector,
-  val agentSubscriptionConnector: AgentSubscriptionConnector,
   repository: MappingArnRepository,
   val config: Configuration,
   val env: Environment,

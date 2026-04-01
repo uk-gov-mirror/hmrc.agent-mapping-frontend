@@ -54,7 +54,6 @@ with EndpointBehaviours {
     .configure(
       "microservice.services.auth.port" -> wireMockPort,
       "microservice.services.agent-mapping.port" -> wireMockPort,
-      "microservice.services.agent-subscription.port" -> wireMockPort,
       "microservice.services.agent-client-authorisation.port" -> wireMockPort,
       "application.router" -> "testOnlyDoNotUseInAppConf.Routes",
       "clientCount.maxRecords" -> 15

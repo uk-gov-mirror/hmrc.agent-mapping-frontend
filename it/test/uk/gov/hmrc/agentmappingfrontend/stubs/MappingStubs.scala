@@ -85,33 +85,6 @@ object MappingStubs {
       .willReturn(aResponse().withStatus(200).withBody(Json.obj("clientCount" -> recordCount).toString()))
   )
 
-  def mappingDetailsAreCreated(
-    arn: Arn,
-    mappingDetailsRequest: MappingDetailsRequest
-  ): StubMapping = stubFor(
-    post(urlPathEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
-      .withRequestBody(equalToJson(Json.toJson(mappingDetailsRequest).toString()))
-      .willReturn(aResponse().withStatus(Status.CREATED))
-  )
-
-  def mappingDetailsCreationFails(
-    arn: Arn,
-    mappingDetailsRequest: MappingDetailsRequest,
-    status: Int
-  ): StubMapping = stubFor(
-    post(urlPathEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
-      .withRequestBody(equalToJson(Json.toJson(mappingDetailsRequest).toString()))
-      .willReturn(aResponse().withStatus(status))
-  )
-
-  def givenMappingDetailsExistFor(
-    arn: Arn,
-    mappingDetailsRepositoryRecord: MappingDetailsRepositoryRecord
-  ): StubMapping = stubFor(
-    get(urlEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
-      .willReturn(aResponse().withStatus(Status.OK).withBody(Json.toJson(mappingDetailsRepositoryRecord).toString()))
-  )
-
   def givenGetMappingDetailsFailsForReason(
     arn: Arn,
     statusCode: Int

@@ -32,7 +32,6 @@ trait AppConfig {
   val agentServicesFrontendBaseUrl: String
   val basGatewayFrontendExternalUrl: String
   val agentMappingBaseUrl: String
-  val agentSubscriptionBaseUrl: String
   val agentMappingFrontendBaseUrl: String
   val contactFrontendHost: String
   val clientCountMaxRecords: Int
@@ -62,7 +61,6 @@ extends AppConfig {
 
   // base urls
   override lazy val basGatewayFrontendExternalUrl: String = servicesConfig.getString("microservice.services.bas-gateway-frontend.external-url")
-  override lazy val agentSubscriptionBaseUrl: String = servicesConfig.baseUrl("agent-subscription")
   override lazy val agentMappingBaseUrl: String = servicesConfig.baseUrl("agent-mapping")
   override lazy val agentMappingFrontendBaseUrl: String = s"${servicesConfig.getString("microservice.services.agent-mapping-frontend.external-url")}"
   override lazy val agentServicesFrontendBaseUrl: String =

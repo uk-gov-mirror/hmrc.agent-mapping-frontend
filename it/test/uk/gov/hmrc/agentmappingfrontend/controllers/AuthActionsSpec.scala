@@ -26,12 +26,8 @@ import play.api.Environment
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.connectors.AgentSubscriptionConnector
-import uk.gov.hmrc.agentmappingfrontend.model.AuthProviderId
 import uk.gov.hmrc.agentmappingfrontend.model.LegacyAgentEnrolmentType
-import uk.gov.hmrc.agentmappingfrontend.stubs.AgentSubscriptionStubs
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
-import uk.gov.hmrc.agentmappingfrontend.support.SubscriptionJourneyRecordSamples
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.SessionKeys
 
@@ -40,15 +36,12 @@ import scala.concurrent.Future
 
 class AuthActionsSpec
 extends BaseControllerISpec
-with AuthStubs
-with AgentSubscriptionStubs
-with SubscriptionJourneyRecordSamples {
+with AuthStubs {
 
   object TestController
   extends AuthActions {
 
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
-    override def agentSubscriptionConnector: AgentSubscriptionConnector = app.injector.instanceOf[AgentSubscriptionConnector]
 
     implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/foo")
       .withSession(SessionKeys.authToken -> "Bearer XYZ")
@@ -65,8 +58,6 @@ with SubscriptionJourneyRecordSamples {
     def testWithBasicAgentAuth: Result = await(withBasicAgentAuth(Future.successful(Ok("Done."))))
 
     def testWithCheckForArn: Result = await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
-
-    def testWithSubscribingAgent: Result = await(withSubscribingAgent()(_ => Future.successful(Ok("Done."))))
 
   }
 
@@ -116,43 +107,6 @@ with SubscriptionJourneyRecordSamples {
     )
 
     val result: Result = TestController.testWithAuthorisedSaAgent
-    status(result) shouldBe 303
-    result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
-    ()
-  }
-
-  def testSubscribingAgentRedirectedTo(
-    expectedLocation: String,
-    enrolments: (String, String)*
-  ): Unit = {
-
-    val enrolmentsArr = enrolments
-      .map { case (key, identifier) =>
-        s"""
-           |{
-           |  "key":"$key",
-           |  "identifiers": [
-           |    {
-           |      "key":"$identifier",
-           |      "value": "TARN0000001"
-           |    }
-           |  ]
-           |}
-             """.stripMargin
-      }
-      .mkString("[", ", ", "]")
-
-    givenAuthorisedFor(
-      "{}",
-      s"""{
-         |  "allEnrolments": $enrolmentsArr,
-         |  "optionalCredentials": {
-         |    "providerId": "12345-credId",
-         |    "providerType": "GovernmentGateway"
-         |  }, "agentCode": "a1234"}""".stripMargin
-    )
-
-    val result: Result = TestController.testWithSubscribingAgent
     status(result) shouldBe 303
     result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
     ()
@@ -269,50 +223,6 @@ with SubscriptionJourneyRecordSamples {
       result.header.headers(
         HeaderNames.LOCATION
       ) shouldBe s"http://localhost:9099/bas-gateway/sign-in?continue_url=http://localhost:9438/foo&origin=agent-mapping-frontend"
-    }
-  }
-
-  "withSubscribingAgent" should {
-
-    eligibleEnrolments.foreach { case (enrolment, identifier) =>
-      s"check if agent is enrolled for the eligible enrolment $enrolment and extract $identifier" in {
-        givenAuthorisedFor(
-          "{}",
-          s"""{
-             |  "allEnrolments": [
-             |    { "key":"$enrolment", "identifiers": [
-             |      { "key":"$identifier", "value": "fooReference" }
-             |    ]}
-             |  ],
-             |  "optionalCredentials": {
-             |    "providerId": "12345-credId",
-             |    "providerType": "GovernmentGateway"
-             |  }}""".stripMargin
-        )
-        givenSubscriptionJourneyRecordExistsForAuthProviderId(AuthProviderId("12345-credId"), sjrNoContinueId)
-        val result = TestController.testWithSubscribingAgent
-        status(result) shouldBe 200
-        bodyOf(result) shouldBe "Done."
-      }
-    }
-
-    "return Forbidden" when {
-      "the affinity group is unsupported" in {
-        givenuserHasUnsupportedAffinityGroup()
-        val result = TestController.testWithSubscribingAgent
-        status(result) shouldBe 403
-      }
-    }
-
-    "redirect to gg log in" when {
-      "the auth provider is unsupported" in {
-        givenUserHasUnsupportedAuthProvider()
-        val result = TestController.testWithSubscribingAgent
-        status(result) shouldBe 303
-        result.header.headers(
-          HeaderNames.LOCATION
-        ) shouldBe s"http://localhost:9099/bas-gateway/sign-in?continue_url=http://localhost:9438/foo"
-      }
     }
   }
 

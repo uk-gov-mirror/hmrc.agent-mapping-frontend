@@ -18,15 +18,11 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import play.api.Logging
 import play.api.http.Status._
-import play.api.libs.json.Json
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRepositoryRecord
-import uk.gov.hmrc.agentmappingfrontend.model.MappingDetailsRequest
 import uk.gov.hmrc.agentmappingfrontend.model.SaMapping
-import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
-import uk.gov.hmrc.http.HttpErrorFunctions._
+import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -74,40 +70,6 @@ extends Logging {
     .delete(url"$baseUrl/agent-mapping/test-only/mappings/${arn.value}")
     .execute[HttpResponse]
     .map(_.status)
-
-  def createOrUpdateMappingDetails(
-    arn: Arn,
-    mappingDetailsRequest: MappingDetailsRequest
-  )(implicit
-    rh: RequestHeader
-  ): Future[Unit] = http
-    .post(url"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}")
-    .withBody(Json.toJson(mappingDetailsRequest))
-    .execute[HttpResponse]
-    .map { r =>
-      r.status match {
-        case status if is2xx(status) => ()
-        case status if status == CONFLICT => throw new ConflictException(s"Failed to create or update mapping details for $arn")
-        case status =>
-          logger.error(s"status: $status Failed to create or update mapping details for arn: $arn")
-          throw new RuntimeException
-      }
-    }
-
-  def getMappingDetails(
-    arn: Arn
-  )(implicit rh: RequestHeader): Future[Option[MappingDetailsRepositoryRecord]] = {
-    http
-      .get(url"$baseUrl/agent-mapping/mappings/details/arn/${arn.value}")
-      .execute[Option[MappingDetailsRepositoryRecord]]
-  }.recover {
-    case _: NotFoundException =>
-      logger.warn(s"no mapping details found for this arn: $arn")
-      None
-    case ex =>
-      logger.warn(s"retrieval of mapping details failed for unknown reason...$ex")
-      None
-  }
 
   private lazy val baseUrl = appConfig.agentMappingBaseUrl
 

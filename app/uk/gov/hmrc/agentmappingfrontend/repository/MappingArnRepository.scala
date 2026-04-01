@@ -27,30 +27,21 @@ import play.api.libs.json.Json
 import play.api.libs.json.OFormat
 import uk.gov.hmrc.agentmappingfrontend.model.LegacyClientDetails
 import uk.gov.hmrc.agentmappingfrontend.model.MongoLocalDateTimeFormat
-import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
+import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import java.time.temporal.ChronoUnit.MILLIS
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit.MILLIS
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
-case class ClientCountAndGGTag(
-  clientCount: Int,
-  ggTag: String
-)
-
-case object ClientCountAndGGTag {
-  implicit val formats: OFormat[ClientCountAndGGTag] = Json.format
-}
 
 case class MappingArnResult(
   id: MappingArnResultId = UUID.randomUUID().toString.replace("-", ""),
