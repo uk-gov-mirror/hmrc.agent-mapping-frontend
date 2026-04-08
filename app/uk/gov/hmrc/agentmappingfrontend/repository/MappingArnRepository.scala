@@ -53,16 +53,13 @@ case class MappingArnResult(
   createdDate: LocalDateTime = Instant.now().atZone(ZoneOffset.UTC).toLocalDateTime.truncatedTo(MILLIS)
 )
 
-object MappingResult {
+object MappingResult:
   type MappingArnResultId = String
-}
 
-object MappingArnResult {
+object MappingArnResult:
 
   implicit val localDateTimeFormat: Format[LocalDateTime] = MongoLocalDateTimeFormat.localDateTimeFormat
   implicit val format: OFormat[MappingArnResult] = Json.format
-
-}
 
 @Singleton
 class MappingArnRepository @Inject() (mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
@@ -79,12 +76,12 @@ extends PlayMongoRepository[MappingArnResult](
   ),
   replaceIndexes = true
 )
-with Logging {
+with Logging:
 
   def create(
     arn: Arn,
     optLegacyClientDetails: Option[LegacyClientDetails] = None
-  ): Future[MappingArnResultId] = {
+  ): Future[MappingArnResultId] =
     val record = MappingArnResult(
       arn = arn,
       legacyClientDetails = optLegacyClientDetails
@@ -93,7 +90,6 @@ with Logging {
       .insertOne(record)
       .toFuture()
       .map(_ => record.id)
-  }
 
   def findRecord(id: MappingArnResultId): Future[Option[MappingArnResult]] = collection
     .find(equal("id", id))
@@ -111,7 +107,7 @@ with Logging {
     )
     .toFuture()
     .map(wr =>
-      if (!wr.wasAcknowledged())
+      if !wr.wasAcknowledged() then
         throw new RuntimeException("Something went wrong with upsert.")
       else
         logger.info(
@@ -124,5 +120,3 @@ with Logging {
     .deleteOne(equal("id", id))
     .toFuture()
     .map(_ => ())
-
-}

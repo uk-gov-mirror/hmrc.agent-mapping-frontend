@@ -18,9 +18,9 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 
 import play.api.mvc.AnyContentAsEmpty
 import play.api.mvc.Result
-import play.api.mvc.Results._
+import play.api.mvc.Results.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.Configuration
 import play.api.Environment
 import play.mvc.Http.HeaderNames
@@ -31,15 +31,14 @@ import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.SessionKeys
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AuthActionsSpec
 extends BaseControllerISpec
-with AuthStubs {
+with AuthStubs:
 
   object TestController
-  extends AuthActions {
+  extends AuthActions:
 
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
 
@@ -59,8 +58,6 @@ with AuthStubs {
 
     def testWithCheckForArn: Result = await(withCheckForArn(optEnrolmentIdentifier => Future.successful(Ok(optEnrolmentIdentifier.toString))))
 
-  }
-
   private val eligibleEnrolments = Map(
     "IR-SA-AGENT" -> "IRAgentReference",
     "HMCE-VAT-AGNT" -> "AgentRefNo",
@@ -76,7 +73,7 @@ with AuthStubs {
   def testAuthorisedAgentRedirectedTo(
     expectedLocation: String,
     enrolments: (String, String)*
-  ): Unit = {
+  ): Unit =
 
     val enrolmentsArr = enrolments
       .map { case (key, identifier) =>
@@ -110,7 +107,6 @@ with AuthStubs {
     status(result) shouldBe 303
     result.header.headers(HeaderNames.LOCATION) shouldBe expectedLocation
     ()
-  }
 
   "withAuthorisedAgent" should {
     "this test should cover all eligible enrolments" in {
@@ -299,5 +295,3 @@ with AuthStubs {
       bodyOf(result) should include("None")
     }
   }
-
-}

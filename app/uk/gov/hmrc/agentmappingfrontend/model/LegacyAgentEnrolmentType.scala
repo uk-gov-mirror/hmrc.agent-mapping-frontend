@@ -27,13 +27,13 @@ import uk.gov.hmrc.auth.core.Enrolment
 /** A comprehensive list of all the old (pre-MTD) agent enrolment types IR-SA-AGENT is the only legacy code we actually use in authentication others are
   * captured for future use
   */
-sealed abstract class LegacyAgentEnrolmentType {
+sealed abstract class LegacyAgentEnrolmentType:
 
   /** @return
     *   The service key for a legacy enrolment (1-1 for these old agent enrolments)
     */
   def serviceKey: String =
-    this match {
+    this match
       case IRAgentReference => "IR-SA-AGENT"
       case AgentRefNo => "HMCE-VAT-AGNT"
       case AgentCharId => "HMRC-CHAR-AGENT"
@@ -43,27 +43,21 @@ sealed abstract class LegacyAgentEnrolmentType {
       case IRAgentReferenceCt => "IR-CT-AGENT"
       case IRAgentReferencePaye => "IR-PAYE-AGENT"
       case SdltStorn => "IR-SDLT-AGENT"
-    }
 
-}
-
-object LegacyAgentEnrolmentType {
+object LegacyAgentEnrolmentType:
 
   implicit val format: Format[LegacyAgentEnrolmentType] =
-    new Format[LegacyAgentEnrolmentType] {
+    new Format[LegacyAgentEnrolmentType]:
 
       def reads(json: JsValue): JsResult[LegacyAgentEnrolmentType] =
-        json match {
+        json match
           case JsString(s) =>
-            find(s) match {
+            find(s) match
               case Some(x) => JsSuccess(x)
               case None => JsError(s"Unexpected enrolment type: ${json.toString}")
-            }
           case _ => JsError(s"Enrolment type is not a string: $json")
-        }
 
       def writes(o: LegacyAgentEnrolmentType): JsValue = JsString(o.serviceKey)
-    }
 
   /** @param serviceKey
     *   the enrolment service key to find an enrolment type
@@ -71,7 +65,7 @@ object LegacyAgentEnrolmentType {
     *   Some enrolment type if found, None otherwise
     */
   def find(serviceKey: String): Option[LegacyAgentEnrolmentType] =
-    serviceKey match {
+    serviceKey match
       case "IR-SA-AGENT" => Some(IRAgentReference)
       case "HMCE-VAT-AGNT" => Some(AgentRefNo)
       case "HMRC-CHAR-AGENT" => Some(AgentCharId)
@@ -82,7 +76,6 @@ object LegacyAgentEnrolmentType {
       case "IR-PAYE-AGENT" => Some(IRAgentReferencePaye)
       case "IR-SDLT-AGENT" => Some(SdltStorn)
       case _ => None
-    }
 
   def exists(serviceKey: String): Boolean = find(serviceKey).isDefined
   def exists(enrolment: Enrolment): Boolean = find(serviceKey = enrolment.key).isDefined
@@ -100,8 +93,6 @@ object LegacyAgentEnrolmentType {
     IRAgentReferencePaye,
     SdltStorn
   )
-
-}
 
 case object IRAgentReference
 extends LegacyAgentEnrolmentType

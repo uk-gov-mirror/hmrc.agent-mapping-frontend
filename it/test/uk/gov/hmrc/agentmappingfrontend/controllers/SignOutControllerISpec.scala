@@ -20,11 +20,11 @@ import play.api.http.Writeable
 import play.api.mvc.Request
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.http.StringContextOps
 
 class SignOutControllerISpec
-extends BaseControllerISpec {
+extends BaseControllerISpec:
 
   private lazy val controller: SignedOutController = app.injector.instanceOf[SignedOutController]
 
@@ -87,5 +87,3 @@ extends BaseControllerISpec {
       )
     }
   }
-
-}

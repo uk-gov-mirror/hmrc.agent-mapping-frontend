@@ -20,7 +20,7 @@ import uk.gov.hmrc.http.BadRequestException
 
 sealed trait RadioInputAnswer
 
-object RadioInputAnswer {
+object RadioInputAnswer:
 
   case object Yes
   extends RadioInputAnswer
@@ -28,16 +28,12 @@ object RadioInputAnswer {
   extends RadioInputAnswer
 
   def apply(str: String): RadioInputAnswer =
-    str.toLowerCase match {
+    str.toLowerCase match
       case "yes" => Yes
       case "no" => No
       case _ => throw new BadRequestException("Strange form input value")
-    }
 
   def unapply(answer: RadioInputAnswer): Option[String] =
-    answer match {
+    answer match
       case Yes => Some("yes")
       case No => Some("no")
-    }
-
-}

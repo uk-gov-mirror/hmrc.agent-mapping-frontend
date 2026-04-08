@@ -24,10 +24,10 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.*
 
 trait EndpointBehaviours
-extends AuthStubs {
+extends AuthStubs:
   me: UnitSpec
     with WireMockSupport =>
 
@@ -60,7 +60,7 @@ extends AuthStubs {
     endpointPath: String
   )(
     doRequest: Request[AnyContentAsEmpty.type] => Result
-  ): Unit = {
+  ): Unit =
     behave like anAuthenticatedEndpoint(
       endpointMethod,
       endpointPath,
@@ -104,6 +104,3 @@ extends AuthStubs {
       result.header.status shouldBe 303
       result.header.headers("Location") shouldBe routes.MappingController.problemWithDetails(id = "someArnRefForMapping").url
     }
-  }
-
-}

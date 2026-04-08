@@ -51,7 +51,7 @@
 }
 
 @mainTemplate(
-    title = errorPrefix(agentCodeForm) + msgs("agentCodeAuth.title"),
+    title = s"${errorPrefix(agentCodeForm)}${msgs("agentCodeAuth.title")}",
     backLinkHref = Some(legacyClientDetails.backUrl)
 ) {
 

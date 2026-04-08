@@ -20,14 +20,14 @@ import play.api.Configuration
 import play.api.Environment
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.agentmappingfrontend.auth.AuthActions
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
-import uk.gov.hmrc.agentmappingfrontend.model._
+import uk.gov.hmrc.agentmappingfrontend.model.*
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingArnRepository
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.agentmappingfrontend.controllers.{routes => frontendRoutes}
+import uk.gov.hmrc.agentmappingfrontend.controllers.routes as frontendRoutes
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,18 +47,15 @@ class MappingInternalController @Inject() (
 )
 extends FrontendController(mcc)
 with I18nSupport
-with AuthActions {
+with AuthActions:
 
   def startAuthMappingJourney(): Action[LegacyClientDetails] =
-    Action.async(parse.json[LegacyClientDetails]) { implicit request =>
-      withCheckForArn {
+    Action.async(parse.json[LegacyClientDetails]): request =>
+      given MessagesRequest[?] = request
+      withCheckForArn:
         case Some(arn) =>
           repository.create(arn, Some(request.body)).map { id =>
             val redirectUrl = s"${appConfig.agentMappingFrontendBaseUrl}${frontendRoutes.MappingController.showAgentCode(id).url}"
             Created(Json.toJson(Map("redirectUrl" -> redirectUrl)))
           }
         case None => Future.successful(Forbidden)
-      }
-    }
-
-}

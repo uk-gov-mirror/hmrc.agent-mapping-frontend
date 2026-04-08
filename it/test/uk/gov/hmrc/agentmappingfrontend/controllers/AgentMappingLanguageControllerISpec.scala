@@ -20,10 +20,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.cookies
 import play.api.test.Helpers
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class AgentMappingLanguageControllerISpec
-extends BaseControllerISpec {
+extends BaseControllerISpec:
 
   implicit val timeout: FiniteDuration = 2.second
 
@@ -64,5 +64,3 @@ extends BaseControllerISpec {
       cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "cy"
     }
   }
-
-}

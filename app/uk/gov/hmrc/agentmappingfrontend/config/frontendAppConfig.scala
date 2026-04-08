@@ -25,21 +25,18 @@ import sttp.model.Uri.UriContext
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @ImplementedBy(classOf[FrontendAppConfig])
-trait AppConfig {
+trait AppConfig:
 
   val appName: String = "agent-mapping-frontend"
 
-  val agentServicesFrontendBaseUrl: String
-  val basGatewayFrontendExternalUrl: String
-  val agentMappingBaseUrl: String
-  val agentMappingFrontendBaseUrl: String
-  val contactFrontendHost: String
-  val clientCountMaxRecords: Int
+  lazy val agentServicesFrontendBaseUrl: String
+  lazy val basGatewayFrontendExternalUrl: String
+  lazy val agentMappingBaseUrl: String
+  lazy val agentMappingFrontendBaseUrl: String
+  lazy val signOutPath: String
+  lazy val signInPath: String
   val timeout: Int
   val timeoutCountdown: Int
-  val languageToggle: Boolean
-  val signOutPath: String
-  val signInPath: String
 
   // derived values
   lazy val signOutUrl: String = s"$basGatewayFrontendExternalUrl$signOutPath"
@@ -52,12 +49,9 @@ trait AppConfig {
     "cymraeg" -> Lang("cy")
   )
 
-}
 @Singleton
 class FrontendAppConfig @Inject() (servicesConfig: ServicesConfig)
-extends AppConfig {
-
-  override lazy val contactFrontendHost: String = servicesConfig.getString("contact-frontend.host")
+extends AppConfig:
 
   // base urls
   override lazy val basGatewayFrontendExternalUrl: String = servicesConfig.getString("microservice.services.bas-gateway-frontend.external-url")
@@ -69,11 +63,5 @@ extends AppConfig {
   override lazy val signOutPath: String = servicesConfig.getString("microservice.services.bas-gateway-frontend.sign-out.path")
   override lazy val signInPath: String = servicesConfig.getString("microservice.services.bas-gateway-frontend.sign-in.path")
 
-  override lazy val clientCountMaxRecords: Int = servicesConfig.getInt("clientCount.maxRecords")
-
   override val timeout: Int = servicesConfig.getInt("timeoutDialog.timeout-seconds")
   override val timeoutCountdown: Int = servicesConfig.getInt("timeoutDialog.timeout-countdown-seconds")
-
-  override val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
-
-}

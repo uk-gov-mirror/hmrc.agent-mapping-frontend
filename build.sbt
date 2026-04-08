@@ -1,22 +1,19 @@
-import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
+import uk.gov.hmrc.DefaultBuildSettings
 
 
 val appName = "agent-mapping-frontend"
 
 ThisBuild / majorVersion := 1
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.3.7"
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val scalaCOptions = Seq(
   "-Werror",
-  "-Wdead-code",
-  "-Wunused",
-  "-deprecation",
+  "-Wconf:msg=Flag.*repeatedly:s",
   "-feature",
-  "-unchecked",
   "-language:implicitConversions",
   "-Wconf:src=target/.*:s", // silence warnings from compiled files
   "-Wconf:msg=match may not be exhaustive:s", // silence warnings about non-exhaustive pattern matching
-
 )
 
 lazy val root = (project in file("."))
@@ -32,7 +29,8 @@ lazy val root = (project in file("."))
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true,
     Test / logBuffered := false,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+
   )
   .settings(
     Test / parallelExecution := false,

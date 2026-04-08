@@ -23,27 +23,18 @@ import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 import uk.gov.hmrc.http.BadRequestException
 
 class RadioInputAnswerSpec
-extends UnitSpec {
+extends UnitSpec:
 
-  "RadioInputAnswer" should {
-    "return Yes when input is 'yes'" in {
+  "RadioInputAnswer" should:
+    "return Yes when input is 'yes'" in:
       RadioInputAnswer.apply("yes") shouldBe Yes
-    }
-    "return No when inoput is 'no'" in {
+    "return No when inoput is 'no'" in:
       RadioInputAnswer.apply("no") shouldBe No
-    }
-    "throw an exception when any other value is passed" in {
-      an[BadRequestException] shouldBe thrownBy {
+    "throw an exception when any other value is passed" in:
+      an[BadRequestException] shouldBe thrownBy:
         RadioInputAnswer.apply("true")
-      }
-    }
-    "return 'yes' when input is Yes" in {
+    "return 'yes' when input is Yes" in:
       RadioInputAnswer.unapply(Yes) shouldBe Some("yes")
-    }
 
-    "return 'no' when input is No" in {
+    "return 'no' when input is No" in:
       RadioInputAnswer.unapply(No) shouldBe Some("no")
-    }
-  }
-
-}

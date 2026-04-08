@@ -48,7 +48,7 @@
 }
 
 @mainTemplate(
-    title = errorPrefix(agentCodeForm) + msgs("agentCode.title"),
+    title = s"${errorPrefix(agentCodeForm)}${msgs("agentCode.title")}",
     backLinkHref = Some(backLink)
 ) {
 

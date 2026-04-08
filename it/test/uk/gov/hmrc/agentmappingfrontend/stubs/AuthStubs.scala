@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.agentmappingfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.agentmappingfrontend.support.SampleUser
 import uk.gov.hmrc.agentmappingfrontend.support.WireMockSupport
 
-trait AuthStubs {
+trait AuthStubs:
   me: WireMockSupport =>
 
   def givenUserIsAuthenticated(user: SampleUser): StubMapping =
@@ -69,7 +69,7 @@ trait AuthStubs {
   def givenAuthorisedFor(
     payload: String,
     responseBody: String
-  ): StubMapping = {
+  ): StubMapping =
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
@@ -95,7 +95,6 @@ trait AuthStubs {
             .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
         )
     )
-  }
 
   def givenuserHasUnsupportedAffinityGroup(): StubMapping = stubFor(
     post(urlEqualTo("/auth/authorise"))
@@ -116,5 +115,3 @@ trait AuthStubs {
   )
 
   def verifyAuthoriseAttempt(): Unit = verify(1, postRequestedFor(urlEqualTo("/auth/authorise")))
-
-}

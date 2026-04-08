@@ -22,9 +22,9 @@ import play.api.mvc.RequestHeader
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
 
-object DisplayDate {
+object DisplayDate:
 
-  def displayDateForLang(date: LocalDate)(implicit request: RequestHeader): String = {
+  def displayDateForLang(date: LocalDate)(implicit request: RequestHeader): String =
     val lang = request.cookies
       .get("PLAY_LANG")
       .map(_.value)
@@ -33,5 +33,3 @@ object DisplayDate {
     val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM uuuu", Lang(lang).toLocale)
 
     date.format(dateFormatter)
-  }
-}

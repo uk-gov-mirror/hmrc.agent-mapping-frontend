@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.agentmappingfrontend.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentmappingfrontend.model._
+import uk.gov.hmrc.agentmappingfrontend.model.*
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 
 import java.time.LocalDate
 
-object MappingStubs {
+object MappingStubs:
 
   val listOfSaMappings = List(
     SaMapping(
@@ -92,5 +91,3 @@ object MappingStubs {
     get(urlEqualTo(s"/agent-mapping/mappings/details/arn/${arn.value}"))
       .willReturn(aResponse().withStatus(statusCode))
   )
-
-}

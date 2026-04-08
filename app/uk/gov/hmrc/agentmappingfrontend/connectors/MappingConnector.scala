@@ -17,14 +17,14 @@
 package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import play.api.Logging
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.model.SaMapping
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.hc
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.metrics.Metrics
 
@@ -41,7 +41,7 @@ class MappingConnector @Inject() (
 )(implicit
   val ec: ExecutionContext
 )
-extends Logging {
+extends Logging:
 
   def createMapping(arn: Arn)(implicit rh: RequestHeader): Future[Int] = http
     .put(url"$baseUrl/agent-mapping/mappings/arn/${arn.value}")
@@ -59,11 +59,10 @@ extends Logging {
     .get(url"$baseUrl/agent-mapping/mappings/sa/${arn.value}")
     .execute[HttpResponse]
     .map { response =>
-      response.status match {
+      response.status match
         case OK => (response.json \ "mappings").as[Seq[SaMapping]]
         case NOT_FOUND => Seq.empty
         case s => throw new RuntimeException(s"unexpected error when calling findSaMappingsFor, status: $s")
-      }
     }
 
   def deleteAllMappingsBy(arn: Arn)(implicit rh: RequestHeader): Future[Int] = http
@@ -72,5 +71,3 @@ extends Logging {
     .map(_.status)
 
   private lazy val baseUrl = appConfig.agentMappingBaseUrl
-
-}

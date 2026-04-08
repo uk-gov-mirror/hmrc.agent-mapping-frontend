@@ -21,6 +21,5 @@ import play.api.libs.json.OFormat
 
 case class VerifiedEmails(emails: Set[String] = Set.empty)
 
-object VerifiedEmails {
+object VerifiedEmails:
   implicit val format: OFormat[VerifiedEmails] = Json.format[VerifiedEmails]
-}

@@ -20,7 +20,7 @@ import org.mongodb.scala.model.Filters
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.agentmappingfrontend.support.UnitSpec
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -31,11 +31,12 @@ import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.temporal.ChronoUnit.SECONDS
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.mongodb.scala.SingleObservableFuture
 
 class MappingArnRepositoryISpec
 extends UnitSpec
 with GuiceOneAppPerSuite
-with DefaultPlayMongoRepositorySupport[MappingArnResult] {
+with DefaultPlayMongoRepositorySupport[MappingArnResult]:
 
   protected def builder: GuiceApplicationBuilder = new GuiceApplicationBuilder()
     .configure("mongodb.uri" -> mongoUri)
@@ -101,5 +102,3 @@ with DefaultPlayMongoRepositorySupport[MappingArnResult] {
       await(repository.collection.find(Filters.equal("id", record.id)).headOption()) shouldBe empty
     }
   }
-
-}

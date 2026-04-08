@@ -18,13 +18,13 @@ package uk.gov.hmrc.agentmappingfrontend.connectors
 
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.*
 
 class MappingConnectorISpec
-extends BaseControllerISpec {
+extends BaseControllerISpec:
 
   private val arn = Arn("ARN0001")
 
@@ -87,5 +87,3 @@ extends BaseControllerISpec {
       await(connector.deleteAllMappingsBy(arn)) shouldBe 204
     }
   }
-
-}

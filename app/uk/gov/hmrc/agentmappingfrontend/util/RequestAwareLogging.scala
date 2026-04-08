@@ -19,14 +19,13 @@ package uk.gov.hmrc.agentmappingfrontend.util
 import play.api.Logger
 import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport._
+import uk.gov.hmrc.agentmappingfrontend.util.RequestSupport.*
 
-trait RequestAwareLogging {
+trait RequestAwareLogging:
   val logger: RequestAwareLogger =
     new RequestAwareLogger(
       delegateLogger = Logger(getClass)
     )
-}
 
 /** A logger which is aware of the request. It will append to the message extra information such as session ID, request ID, user agent, referer, and device ID
   * etc.
@@ -35,7 +34,7 @@ trait RequestAwareLogging {
   */
 class RequestAwareLogger(
   delegateLogger: Logger
-) {
+):
 
   def warn(message: => String)(implicit request: RequestHeader): Unit = logMessage(message, Warn)
 
@@ -60,11 +59,9 @@ class RequestAwareLogger(
 
   private def deviceId(implicit r: RequestHeader) = s"[DeviceId: ${hc.deviceID}]"
 
-  private def makeRichMessage(message: String)(implicit request: RequestHeader): String = {
-    request match {
+  private def makeRichMessage(message: String)(implicit request: RequestHeader): String =
+    request match
       case _ => s"$message $context "
-    }
-  }
 
   private sealed trait LogLevel
 
@@ -74,22 +71,16 @@ class RequestAwareLogger(
   private def logMessage(
     message: => String,
     level: LogLevel
-  )(implicit request: RequestHeader): Unit = {
+  )(implicit request: RequestHeader): Unit =
     lazy val richMessage = makeRichMessage(message)
-    level match {
+    level match
       case Warn => delegateLogger.warn(richMessage)
-    }
-  }
 
   private def logMessage(
     message: => String,
     ex: Throwable,
     level: LogLevel
-  )(implicit request: RequestHeader): Unit = {
+  )(implicit request: RequestHeader): Unit =
     lazy val richMessage = makeRichMessage(message)
-    level match {
+    level match
       case Warn => delegateLogger.warn(richMessage, ex)
-    }
-  }
-
-}

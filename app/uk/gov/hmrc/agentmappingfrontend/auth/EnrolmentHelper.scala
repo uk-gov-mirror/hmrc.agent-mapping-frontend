@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentmappingfrontend.auth
 
 import uk.gov.hmrc.auth.core.Enrolment
 
-object EnrolmentHelper {
+object EnrolmentHelper:
 
   val AsAgentServiceKey = "HMRC-AS-AGENT" // The main Enrolment for MTD Agent Services
   val AtedAgentServiceKey = "HMRC-AGENT-AGENT" // Used for ATED; we don't map this, as it uses the same ARN as above
@@ -33,5 +33,3 @@ object EnrolmentHelper {
     enrolments: Set[Enrolment],
     key: String
   ): Boolean = enrolments.map(_.key).contains(key)
-
-}

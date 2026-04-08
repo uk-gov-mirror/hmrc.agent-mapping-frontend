@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.agentmappingfrontend.util
 
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
-import play.api.mvc._
+import org.scalatest.matchers.must.Matchers.*
+import play.api.mvc.*
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.mvc.RequestHeader
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 
 class RequestSupportISpec
-extends BaseControllerISpec {
+extends BaseControllerISpec:
 
   "RequestSupport.hc" should {
     "produce a HeaderCarrier from a RequestHeader" in {
@@ -39,4 +39,3 @@ extends BaseControllerISpec {
       hc mustBe a[HeaderCarrier]
     }
   }
-}

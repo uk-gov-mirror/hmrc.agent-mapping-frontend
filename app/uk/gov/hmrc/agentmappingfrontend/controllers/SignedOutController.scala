@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.MessagesControllerComponents
+import play.api.mvc.MessagesRequest
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.agentmappingfrontend.config.AppConfig
 import uk.gov.hmrc.agentmappingfrontend.repository.MappingResult.MappingArnResultId
@@ -34,34 +35,27 @@ class SignedOutController @Inject() (
 )(implicit
   appConfig: AppConfig
 )
-extends FrontendController(cc) {
+extends FrontendController(cc):
 
-  private def signOutWithContinue(continue: String) = {
+  private def signOutWithContinue(continue: String) =
     val signOutAndRedirectUrl: String = uri"${appConfig.signOutUrl}?${Map("continue" -> continue)}".toString
     Redirect(signOutAndRedirectUrl)
-  }
 
-  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action {
+  def signOutAndRedirect(id: MappingArnResultId): Action[AnyContent] = Action:
     val url = uri"${appConfig.signOutRedirectUrl}?${Map("id" -> id)}"
     signOutWithContinue(url.toString)
-  }
 
-  def reLogForMappingStart: Action[AnyContent] = Action {
+  def reLogForMappingStart: Action[AnyContent] = Action:
     signOutWithContinue(appConfig.signInAndContinue)
-  }
 
-  def signOut: Action[AnyContent] = Action {
+  def signOut: Action[AnyContent] = Action:
     val url = uri"${appConfig.agentMappingFrontendBaseUrl + routes.MappingController.root.url}"
     signOutWithContinue(url.toString)
-  }
 
-  def timeOut(): Action[AnyContent] = Action {
+  def timeOut(): Action[AnyContent] = Action:
     val url = uri"${appConfig.agentMappingFrontendBaseUrl + routes.SignedOutController.timedOut.url}"
     signOutWithContinue(url.toString)
-  }
 
-  def timedOut: Action[AnyContent] = Action.async { implicit request =>
+  def timedOut: Action[AnyContent] = Action.async: request =>
+    given MessagesRequest[?] = request
     Future successful Forbidden(timedOutTemplate())
-  }
-
-}

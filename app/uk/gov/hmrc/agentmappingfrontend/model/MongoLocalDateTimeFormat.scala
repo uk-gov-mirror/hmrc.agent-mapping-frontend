@@ -25,7 +25,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-object MongoLocalDateTimeFormat {
+object MongoLocalDateTimeFormat:
 
   // LocalDateTime must be written to DB as ISODate to allow the expiry TTL on createdOn date to work
 
@@ -45,5 +45,3 @@ object MongoLocalDateTimeFormat {
     .contramap(_.toInstant(ZoneOffset.UTC).toEpochMilli.toString)
 
   implicit final val localDateTimeFormat: Format[LocalDateTime] = Format(localDateTimeReads.orElse(legacyDateTimeReads), localDateTimeWrites)
-
-}

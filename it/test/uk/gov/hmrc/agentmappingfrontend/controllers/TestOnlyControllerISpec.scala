@@ -19,11 +19,11 @@ package uk.gov.hmrc.agentmappingfrontend.controllers
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentmappingfrontend.controllers.testOnly.TestOnlyController
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
-import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs._
-import play.api.test.Helpers._
+import uk.gov.hmrc.agentmappingfrontend.stubs.MappingStubs.*
+import play.api.test.Helpers.*
 
 class TestOnlyControllerISpec
-extends BaseControllerISpec {
+extends BaseControllerISpec:
 
   private lazy val controller: TestOnlyController = app.injector.instanceOf[TestOnlyController]
 
@@ -58,5 +58,3 @@ extends BaseControllerISpec {
       html should include(arn.value)
     }
   }
-
-}

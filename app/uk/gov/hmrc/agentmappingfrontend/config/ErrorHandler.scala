@@ -36,7 +36,7 @@ class ErrorHandler @Inject() (
   view: ErrorTemplate
 )(implicit val ec: ExecutionContext)
 extends FrontendErrorHandler
-with I18nSupport {
+with I18nSupport:
 
   val appName: String = appConfig.appName
   val logger: Logger.ALogger = Logger.of(appName)
@@ -47,12 +47,9 @@ with I18nSupport {
     message: String
   )(implicit
     request: RequestHeader
-  ): Future[Html] = Future.successful {
+  ): Future[Html] = Future.successful:
     view(
       pageTitle,
       heading,
       message
     )
-  }
-
-}

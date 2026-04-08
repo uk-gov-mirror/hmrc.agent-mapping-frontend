@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.client.WireMock.reset
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.Suite
@@ -32,16 +32,15 @@ import scala.annotation.tailrec
 
 case class WireMockBaseUrl(value: URL)
 
-object WireMockSupport {
+object WireMockSupport:
   // We have to make the wireMockPort constant per-JVM instead of constant
   // per-WireMockSupport-instance because config values containing it are
   // cached in the GGConfig object
   private lazy val wireMockPort = Port.randomAvailable
-}
 
 trait WireMockSupport
 extends BeforeAndAfterAll
-with BeforeAndAfterEach {
+with BeforeAndAfterEach:
   me: Suite =>
 
   val wireMockPort: Int = WireMockSupport.wireMockPort
@@ -54,26 +53,21 @@ with BeforeAndAfterEach {
 
   private val wireMockServer = new WireMockServer(basicWireMockConfig().port(wireMockPort))
 
-  override protected def beforeAll(): Unit = {
+  override protected def beforeAll(): Unit =
     super.beforeAll()
     configureFor(wireMockHost, wireMockPort)
     wireMockServer.start()
-  }
 
-  override protected def afterAll(): Unit = {
+  override protected def afterAll(): Unit =
     wireMockServer.stop()
     super.afterAll()
-  }
 
-  override protected def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit =
     super.beforeEach()
     reset()
-  }
-
-}
 
 // This class was copy-pasted from the hmrctest project, which is now deprecated.
-object Port {
+object Port:
 
   val rnd = new scala.util.Random
   val range = 8000 to 39999
@@ -81,11 +75,11 @@ object Port {
 
   @tailrec
   def randomAvailable: Int =
-    range(rnd.nextInt(range.length)) match {
+    range(rnd.nextInt(range.length)) match
       case 8080 => randomAvailable
       case 8090 => randomAvailable
       case p: Int =>
-        available(p) match {
+        available(p) match
           case false =>
             Logger.of("WireMockSupport").debug(s"Port $p is in use, trying another")
             randomAvailable
@@ -93,26 +87,18 @@ object Port {
             Logger.of("WireMockSupport").debug("Taking port : " + p)
             usedPorts :+ p
             p
-        }
-    }
 
-  private def available(p: Int): Boolean = {
+  private def available(p: Int): Boolean =
     var socket: ServerSocket = null
     try
-      if (!usedPorts.contains(p)) {
+      if !usedPorts.contains(p) then
         socket = new ServerSocket(p)
         socket.setReuseAddress(true)
         true
-      }
-      else {
+      else
         false
-      }
-    catch {
+    catch
       case _: Throwable => false
-    }
     finally
-      if (socket != null)
+      if socket != null then
         socket.close()
-  }
-
-}

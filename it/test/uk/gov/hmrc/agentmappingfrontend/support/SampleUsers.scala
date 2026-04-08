@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.agentmappingfrontend.support
 
-import uk.gov.hmrc.auth.core.InsufficientEnrolments
-
 case class SampleUser(
   authoriseJsonResponse: String,
   activeEnrolments: Set[String],
   throwException: Option[Exception] = None
 )
 
-object SampleUsers {
+object SampleUsers:
 
   val saAgentCode = "HZ1234"
   val eligibleAgent = SampleUser(
@@ -116,5 +114,3 @@ object SampleUsers {
        |}""".stripMargin,
     activeEnrolments = Set()
   )
-
-}

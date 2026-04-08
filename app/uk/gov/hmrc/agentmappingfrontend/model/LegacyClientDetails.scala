@@ -26,6 +26,5 @@ case class LegacyClientDetails(
   cancelUrl: String
 )
 
-object LegacyClientDetails {
+object LegacyClientDetails:
   implicit val format: Format[LegacyClientDetails] = Json.format[LegacyClientDetails]
-}

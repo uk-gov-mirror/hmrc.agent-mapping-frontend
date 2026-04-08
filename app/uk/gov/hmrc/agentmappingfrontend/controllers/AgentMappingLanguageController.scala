@@ -30,10 +30,8 @@ class AgentMappingLanguageController @Inject() (
   cc: ControllerComponents,
   appConfig: AppConfig
 )
-extends LanguageController(languageUtils, cc) {
+extends LanguageController(languageUtils, cc):
 
   override def languageMap: Map[String, Lang] = appConfig.languageMap
 
   override def fallbackURL: String = "https://www.tax.service.gov.uk/agent-mapping"
-
-}

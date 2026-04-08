@@ -21,6 +21,7 @@ import play.api.i18n.MessagesApi
 import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.MessagesControllerComponents
+import play.api.mvc.MessagesRequest
 import uk.gov.hmrc.agentmappingfrontend.connectors.MappingConnector
 import uk.gov.hmrc.agentmappingfrontend.views.html.no_mappings
 import uk.gov.hmrc.agentmappingfrontend.views.html.view_sa_mappings
@@ -40,21 +41,19 @@ class TestOnlyController @Inject() (
   cc: MessagesControllerComponents
 )
 extends FrontendController(cc)
-with I18nSupport {
+with I18nSupport:
 
-  def findSaMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
+  def findSaMappings(arn: Arn): Action[AnyContent] = Action.async: request =>
+    given MessagesRequest[?] = request
     mappingConnector.findSaMappingsFor(arn).map { mappings =>
-      if (mappings.nonEmpty)
+      if mappings.nonEmpty then
         Ok(viewSaMappingsTemplate(arn, mappings))
       else
         NotFound(noMappingsTemplate(arn))
     }
-  }
 
-  def deleteAllMappings(arn: Arn): Action[AnyContent] = Action.async { implicit request =>
+  def deleteAllMappings(arn: Arn): Action[AnyContent] = Action.async: request =>
+    given MessagesRequest[?] = request
     mappingConnector.deleteAllMappingsBy(arn).map { _ =>
       Ok(noMappingsTemplate(arn))
     }
-  }
-
-}

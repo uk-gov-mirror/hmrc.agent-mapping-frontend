@@ -23,9 +23,9 @@ import scala.io.Source
 
 class MessagesSpec
 extends AnyWordSpecLike
-with Matchers {
+with Matchers:
 
-  private def getMessageKeys(fileName: String) = {
+  private def getMessageKeys(fileName: String) =
     Source.fromResource(fileName)
       .getLines()
       .filter(!_.startsWith("#"))
@@ -33,57 +33,48 @@ with Matchers {
       .map(_.split('=').head)
       .map(_.trim)
       .toList
-  }
 
   val english: List[String] = getMessageKeys("messages.en")
   val welsh: List[String] = getMessageKeys("messages.cy")
 
-  "The English messages file" should {
-    "have a corresponding Welsh translation for all keys" in {
+  "The English messages file" should:
+    "have a corresponding Welsh translation for all keys" in:
       val missingKeys: List[String] = english.filterNot(welsh.contains)
 
-      if (missingKeys.nonEmpty)
+      if missingKeys.nonEmpty then
         fail(s"Missing keys in Welsh translation: ${missingKeys.mkString(
             "\n",
             "\n",
             "\n"
           )}")
-    }
 
-    "have no duplicates" in {
+    "have no duplicates" in:
       val duplicateKeys: List[String] = english.diff(english.distinct).distinct
 
-      if (duplicateKeys.nonEmpty)
+      if duplicateKeys.nonEmpty then
         fail(s"Duplicate keys in English translation: ${duplicateKeys.mkString(
             "\n",
             "\n",
             "\n"
           )}")
-    }
-  }
 
-  "The Welsh messages file" should {
-    "have a corresponding English translation for all keys" in {
+  "The Welsh messages file" should:
+    "have a corresponding English translation for all keys" in:
       val missingKeys: List[String] = welsh.filterNot(english.contains)
 
-      if (missingKeys.nonEmpty)
+      if missingKeys.nonEmpty then
         fail(s"Missing keys in English translation: ${missingKeys.mkString(
             "\n",
             "\n",
             "\n"
           )}")
-    }
 
-    "have no duplicates" in {
+    "have no duplicates" in:
       val duplicateKeys: List[String] = welsh.diff(welsh.distinct).distinct
 
-      if (duplicateKeys.nonEmpty)
+      if duplicateKeys.nonEmpty then
         fail(s"Duplicate keys in Welsh translation: ${duplicateKeys.mkString(
             "\n",
             "\n",
             "\n"
           )}")
-    }
-  }
-
-}

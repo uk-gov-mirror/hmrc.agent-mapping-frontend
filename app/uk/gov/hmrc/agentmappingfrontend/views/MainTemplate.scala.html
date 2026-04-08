@@ -42,7 +42,7 @@
     @if(isSignedIn) {
         @hmrcTimeoutDialogHelper(
             signOutUrl = routes.SignedOutController.signOut.url,
-            timeoutUrl = Some(routes.SignedOutController.timeOut.url),
+            timeoutUrl = Some(routes.SignedOutController.timeOut().url),
             timeout = Some(appConfig.timeout),
             countdown = Some(appConfig.timeoutCountdown)
         )

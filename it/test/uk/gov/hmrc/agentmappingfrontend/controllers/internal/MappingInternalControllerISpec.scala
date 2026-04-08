@@ -22,27 +22,27 @@ import play.api.libs.json.Json
 import play.api.mvc.Request
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.agentmappingfrontend.controllers.BaseControllerISpec
 import uk.gov.hmrc.agentmappingfrontend.controllers.routes
 import uk.gov.hmrc.agentmappingfrontend.model.identifiers.Arn
 import uk.gov.hmrc.agentmappingfrontend.stubs.AuthStubs
-import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers._
+import uk.gov.hmrc.agentmappingfrontend.support.SampleUsers.*
 import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.test.MongoSupport
+import org.mongodb.scala.ObservableFuture
 
 class MappingInternalControllerISpec
 extends BaseControllerISpec
 with AuthStubs
-with MongoSupport {
+with MongoSupport:
 
   override def additionalConfig: Map[String, String] = Map("mongodb.uri" -> mongoUri)
 
   override def moduleWithOverrides: AbstractModule =
-    new AbstractModule {
+    new AbstractModule:
       override def configure(): Unit = bind(classOf[MongoComponent]).toInstance(mongoComponent)
-    }
 
   val arn: Arn = Arn("TARN0000001")
 
@@ -81,5 +81,3 @@ with MongoSupport {
       status(result) shouldBe 403
     }
   }
-
-}

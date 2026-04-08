@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentmappingfrontend
 
 import scala.concurrent.Future
 
-package object util {
+package object util:
 
   implicit def toFuture[A](a: A): Future[A] = Future.successful(a)
-}
