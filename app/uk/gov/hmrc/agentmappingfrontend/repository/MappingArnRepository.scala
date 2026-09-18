@@ -21,7 +21,6 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.IndexModel
 import org.mongodb.scala.model.IndexOptions
 import org.mongodb.scala.model.ReplaceOptions
-import play.api.Logging
 import play.api.libs.json.Format
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
@@ -95,7 +94,8 @@ with RequestAwareLogging:
 
   def findRecord(id: MappingArnResultId): Future[Option[MappingArnResult]] = collection
     .find(equal("id", id))
-    .headOption()
+    .first()
+    .toFutureOption()
 
   def replace(
     mappingArnResult: MappingArnResult,
